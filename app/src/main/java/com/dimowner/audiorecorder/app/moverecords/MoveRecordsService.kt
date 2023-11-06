@@ -230,7 +230,7 @@ class MoveRecordsService : Service() {
 		// Create notification default intent.
 		val intent = Intent(applicationContext, MainActivity::class.java)
 		intent.flags = Intent.FLAG_ACTIVITY_PREVIOUS_IS_TOP
-		val pendingIntent = PendingIntent.getActivity(applicationContext, 0, intent, 0)
+		val pendingIntent = PendingIntent.getActivity(applicationContext, 0, intent, PendingIntent.FLAG_IMMUTABLE)
 
 		// Create notification builder.
 		builder = NotificationCompat.Builder(this, CHANNEL_ID)
@@ -260,7 +260,7 @@ class MoveRecordsService : Service() {
 	private fun getCancelMovePendingIntent(context: Context): PendingIntent {
 		val intent = Intent(context, StopMoveRecordsReceiver::class.java)
 		intent.action = ACTION_CANCEL_MOVE_RECORDS
-		return PendingIntent.getBroadcast(context, 318, intent, 0)
+		return PendingIntent.getBroadcast(context, 318, intent, PendingIntent.FLAG_IMMUTABLE)
 	}
 
 	@RequiresApi(Build.VERSION_CODES.O)

@@ -205,7 +205,7 @@ public class DownloadService extends Service {
 		// Create notification default intent.
 		Intent intent = new Intent(getApplicationContext(), MainActivity.class);
 		intent.setFlags(Intent.FLAG_ACTIVITY_PREVIOUS_IS_TOP);
-		contentPendingIntent = PendingIntent.getActivity(getApplicationContext(), 0, intent, 0);
+		contentPendingIntent = PendingIntent.getActivity(getApplicationContext(), 0, intent, PendingIntent.FLAG_IMMUTABLE);
 		startForeground(NOTIF_ID, buildNotification());
 	}
 
@@ -239,7 +239,7 @@ public class DownloadService extends Service {
 	protected PendingIntent getPendingSelfIntent(Context context, String action) {
 		Intent intent = new Intent(context, StopDownloadReceiver.class);
 		intent.setAction(action);
-		return PendingIntent.getBroadcast(context, 10, intent, 0);
+		return PendingIntent.getBroadcast(context, 10, intent, PendingIntent.FLAG_IMMUTABLE);
 	}
 
 	@RequiresApi(Build.VERSION_CODES.O)

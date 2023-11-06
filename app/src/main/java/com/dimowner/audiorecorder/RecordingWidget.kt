@@ -45,7 +45,7 @@ internal fun updateAppWidget(
 
 private fun getRecordingPendingIntent(context: Context): PendingIntent {
 	val intent = Intent(context, WidgetReceiver::class.java)
-	return PendingIntent.getBroadcast(context, 11, intent, 0)
+	return PendingIntent.getBroadcast(context, 11, intent, PendingIntent.FLAG_IMMUTABLE)
 }
 
 class WidgetReceiver : BroadcastReceiver() {
