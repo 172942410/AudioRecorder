@@ -111,7 +111,7 @@
 		</FrameLayout>
 	</LinearLayout>
 
-	<com.dimowner.audiorecorder.app.widget.TouchLayout
+	<com.perry.audiorecorder.app.widget.TouchLayout
 			android:id="@+id/touchLayout"
 			android:layout_width="match_parent"
 			android:layout_height="wrap_content"
@@ -146,7 +146,7 @@
 					android:layout_height="60dp"
 					>
 
-				<com.dimowner.audiorecorder.app.widget.WaveformViewNew
+				<com.perry.audiorecorder.app.widget.WaveformViewNew
 						android:id="@+id/waveformView"
 						android:layout_width="wrap_content"
 						android:layout_height="60dp"
@@ -246,5 +246,5 @@
 
 			</LinearLayout>
 		</LinearLayout>
-	</com.dimowner.audiorecorder.app.widget.TouchLayout>
+	</com.perry.audiorecorder.app.widget.TouchLayout>
 </FrameLayout>

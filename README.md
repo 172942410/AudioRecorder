@@ -7,10 +7,10 @@ This app is optimized to start up as fast as possible, aiding the user in not mi
 
 [<img src="https://fdroid.gitlab.io/artwork/badge/get-it-on.png"
      alt="Get it on F-Droid"
-     height="80">](https://f-droid.org/packages/com.dimowner.audiorecorder/)
+     height="80">](https://f-droid.org/packages/com.perry.audiorecorder/)
 [<img src="https://play.google.com/intl/en_us/badges/images/generic/en-play-badge.png"
      alt="Get it on Google Play"
-     height="80">](https://play.google.com/store/apps/details?id=com.dimowner.audiorecorder)
+     height="80">](https://play.google.com/store/apps/details?id=com.perry.audiorecorder)
 
 <b>Two recording formats are available:</b>
  - M4A

@@ -3,10 +3,10 @@ apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-kapt'
 
 android {
-	namespace 'com.dimowner.audiorecorder'
+	namespace 'com.perry.audiorecorder'
 	compileSdkVersion 33
 	defaultConfig {
-		applicationId "com.dimowner.audiorecorder"
+		applicationId "com.perry.audiorecorder"
 		minSdkVersion 21
 		targetSdkVersion 33
 		versionCode 933
@@ -55,13 +55,13 @@ android {
 	productFlavors {
 		debugConfig {
 			dimension "default"
-			applicationId "com.dimowner.audiorecorder.debug"
+			applicationId "com.perry.audiorecorder.debug"
 			signingConfig = signingConfigs.dev
 		}
 		releaseConfig {
 			dimension "default"
 			signingConfig = signingConfigs.dev
-			applicationId "com.dimowner.audiorecorder"
+			applicationId "com.perry.audiorecorder"
 		}
 	}
 
@@ -98,8 +98,8 @@ dependencies {
 	implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutines"
 
 	//Timber
-	implementation "com.jakewharton.timber:timber:$timber"
-	implementation "androidx.recyclerview:recyclerview:$androidX"
+	api "com.jakewharton.timber:timber:$timber"
+	api "androidx.recyclerview:recyclerview:$androidX"
 
 	implementation "androidx.viewpager2:viewpager2:1.0.0"
 
