@@ -35,7 +35,7 @@
         </receiver>
 
         <activity
-            android:name=".app.main.MainActivity"
+            android:name=".app.talk.TalkActivity"
             android:launchMode="singleTask"
             android:exported="true"
             android:screenOrientation="portrait">

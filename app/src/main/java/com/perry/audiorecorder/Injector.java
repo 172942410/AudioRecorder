@@ -28,6 +28,8 @@ import com.perry.audiorecorder.app.moverecords.MoveRecordsViewModel;
 import com.perry.audiorecorder.app.settings.SettingsMapper;
 import com.perry.audiorecorder.app.setup.SetupContract;
 import com.perry.audiorecorder.app.setup.SetupPresenter;
+import com.perry.audiorecorder.app.talk.TalkContract;
+import com.perry.audiorecorder.app.talk.TalkPresenter;
 import com.perry.audiorecorder.app.trash.TrashContract;
 import com.perry.audiorecorder.app.trash.TrashPresenter;
 import com.perry.audiorecorder.audio.AudioWaveformVisualization;
@@ -62,6 +64,7 @@ public class Injector {
 	private BackgroundQueue processingTasks;
 	private BackgroundQueue copyTasks;
 
+	private TalkContract.UserActionsListener talkPresenter;
 	private MainContract.UserActionsListener mainPresenter;
 	private RecordsContract.UserActionsListener recordsPresenter;
 	private SettingsContract.UserActionsListener settingsPresenter;
@@ -173,6 +176,16 @@ public class Injector {
 		}
 	}
 
+	public TalkContract.UserActionsListener provideTalkPresenter() {
+		if (talkPresenter == null) {
+			talkPresenter = new TalkPresenter(providePrefs(), provideFileRepository(),
+					provideLocalRepository(), provideAudioPlayer(), provideAppRecorder(),
+					provideRecordingTasksQueue(), provideLoadingTasksQueue(), provideProcessingTasksQueue(),
+					provideImportTasksQueue(), provideSettingsMapper());
+		}
+		return talkPresenter;
+	}
+
 	public MainContract.UserActionsListener provideMainPresenter() {
 		if (mainPresenter == null) {
 			mainPresenter = new MainPresenter(providePrefs(), provideFileRepository(),
@@ -273,6 +286,13 @@ public class Injector {
 		if (recordsPresenter != null) {
 			recordsPresenter.clear();
 			recordsPresenter = null;
+		}
+	}
+
+	public void releaseTalkPresenter() {
+		if (talkPresenter != null) {
+			talkPresenter.clear();
+			talkPresenter = null;
 		}
 	}
 

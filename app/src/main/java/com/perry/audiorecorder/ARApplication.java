@@ -111,6 +111,7 @@ public class ARApplication extends Application {
 		super.onTerminate();
 		//This method is never called on real Android devices
 		injector.releaseMainPresenter();
+		injector.releaseTalkPresenter();
 		injector.closeTasks();
 
 		unregisterReceiver(audioOutputChangeReceiver);
