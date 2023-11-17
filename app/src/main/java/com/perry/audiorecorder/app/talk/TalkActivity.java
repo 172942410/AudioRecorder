@@ -160,7 +160,7 @@ public class TalkActivity extends Activity implements TalkContract.View, View.On
 		colorMap = ARApplication.getInjector().provideColorMap();
 		setTheme(colorMap.getAppThemeResource());
 		super.onCreate(savedInstanceState);
-		setContentView(R.layout.activity_main);
+		setContentView(R.layout.activity_talk);
 
 		waveformView = findViewById(R.id.record);
 		recordingWaveformView = findViewById(R.id.recording_view);

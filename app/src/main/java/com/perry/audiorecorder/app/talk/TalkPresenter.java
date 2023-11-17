@@ -187,6 +187,7 @@ public class TalkPresenter implements TalkContract.UserActionsListener {
 
 				@Override
 				public void onRecordingProgress(final long mills, final int amp) {
+					//TODO 这里是获取 音频amp 最大振幅 的地方
 					if (view != null) {
 						view.onRecordingProgress(mills, amp);
 						File recFile = appRecorder.getRecordFile();
