@@ -1,340 +1,398 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<LinearLayout
-		xmlns:android="http://schemas.android.com/apk/res/android"
-		xmlns:tools="http://schemas.android.com/tools"
-		tools:viewBindingIgnore="true"
-	android:id="@+id/root"
-		android:layout_width="match_parent"
-		android:layout_height="match_parent"
-		android:orientation="vertical"
-		tools:context="com.perry.audiorecorder.app.talk.TalkActivity">
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context="com.perry.audiorecorder.app.talk.TalkActivity"
+    tools:viewBindingIgnore="true">
 
-	<LinearLayout
-			android:id="@+id/toolbar"
-			android:layout_width="match_parent"
-			android:layout_height="wrap_content"
-			android:orientation="horizontal">
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
 
-		<ImageButton
-				android:id="@+id/btn_import"
-				android:layout_width="wrap_content"
-				android:layout_height="wrap_content"
-				android:contentDescription="@null"
-				android:layout_gravity="start"
-				android:background="?android:selectableItemBackgroundBorderless"
-				android:padding="@dimen/spacing_normal"
-				android:src="@drawable/ic_import"
-			android:visibility="invisible"
-			/>
+        <LinearLayout
+            android:id="@+id/toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
 
-		<TextView
-				android:layout_width="0dp"
-				android:layout_height="wrap_content"
-				android:layout_weight="1"
-				android:gravity="center_horizontal"
-				android:layout_marginStart="@dimen/spacing_double"
-				android:layout_marginEnd="@dimen/spacing_double"
-				android:layout_marginTop="@dimen/spacing_medium"
-				android:layout_marginBottom="@dimen/spacing_normal"
-				android:textColor="@color/text_primary_light"
-				android:textSize="@dimen/text_xlarge"
-				android:fontFamily="sans-serif-medium"
-				android:text="@string/title"/>
+            <ImageButton
+                android:id="@+id/btn_settings"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="start"
+                android:background="?android:selectableItemBackgroundBorderless"
+                android:contentDescription="@string/settings"
+                android:padding="@dimen/spacing_normal"
+                android:src="@drawable/ic_settings"
+                android:visibility="visible"
 
-		<ImageButton
-				android:id="@+id/btn_share"
-				android:layout_width="@dimen/bottom_pnl_small_btn_size"
-				android:layout_height="@dimen/bottom_pnl_small_btn_size"
-				android:adjustViewBounds="true"
-				android:background="?android:selectableItemBackgroundBorderless"
-				android:contentDescription="@null"
-				android:layout_gravity="end"
-				android:scaleType="center"
-				android:src="@drawable/ic_more_vert"/>
+                />
 
-	</LinearLayout>
+            <TextView
+                android:id="@+id/txt_title"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/spacing_double"
+                android:layout_marginTop="@dimen/spacing_medium"
+                android:layout_marginEnd="@dimen/spacing_double"
+                android:layout_marginBottom="@dimen/spacing_normal"
+                android:layout_weight="1"
+                android:fontFamily="sans-serif-medium"
+                android:gravity="center_horizontal"
+                android:text="@string/title"
+                android:textColor="@color/text_primary_light"
+                android:textSize="@dimen/text_xlarge" />
 
-	<LinearLayout
-			android:id="@+id/pnl_record_processing"
-			android:layout_width="match_parent"
-			android:layout_height="wrap_content"
-			android:gravity="center_horizontal"
-			android:visibility="invisible"
-			android:orientation="horizontal"
-			android:layout_marginBottom="@dimen/spacing_tiny"
-			tools:visibility="visible">
+            <ImageButton
+                android:id="@+id/btn_bookmarks"
+                android:layout_width="@dimen/bottom_pnl_small_btn_size"
+                android:layout_height="@dimen/bottom_pnl_small_btn_size"
+                android:contentDescription="@null"
+                android:layout_gravity="center_vertical|end"
+                android:background="?android:selectableItemBackgroundBorderless"
+                android:src="@drawable/ic_bookmark_bordered"/>
 
-		<ProgressBar
-				style="?android:attr/progressBarStyleSmall"
-				android:layout_width="wrap_content"
-				android:layout_height="wrap_content"
-				android:layout_gravity="center"/>
+            <ImageButton
+                android:id="@+id/btn_share"
+                android:layout_width="@dimen/bottom_pnl_small_btn_size"
+                android:layout_height="@dimen/bottom_pnl_small_btn_size"
+                android:adjustViewBounds="true"
+                android:background="?android:selectableItemBackgroundBorderless"
+                android:contentDescription="@null"
+                android:scaleType="center"
+                android:src="@drawable/ic_more_vert"
+                android:layout_gravity="center_vertical|end"
+                />
 
-		<TextView
-				android:layout_width="wrap_content"
-				android:layout_height="wrap_content"
-				android:layout_marginStart="@dimen/spacing_small"
-				android:textColor="@color/white"
-				android:textSize="@dimen/text_small"
-				android:text="@string/record_processing"/>
+        </LinearLayout>
 
-	</LinearLayout>
+        <LinearLayout
+            android:id="@+id/menu_multi_select"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/md_blue_gray_500"
+            android:elevation="@dimen/toolbar_elevation"
+            android:orientation="horizontal"
+            android:visibility="gone"
+            tools:visibility="gone">
 
-	<LinearLayout
-			android:layout_width="match_parent"
-			android:layout_height="0dp"
-			android:layout_weight="1"
-			android:gravity="center"
-			android:orientation="vertical">
+            <ImageButton
+                android:id="@+id/btn_close_multi_select"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="start"
+                android:background="?android:selectableItemBackgroundBorderless"
+                android:contentDescription="@null"
+                android:padding="@dimen/spacing_normal"
+                android:src="@drawable/ic_round_close" />
 
-		<FrameLayout
-				android:layout_width="match_parent"
-				android:layout_height="wrap_content"
-				android:layout_gravity="center"
-				>
+            <TextView
+                android:id="@+id/txt_selected_multi"
+                style="@style/Text.SectionLabel"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:layout_weight="1"
+                android:paddingStart="@dimen/spacing_normal"
+                android:paddingLeft="@dimen/spacing_normal"
+                android:paddingEnd="@dimen/spacing_normal"
+                android:paddingRight="@dimen/spacing_normal"
+                android:text="@string/selected"
+                android:textColor="@color/text_primary_light" />
 
-			<ImageView
-					android:id="@+id/placeholder"
-					android:layout_width="wrap_content"
-					android:layout_height="wrap_content"
-					android:visibility="gone"
-					android:layout_gravity="center"
-					tools:visibility="visible"/>
+            <ImageButton
+                android:id="@+id/btn_share_multi"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical|end"
+                android:background="?android:selectableItemBackgroundBorderless"
+                android:contentDescription="@null"
+                android:padding="@dimen/spacing_normal"
+                android:src="@drawable/ic_share" />
 
-			<com.perry.audiorecorder.app.widget.WaveformViewNew
-					android:id="@+id/record"
-					android:layout_width="wrap_content"
-					android:layout_height="@dimen/waveform_height"
-					android:layout_marginBottom="@dimen/notification_btn"
-					/>
+            <ImageButton
+                android:id="@+id/btn_download_multi"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical|end"
+                android:background="?android:selectableItemBackgroundBorderless"
+                android:contentDescription="@null"
+                android:padding="@dimen/spacing_normal"
+                android:src="@drawable/ic_save_alt" />
 
-			<com.perry.audiorecorder.app.widget.RecordingWaveformView
-					android:id="@+id/recording_view"
-					android:layout_width="wrap_content"
-					android:layout_height="@dimen/waveform_height"
-					android:visibility="visible"
-					android:layout_marginBottom="@dimen/notification_btn"
-					/>
+            <ImageButton
+                android:id="@+id/btn_delete_multi"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical|end"
+                android:background="?android:selectableItemBackgroundBorderless"
+                android:contentDescription="@null"
+                android:padding="@dimen/spacing_normal"
+                android:src="@drawable/ic_delete" />
 
-			<ProgressBar
-					android:id="@+id/progress"
-					android:layout_width="wrap_content"
-					android:layout_height="wrap_content"
-					android:visibility="invisible"
-					android:layout_gravity="center"
-					tools:visibility="gone"/>
+        </LinearLayout>
+    </FrameLayout>
 
-			<ImageButton
-					android:id="@+id/btn_play"
-					android:layout_width="@dimen/notification_btn"
-					android:layout_height="@dimen/notification_btn"
-					android:adjustViewBounds="true"
-					android:background="?android:selectableItemBackgroundBorderless"
-					android:contentDescription="@null"
-					android:layout_gravity="bottom|center"
-					android:scaleType="center"
-					android:visibility="invisible"
-					android:src="@drawable/ic_play"/>
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
 
-			<ImageButton
-					android:id="@+id/btn_stop"
-					android:layout_width="@dimen/notification_btn"
-					android:layout_height="@dimen/notification_btn"
-					android:adjustViewBounds="true"
-					android:background="?android:selectableItemBackgroundBorderless"
-					android:contentDescription="@null"
-					android:layout_gravity="bottom|center"
-					android:layout_marginStart="27dp"
-					android:scaleType="center"
-					android:visibility="gone"
-					android:src="@drawable/ic_stop"/>
-		</FrameLayout>
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recycler_view"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:overScrollMode="never" />
 
-	</LinearLayout>
+        <TextView
+            android:id="@+id/txtEmpty"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginTop="24dp"
+            android:drawableTop="@drawable/ic_audiotrack_64"
+            android:drawablePadding="@dimen/spacing_normal"
+            android:gravity="center"
+            android:text="@string/no_records"
+            android:textColor="@color/text_primary_light"
+            android:textSize="@dimen/text_large"
+            android:visibility="gone"
+            tools:text="@string/app_name"
+            tools:visibility="visible" />
 
-	<FrameLayout
-			android:layout_width="match_parent"
-			android:layout_height="wrap_content">
+        <ProgressBar
+            android:id="@+id/progress"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center" />
 
-		<TextView
-				android:id="@+id/txt_zero_time"
-				android:layout_width="wrap_content"
-				android:layout_height="wrap_content"
-				android:layout_gravity="start|bottom"
-				android:textColor="@color/text_primary_light"
-				android:layout_marginStart="@dimen/spacing_normal"
-				android:layout_marginBottom="@dimen/spacing_small"
-				android:textSize="@dimen/text_medium"
-				android:visibility="invisible"
-				android:text="@string/zero_time"/>
+        <com.perry.audiorecorder.app.widget.TouchLayout
+            android:id="@+id/touch_layout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom"
+            android:layout_marginStart="2dp"
+            android:layout_marginEnd="2dp"
+            android:layout_marginBottom="2dp"
+            android:background="@drawable/panel_amber"
+            android:clipToPadding="false"
+            android:elevation="@dimen/toolbar_elevation"
+            android:visibility="gone"
+            tools:visibility="visible">
 
-		<LinearLayout
-				android:layout_width="match_parent"
-				android:layout_height="wrap_content"
-				android:orientation="vertical">
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
 
-			<TextView
-					android:id="@+id/txt_progress"
-					android:layout_width="wrap_content"
-					android:layout_height="wrap_content"
-					android:layout_gravity="center_horizontal"
-					android:textColor="@color/text_primary_light"
-					android:textSize="54sp"
-					android:textStyle="bold"
-					tools:text="00:00"/>
+                <FrameLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
 
-			<TextView
-					android:id="@+id/txt_name"
-					android:layout_width="wrap_content"
-					android:layout_height="wrap_content"
-					android:layout_gravity="bottom|center_horizontal"
-					android:gravity="center_horizontal"
-					android:layout_marginStart="@dimen/spacing_xnormal"
-					android:layout_marginEnd="@dimen/spacing_xnormal"
-					android:layout_marginBottom="@dimen/spacing_tiny"
-					android:drawableEnd="@drawable/ic_pencil_small"
-					android:ellipsize="end"
-					android:maxLines="2"
-					android:textColor="@color/text_primary_light"
-					android:textSize="22sp"
-					android:visibility="invisible"
-					tools:text="2019.12.30 12:12:23"
-					tools:visibility="visible" />
+                    <TextView
+                        android:id="@+id/txt_progress"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:fontFamily="sans-serif-medium"
+                        android:padding="@dimen/spacing_medium"
+                        android:textColor="@color/text_primary_light"
+                        android:textSize="@dimen/text_xlarge"
+                        tools:text="00:00:00" />
 
-			<TextView
-					android:id="@+id/txt_record_info"
-					android:layout_width="wrap_content"
-					android:layout_height="wrap_content"
-					android:layout_gravity="bottom|center_horizontal"
-					android:layout_marginStart="@dimen/spacing_huge"
-					android:layout_marginEnd="@dimen/spacing_huge"
-					android:layout_marginBottom="@dimen/spacing_xsmall"
-					android:ellipsize="end"
-					android:maxLines="1"
-					android:fontFamily="sans-serif-light"
-					android:textColor="@color/text_primary_light2"
-					android:textSize="@dimen/text_normal"
-					tools:text="M4a, 44.1kHz, 128kbps, Stereo" />
-		</LinearLayout>
+                    <ImageButton
+                        android:id="@+id/btn_decoding"
+                        android:layout_width="48dp"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical|start"
+                        android:layout_marginStart="@dimen/spacing_small"
+                        android:adjustViewBounds="true"
+                        android:background="?android:selectableItemBackgroundBorderless"
+                        android:contentDescription="@null"
+                        android:scaleType="center"
+                        android:src="@drawable/ic_loop"
+                        android:visibility="gone" />
 
-		<TextView
-				android:id="@+id/txt_duration"
-				android:layout_width="wrap_content"
-				android:layout_height="wrap_content"
-				android:layout_gravity="end|bottom"
-				android:textColor="@color/text_primary_light"
-				android:layout_marginEnd="@dimen/spacing_normal"
-				android:layout_marginBottom="@dimen/spacing_small"
-				android:textSize="@dimen/text_medium"
-				android:visibility="invisible"
-				android:text="@string/zero_time"/>
+                    <ImageButton
+                        android:id="@+id/btn_check_bookmark"
+                        android:layout_width="48dp"
+                        android:layout_height="40dp"
+                        android:layout_gravity="center_vertical|end"
+                        android:layout_marginEnd="@dimen/spacing_small"
+                        android:adjustViewBounds="true"
+                        android:background="?android:selectableItemBackgroundBorderless"
+                        android:contentDescription="@null"
+                        android:scaleType="center"
+                        android:src="@drawable/ic_bookmark_bordered" />
+                </FrameLayout>
 
-	</FrameLayout>
+                <FrameLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="60dp">
 
-	<SeekBar
-			android:id="@+id/play_progress"
-			android:layout_width="match_parent"
-			android:layout_height="wrap_content"
-			android:max="1000"
-			android:progress="20"
-			/>
+                    <com.perry.audiorecorder.app.widget.WaveformViewNew
+                        android:id="@+id/record"
+                        android:layout_width="wrap_content"
+                        android:layout_height="60dp"
+                        android:layout_gravity="center" />
 
-	<FrameLayout
-			android:layout_width="match_parent"
-			android:layout_height="wrap_content"
-			android:layout_marginBottom="@dimen/spacing_small">
+                    <ProgressBar
+                        android:id="@+id/wave_progress"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:visibility="gone" />
 
-		<ImageButton
-				android:id="@+id/btn_settings"
-				android:layout_width="@dimen/bottom_pnl_btn_size"
-				android:layout_height="@dimen/bottom_pnl_btn_size"
-				android:layout_marginTop="@dimen/spacing_small"
-				android:adjustViewBounds="true"
-				android:background="?android:selectableItemBackgroundBorderless"
-				android:layout_gravity="start"
-				android:clickable="true"
-				android:contentDescription="@string/settings"
-				android:focusable="true"
-				android:scaleType="centerInside"
-				android:src="@drawable/ic_settings"/>
+                </FrameLayout>
 
-		<LinearLayout
-				android:layout_width="wrap_content"
-				android:layout_height="wrap_content"
-				android:layout_gravity="center"
-				android:orientation="horizontal">
+                <FrameLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="@dimen/spacing_tiny">
 
-			<ImageButton
-					android:id="@+id/btn_record_delete"
-					android:layout_width="42dp"
-					android:layout_height="42dp"
-					android:background="?android:selectableItemBackgroundBorderless"
-					android:contentDescription="@string/delete"
-					android:layout_margin="@dimen/spacing_xtiny"
-					android:layout_gravity="center"
-					android:scaleType="center"
-					android:visibility="invisible"
-					android:src="@drawable/ic_delete_forever_36"/>
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="start|bottom"
+                        android:layout_marginStart="@dimen/spacing_small"
+                        android:text="@string/zero_time"
+                        android:textColor="@color/text_primary_light"
+                        android:textSize="@dimen/text_normal" />
 
-			<ImageButton
-					android:id="@+id/btn_record"
-					android:layout_width="@dimen/bottom_pnl_btn_size"
-					android:layout_height="@dimen/bottom_pnl_btn_size"
-					android:layout_margin="@dimen/spacing_small"
-					android:adjustViewBounds="true"
-					android:background="?android:selectableItemBackgroundBorderless"
-					android:contentDescription="@string/recording"
-					android:layout_gravity="center"
-					android:scaleType="center"
-					android:src="@drawable/ic_record"/>
+                    <TextView
+                        android:id="@+id/txt_name"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="bottom|center_horizontal"
+                        android:layout_marginStart="@dimen/spacing_xdouble"
+                        android:layout_marginEnd="@dimen/spacing_xdouble"
+                        android:drawableEnd="@drawable/ic_pencil_small"
+                        android:ellipsize="end"
+                        android:maxLines="2"
+                        android:padding="@dimen/spacing_tiny"
+                        android:textColor="@color/text_primary_light"
+                        android:textSize="@dimen/text_xmedium"
+                        tools:text="Record 2321" />
 
-			<ImageButton
-					android:id="@+id/btn_record_stop"
-					android:layout_width="@dimen/bottom_pnl_small_btn_size"
-					android:layout_height="@dimen/bottom_pnl_small_btn_size"
-					android:layout_gravity="center"
-					android:adjustViewBounds="true"
-					android:background="?android:selectableItemBackgroundBorderless"
-					android:contentDescription="@null"
-					android:padding="@dimen/spacing_normal"
-					android:scaleType="center"
-					android:src="@drawable/ic_stop"
-					android:visibility="invisible" />
+                    <TextView
+                        android:id="@+id/txt_duration"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="end|bottom"
+                        android:layout_marginEnd="@dimen/spacing_small"
+                        android:textColor="@color/text_primary_light"
+                        android:textSize="@dimen/text_normal"
+                        tools:text="34:56" />
 
-		</LinearLayout>
+                </FrameLayout>
 
-		<ImageButton
-				android:id="@+id/btn_records_list"
-				android:layout_width="@dimen/bottom_pnl_btn_size"
-				android:layout_height="@dimen/bottom_pnl_btn_size"
-				android:layout_marginTop="@dimen/spacing_small"
-				android:adjustViewBounds="true"
-				android:background="?android:selectableItemBackgroundBorderless"
-				android:layout_gravity="end"
-				android:contentDescription="@null"
-				android:scaleType="centerInside"
-				android:src="@drawable/ic_list"/>
+                <SeekBar
+                    android:id="@+id/play_progress"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:max="1000"
+                    android:progress="20" />
 
-	</FrameLayout>
-	<androidx.recyclerview.widget.RecyclerView
-		android:id="@+id/rvMsg"
-		android:layout_width="match_parent"
-		android:layout_height="0dp"
-		android:layout_weight="1" />
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="bottom|center_horizontal"
+                    android:layout_marginTop="@dimen/spacing_tiny"
+                    android:layout_marginBottom="@dimen/spacing_tiny"
+                    android:orientation="horizontal">
 
-	<View
-		android:layout_width="match_parent"
-		android:layout_height="1dp"
-		android:background="#ccc" />
-	<com.perry.audiorecorder.app.widget.RecordAudioButton
-		android:id="@+id/btnVoice"
-		style="?android:attr/borderlessButtonStyle"
-		android:layout_width="match_parent"
-		android:layout_height="40dp"
-		android:layout_margin="10dp"
-		android:background="@drawable/btn_chat_press_normal"
-		android:text="按住 说话"
-		android:textColor="#7e7e7e"
-		/>
+                    <ImageButton
+                        android:id="@+id/btn_prev"
+                        android:layout_width="@dimen/bottom_pnl_small_btn_size2"
+                        android:layout_height="@dimen/bottom_pnl_small_btn_size2"
+                        android:layout_gravity="center"
+                        android:layout_marginStart="@dimen/spacing_small"
+                        android:adjustViewBounds="true"
+                        android:background="?android:selectableItemBackgroundBorderless"
+                        android:contentDescription="@null"
+                        android:scaleType="center"
+                        android:src="@drawable/ic_skip_previous" />
+
+                    <View
+                        android:layout_width="0dp"
+                        android:layout_height="10dp"
+                        android:layout_weight="1" />
+
+                    <ImageButton
+                        android:id="@+id/btn_delete"
+                        android:layout_width="@dimen/bottom_pnl_small_btn_size2"
+                        android:layout_height="@dimen/bottom_pnl_small_btn_size2"
+                        android:layout_gravity="center"
+                        android:adjustViewBounds="true"
+                        android:background="?android:selectableItemBackgroundBorderless"
+                        android:contentDescription="@null"
+                        android:scaleType="center"
+                        android:src="@drawable/ic_delete_forever_36"
+                        android:visibility="gone" />
+
+                    <ImageButton
+                        android:id="@+id/btn_play"
+                        android:layout_width="@dimen/bottom_pnl_small_btn_size2"
+                        android:layout_height="@dimen/bottom_pnl_small_btn_size2"
+                        android:layout_gravity="center"
+                        android:layout_marginEnd="@dimen/spacing_small"
+                        android:adjustViewBounds="true"
+                        android:background="?android:selectableItemBackgroundBorderless"
+                        android:contentDescription="@null"
+                        android:scaleType="center"
+                        android:src="@drawable/ic_play"
+                        android:tint="@color/white" />
+
+                    <ImageButton
+                        android:id="@+id/btn_stop"
+                        android:layout_width="@dimen/bottom_pnl_small_btn_size2"
+                        android:layout_height="@dimen/bottom_pnl_small_btn_size2"
+                        android:layout_gravity="center"
+                        android:layout_marginStart="@dimen/spacing_small"
+                        android:adjustViewBounds="true"
+                        android:background="?android:selectableItemBackgroundBorderless"
+                        android:contentDescription="@null"
+                        android:scaleType="center"
+                        android:src="@drawable/ic_stop" />
+
+                    <View
+                        android:layout_width="0dp"
+                        android:layout_height="10dp"
+                        android:layout_weight="1" />
+
+                    <ImageButton
+                        android:id="@+id/btn_next"
+                        android:layout_width="@dimen/bottom_pnl_small_btn_size2"
+                        android:layout_height="@dimen/bottom_pnl_small_btn_size2"
+                        android:layout_gravity="center"
+                        android:layout_marginEnd="@dimen/spacing_small"
+                        android:adjustViewBounds="true"
+                        android:background="?android:selectableItemBackgroundBorderless"
+                        android:contentDescription="@null"
+                        android:scaleType="center"
+                        android:src="@drawable/ic_skip_next" />
+
+                </LinearLayout>
+            </LinearLayout>
+        </com.perry.audiorecorder.app.widget.TouchLayout>
+    </FrameLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="#ccc" />
+
+    <com.perry.audiorecorder.app.widget.RecordAudioButton
+        android:id="@+id/btnVoice"
+        style="?android:attr/borderlessButtonStyle"
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:layout_margin="10dp"
+        android:background="@drawable/btn_chat_press_normal"
+        android:text="按住 说话"
+        android:textColor="#7e7e7e" />
 </LinearLayout>

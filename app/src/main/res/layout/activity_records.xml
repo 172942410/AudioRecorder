@@ -111,7 +111,7 @@
 			android:visibility="gone"
 			android:orientation="horizontal"
 			android:elevation="@dimen/toolbar_elevation"
-			tools:visibility="visible">
+			tools:visibility="gone">
 
 		<ImageButton
 				android:id="@+id/btn_close_multi_select"

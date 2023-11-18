@@ -20,8 +20,9 @@ import android.content.Context;
 import android.net.Uri;
 
 import com.perry.audiorecorder.Contract;
-import com.perry.audiorecorder.IntArrayList;
 import com.perry.audiorecorder.app.info.RecordInfo;
+import com.perry.audiorecorder.app.records.ListItem;
+import com.perry.audiorecorder.app.records.RecordsContract;
 import com.perry.audiorecorder.audio.recorder.RecorderContract;
 import com.perry.audiorecorder.data.database.Record;
 
@@ -30,160 +31,223 @@ import java.util.List;
 
 public interface TalkContract {
 
-	interface View extends Contract.View {
+    interface View extends Contract.View {
+        void addRecords(List<ListItem> records, int order);
+        void showEmptyBookmarksList();
+        void showActiveRecord(int id);
+        void bookmarksUnselected();
+        void bookmarksSelected();
+        void showEmptyList();
 
-		/**
-		 * 发送语音时：显示提示控件
-		 */
-		void showNormalTipView();
-		/**
-		 * 发送语音时：正常录制
-		 */
-		void showRecordingTipView();
-		/**
-		 * 发送语音时：松开手指，取消发送
-		 */
-		void showCancelTipView();
-		/**
-		 * 发送语音时：语音录入完毕 隐藏提示view
-		 */
-		void hideTipView();
-		/**
-		 * 发送语音时：语音说话时的高低峰值差 调整当前音量
-		 *
-		 * @param db
-		 */
-		void updateCurrentVolume(int db);
-		/**
-		 * 发送语音时：录制时间太短
-		 */
-		void showRecordTooShortTipView();
-		/**
-		 * 发送语音时：开始录音启动录音服务
-		 */
-		void showRecordingStart();
-		/**
-		 * 发送语音时：这里是获取 音频amp 最大振幅 的地方
-		 * @param mills
-		 * @param amp
-		 */
-		void onRecordingProgress(long mills, int amp);
-		void keepScreenOn(boolean on);
-		void showRecordingStop();
-		void showRecordingPause();
-		void showRecordingResume();
-		void startWelcomeScreen();
+        void hidePlayPanel();
 
-		void askRecordingNewName(long id, File file,  boolean showCheckbox);
+        void onDeleteRecord(long id);
 
-		void startRecordingService();
+        void showTrashBtn();
 
-		void startPlaybackService(String name);
+        void cancelMultiSelect();
 
-		void showPlayStart(boolean animate);
-		void showPlayPause();
-		void showPlayStop();
-		void onPlayProgress(long mills, int percent);
+        void showRecords(List<ListItem> records, int order);
 
-		void showOptionsMenu();
-		void hideOptionsMenu();
+        void showPlayerPanel();
 
-		void showRecordProcessing();
-		void hideRecordProcessing();
+        void hidePanelProgress();
 
-		void showWaveForm(int[] waveForm, long duration, long playbackMills);
-		void waveFormToStart();
-		void showDuration(String duration);
-		void showRecordingProgress(String progress);
-		void showName(String name);
-		void showInformation(String info);
-		void decodeRecord(int id);
+        void addedToBookmarks(int id, boolean isActive);
 
-		void askDeleteRecord(String name);
+        void removedFromBookmarks(int id, boolean isActive);
 
-		void askDeleteRecordForever();
+        void showRecordName(String name);
 
-		void showRecordInfo(RecordInfo info);
+        /**
+         * 发送语音时：显示提示控件
+         */
+        void showNormalTipView();
 
-		void updateRecordingView(IntArrayList data, long durationMills);
+        /**
+         * 发送语音时：正常录制
+         */
+        void showRecordingTipView();
 
-		void showRecordsLostMessage(List<Record> list);
+        /**
+         * 发送语音时：松开手指，取消发送
+         */
+        void showCancelTipView();
 
-		void shareRecord(Record record);
+        /**
+         * 发送语音时：语音录入完毕 隐藏提示view
+         */
+        void hideTipView();
 
-		void openFile(Record record);
+        /**
+         * 发送语音时：语音说话时的高低峰值差 调整当前音量
+         *
+         * @param db
+         */
+        void updateCurrentVolume(int db);
 
-		void downloadRecord(Record record);
+        /**
+         * 发送语音时：录制时间太短
+         */
+        void showRecordTooShortTipView();
 
-		void showMigratePublicStorageWarning();
-		/**
-		 * 显示对话列表
-		 */
-		void showList(List<File> list);
-		/**
-		 * 开始播放动画
-		 *
-		 * @param position
-		 */
-		void startPlayAnim(int position);
+        /**
+         * 发送语音时：开始录音启动录音服务
+         */
+        void showRecordingStart();
 
-		/**
-		 * 停止播放动画
-		 */
-		void stopPlayAnim();
-	}
+        /**
+         * 发送语音时：这里是获取 音频amp 最大振幅 的地方
+         *
+         * @param mills
+         * @param amp
+         */
+        void onRecordingProgress(long mills, int amp);
 
-	interface UserActionsListener extends Contract.UserActionsListener<TalkContract.View> {
+        void keepScreenOn(boolean on);
 
-		void checkFirstRun();
+        void showRecordingStop();
 
-		void storeInPrivateDir(Context context);
+        void showRecordingPause();
 
-		void setAudioRecorder(RecorderContract.Recorder recorder);
+        void showRecordingResume();
 
-		void pauseUnpauseRecording(Context context);
-		void stopRecording(boolean deleteRecord);
-		void cancelRecording();
+        void startWelcomeScreen();
 
-		void startPlayback();
-		void seekPlayback(long mills);
-		void stopPlayback();
+        void askRecordingNewName(long id, File file, boolean showCheckbox);
 
-		void renameRecord(long id, String name, String extension);
+        void startRecordingService();
 
-		void decodeRecord(long id);
+        void startPlaybackService(String name);
 
-		void loadActiveRecord();
+        void showPlayStart(boolean animate);
 
-		void checkPublicStorageRecords();
+        void showPlayPause();
 
-		void setAskToRename(boolean value);
+        void showPlayStop();
 
-		void updateRecordingDir(Context context);
+        void onPlayProgress(long mills, int percent);
 
-		void setStoragePrivate(Context context);
+        void showOptionsMenu();
 
-		void onShareRecordClick();
+        void hideOptionsMenu();
 
-		void onRenameRecordClick();
+        void showWaveForm(int[] waveForm, long duration, long playbackMills);
 
-		void onOpenFileClick();
+        void waveFormToStart();
 
-		void onSaveAsClick();
+        void showDuration(String duration);
 
-		void onDeleteClick();
+        void showRecordingProgress(String progress);
 
-		//TODO: Remove this getters
-		boolean isStorePublic();
+        void showName(String name);
 
-		String getActiveRecordPath();
+        void decodeRecord(int id);
 
-		void deleteActiveRecord(boolean forever);
+        void askDeleteRecord(String name);
 
-		void onRecordInfo();
+        void askDeleteRecordForever();
 
-		void disablePlaybackProgressListener();
+        void showRecordInfo(RecordInfo info);
 
-		void enablePlaybackProgressListener();
-	}
+        void showRecordsLostMessage(List<Record> list);
+
+        void shareRecord(Record record);
+
+        void openFile(Record record);
+
+        void downloadRecord(Record record);
+
+        void showMigratePublicStorageWarning();
+
+        /**
+         * 显示对话列表
+         */
+        void showList(List<File> list);
+
+        /**
+         * 开始播放动画
+         *
+         * @param position
+         */
+        void startPlayAnim(int position);
+
+        /**
+         * 停止播放动画
+         */
+        void stopPlayAnim();
+
+        void showPanelProgress();
+    }
+
+    interface UserActionsListener extends Contract.UserActionsListener<TalkContract.View> {
+
+        void checkFirstRun();
+
+        void storeInPrivateDir(Context context);
+
+        void setAudioRecorder(RecorderContract.Recorder recorder);
+
+        void pauseUnpauseRecording(Context context);
+
+        void stopRecording(boolean deleteRecord);
+
+        void cancelRecording();
+
+        void startPlayback();
+
+        void seekPlayback(long mills);
+
+        void stopPlayback();
+
+        void renameRecord(long id, String name, String extension);
+
+        void decodeRecord(long id);
+
+        void loadActiveRecord();
+
+        void checkPublicStorageRecords();
+
+        void setAskToRename(boolean value);
+
+        void updateRecordingDir(Context context);
+
+        void setStoragePrivate(Context context);
+
+        void onShareRecordClick();
+
+        void onRenameRecordClick();
+
+        void onOpenFileClick();
+
+        void onSaveAsClick();
+
+        void onDeleteClick();
+
+        //TODO: Remove this getters
+        boolean isStorePublic();
+
+        String getActiveRecordPath();
+
+        void deleteActiveRecord(boolean forever);
+
+        void onRecordInfo(RecordInfo info);
+
+        void disablePlaybackProgressListener();
+
+        void enablePlaybackProgressListener();
+
+        void setActiveRecord(long id, RecordsContract.Callback callback);
+
+        void checkBookmarkActiveRecord();
+
+        void addToBookmark(int id);
+
+        void removeFromBookmarks(int id);
+
+        void deleteRecord(long id, String path);
+        void loadRecords();
+        void applyBookmarksFilter();
+        void loadRecordsPage(int page);
+    }
 }
