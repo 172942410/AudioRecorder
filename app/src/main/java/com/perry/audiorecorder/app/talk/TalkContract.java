@@ -33,33 +33,47 @@ public interface TalkContract {
 	interface View extends Contract.View {
 
 		/**
-		 * 显示提示控件
+		 * 发送语音时：显示提示控件
 		 */
 		void showNormalTipView();
 		/**
-		 * 正常录制
+		 * 发送语音时：正常录制
 		 */
 		void showRecordingTipView();
 		/**
-		 * 松开手指，取消发送
+		 * 发送语音时：松开手指，取消发送
 		 */
 		void showCancelTipView();
 		/**
-		 * 语音录入完毕 隐藏提示view
+		 * 发送语音时：语音录入完毕 隐藏提示view
 		 */
 		void hideTipView();
 		/**
-		 * 语音说话时的高低峰值差 调整当前音量
+		 * 发送语音时：语音说话时的高低峰值差 调整当前音量
 		 *
 		 * @param db
 		 */
 		void updateCurrentVolume(int db);
+		/**
+		 * 发送语音时：录制时间太短
+		 */
+		void showRecordTooShortTipView();
 
+		/**
+		 * 开始录音
+		 */
+		void startRecording();
 		void keepScreenOn(boolean on);
 		void showRecordingStart();
 		void showRecordingStop();
 		void showRecordingPause();
 		void showRecordingResume();
+
+		/**
+		 * 这里是获取 音频amp 最大振幅 的地方
+		 * @param mills
+		 * @param amp
+		 */
 		void onRecordingProgress(long mills, int amp);
 		void startWelcomeScreen();
 
@@ -159,5 +173,10 @@ public interface TalkContract {
 		void disablePlaybackProgressListener();
 
 		void enablePlaybackProgressListener();
+
+		/**
+		 * 开始录音
+		 */
+		void startRecording(String path);
 	}
 }

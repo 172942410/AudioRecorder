@@ -42,6 +42,7 @@ import static com.perry.audiorecorder.AppConstants.PLAYBACK_VISUALIZATION_INTERV
 
 public class AppRecorderImpl implements AppRecorder {
 
+	private final static String TAG = AppRecorderImpl.class.getName();
 	private RecorderContract.Recorder audioRecorder;
 	private final BackgroundQueue recordingsTasks;
 
@@ -247,6 +248,9 @@ public class AppRecorderImpl implements AppRecorder {
 	@Override
 	public void stopRecording() {
 		if (audioRecorder.isRecording()) {
+			if(durationMills < 1000){
+				onRecordShort();
+			}
 			audioRecorder.stopRecording();
 		}
 	}
@@ -336,6 +340,14 @@ public class AppRecorderImpl implements AppRecorder {
 			}
 		}
 	}
+	private void onRecordShort() {
+		if (!appCallbacks.isEmpty()) {
+			for (int i = appCallbacks.size() - 1; i >= 0; i--) {
+				appCallbacks.get(i).onRecordShort();
+			}
+		}
+	}
+
 
 	private void scheduleRecordingTimeUpdate() {
 		updateTime = System.currentTimeMillis();

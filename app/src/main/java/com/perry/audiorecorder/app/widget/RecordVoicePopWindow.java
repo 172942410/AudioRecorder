@@ -100,7 +100,8 @@ public class RecordVoicePopWindow extends PopupWindow {
      */
     public void updateCurrentVolume(int decibel) {
 //        switch (decibel / 5) {
-        switch (decibel / 4400) {
+        switch (decibel / 3000) {
+//        switch (decibel / 4400) {
             case 0:
                 mIvRcVolume.setImageResource(R.mipmap.record_volume_01);
                 break;

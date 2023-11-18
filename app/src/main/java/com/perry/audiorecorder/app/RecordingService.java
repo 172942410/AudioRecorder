@@ -158,6 +158,11 @@ public class RecordingService extends Service {
 				showError(ErrorParser.parseException(throwable));
 				stopForegroundService();
 			}
+
+			@Override
+			public void onRecordShort() {
+
+			}
 		};
 		appRecorder.addRecordingCallback(appRecorderCallback);
 	}

@@ -19,6 +19,7 @@ package com.perry.audiorecorder.audio.recorder;
 import android.media.MediaRecorder;
 import android.os.Build;
 import android.os.Handler;
+import android.util.Log;
 
 import com.perry.audiorecorder.exception.InvalidOutputFile;
 import com.perry.audiorecorder.exception.RecorderInitException;
@@ -32,6 +33,7 @@ import timber.log.Timber;
 import static com.perry.audiorecorder.AppConstants.RECORDING_VISUALIZATION_INTERVAL;
 
 public class ThreeGpRecorder implements RecorderContract.Recorder {
+	private final static String TAG = WavRecorder.class.getName();
 
 	private MediaRecorder recorder = null;
 	private File recordFile = null;
@@ -81,6 +83,7 @@ public class ThreeGpRecorder implements RecorderContract.Recorder {
 				recorder.prepare();
 				recorder.start();
 				updateTime = System.currentTimeMillis();
+				Log.d(TAG,"开始录音:3GP ");
 				isRecording.set(true);
 				scheduleRecordingTimeUpdate();
 				if (recorderCallback != null) {
@@ -149,6 +152,7 @@ public class ThreeGpRecorder implements RecorderContract.Recorder {
 
 	@Override
 	public void stopRecording() {
+		Log.d(TAG,"停止录音 底层执行 stopRecording 3GP");
 		if (isRecording.get()) {
 			stopRecordingTimer();
 			try {

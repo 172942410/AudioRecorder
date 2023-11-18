@@ -28,4 +28,6 @@ public interface AppRecorderCallback {
 	void onRecordingStopped(File file, Record record);
 	void onRecordingProgress(long mills, int amp);
 	void onError(AppException throwable);
+	//录音时间太短的异常回调
+	void onRecordShort();
 }

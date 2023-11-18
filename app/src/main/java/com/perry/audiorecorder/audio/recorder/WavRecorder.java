@@ -20,6 +20,7 @@ import android.media.AudioFormat;
 import android.media.AudioRecord;
 import android.media.MediaRecorder;
 import android.os.Handler;
+import android.util.Log;
 
 import com.perry.audiorecorder.AppConstants;
 import com.perry.audiorecorder.exception.InvalidOutputFile;
@@ -42,6 +43,7 @@ import static com.perry.audiorecorder.AppConstants.RECORDING_VISUALIZATION_INTER
 
 public class WavRecorder implements RecorderContract.Recorder {
 
+	private final static String TAG = WavRecorder.class.getName();
 	private AudioRecord recorder = null;
 
 	private static final int RECORDER_BPP = 16; //bits per sample
@@ -118,6 +120,7 @@ public class WavRecorder implements RecorderContract.Recorder {
 			if (recorder != null && recorder.getState() == AudioRecord.STATE_INITIALIZED) {
 				recorder.startRecording();
 				updateTime = System.currentTimeMillis();
+				Log.d(TAG,"开始录音:Wav ");
 				isRecording.set(true);
 				recordingThread = new Thread(this::writeAudioDataToFile, "AudioRecorder Thread");
 
@@ -171,6 +174,7 @@ public class WavRecorder implements RecorderContract.Recorder {
 
 	@Override
 	public void stopRecording() {
+		Log.d(TAG,"停止录音 底层执行 stopRecording WAV");
 		if (recorder != null) {
 			isRecording.set(false);
 			isPaused.set(false);

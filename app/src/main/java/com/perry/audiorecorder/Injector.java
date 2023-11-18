@@ -81,6 +81,10 @@ public class Injector {
 		this.context = context;
 	}
 
+	public Context getContext() {
+		return context;
+	}
+
 	public Prefs providePrefs() {
 		return PrefsImpl.getInstance(context);
 	}

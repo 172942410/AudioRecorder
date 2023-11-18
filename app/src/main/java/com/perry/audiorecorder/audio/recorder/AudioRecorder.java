@@ -19,6 +19,7 @@ package com.perry.audiorecorder.audio.recorder;
 import android.media.MediaRecorder;
 import android.os.Build;
 import android.os.Handler;
+import android.util.Log;
 
 import com.perry.audiorecorder.exception.InvalidOutputFile;
 import com.perry.audiorecorder.exception.RecorderInitException;
@@ -32,6 +33,7 @@ import timber.log.Timber;
 import static com.perry.audiorecorder.AppConstants.RECORDING_VISUALIZATION_INTERVAL;
 
 public class AudioRecorder implements RecorderContract.Recorder {
+	private final static String TAG = WavRecorder.class.getName();
 
 	private MediaRecorder recorder = null;
 	private File recordFile = null;

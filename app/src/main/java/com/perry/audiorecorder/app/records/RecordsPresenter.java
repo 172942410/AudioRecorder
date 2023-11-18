@@ -91,6 +91,11 @@ public class RecordsPresenter implements RecordsContract.UserActionsListener {
 				public void onError(AppException e) {
 					view.showError(ErrorParser.parseException(e));
 				}
+
+				@Override
+				public void onRecordShort() {
+
+				}
 			};
 		}
 		appRecorder.addRecordingCallback(appRecorderCallback);

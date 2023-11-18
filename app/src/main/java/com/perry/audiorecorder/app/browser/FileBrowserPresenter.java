@@ -112,6 +112,11 @@ public class FileBrowserPresenter implements FileBrowserContract.UserActionsList
 						view.showError(ErrorParser.parseException(throwable));
 					}
 				}
+
+				@Override
+				public void onRecordShort() {
+
+				}
 			};
 		}
 		appRecorder.addRecordingCallback(appRecorderCallback);

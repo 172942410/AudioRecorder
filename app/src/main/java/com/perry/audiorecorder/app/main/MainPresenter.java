@@ -209,6 +209,11 @@ public class MainPresenter implements MainContract.UserActionsListener {
 						view.showRecordingStop();
 					}
 				}
+
+				@Override
+				public void onRecordShort() {
+
+				}
 			};
 		}
 		appRecorder.addRecordingCallback(appRecorderCallback);

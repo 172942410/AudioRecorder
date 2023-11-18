@@ -55,16 +55,23 @@ public class RecordAudioButton extends AppCompatButton {
                 }
                 return true;
             case MotionEvent.ACTION_UP:
-                Log.v("onTouchEvent", "停止录音");
-                if (mOnVoiceButtonCallBack != null) {
-                    mOnVoiceButtonCallBack.onStopRecord();
+                if (isCancelled(this, event)) {
+                    Log.v("onTouchEvent", "取消录音");
+                    if (mOnVoiceButtonCallBack != null) {
+                        mOnVoiceButtonCallBack.onCancelRecord();
+                    }
+                }else{
+                    Log.v("onTouchEvent", "停止录音 界面执行");
+                    if (mOnVoiceButtonCallBack != null) {
+                        mOnVoiceButtonCallBack.onStopRecord();
+                    }
                 }
                 setBackgroundResource(R.drawable.btn_chat_press_normal);
                 return true;
             case MotionEvent.ACTION_CANCEL:
-                Log.v("onTouchEvent", "停止录音");
+                Log.v("onTouchEvent", "ACTION_CANCEL 录音");
                 if (mOnVoiceButtonCallBack != null) {
-                    mOnVoiceButtonCallBack.onStopRecord();
+                    mOnVoiceButtonCallBack.onCancelRecord();
                 }
                 setBackgroundResource(R.drawable.btn_chat_press_normal);
                 return true;
@@ -105,6 +112,10 @@ public class RecordAudioButton extends AppCompatButton {
          * 准备取消录音
          */
         void onWillCancelRecord();
+        /**
+         * 取消录音
+         */
+        void onCancelRecord();
 
         /**
          * 继续录音

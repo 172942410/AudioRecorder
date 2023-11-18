@@ -16,11 +16,15 @@
 
 package com.perry.audiorecorder.app.talk;
 
+import static com.perry.audiorecorder.ARApplication.injector;
+
 import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.ParcelFileDescriptor;
 import android.provider.OpenableColumns;
+import android.util.Log;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 
@@ -58,6 +62,7 @@ import timber.log.Timber;
 
 public class TalkPresenter implements TalkContract.UserActionsListener {
 
+	private final static String TAG = TalkPresenter.class.getName();
 	private TalkContract.View view;
 	private final AppRecorder appRecorder;
 	private final PlayerContractNew.Player audioPlayer;
@@ -204,6 +209,13 @@ public class TalkPresenter implements TalkContract.UserActionsListener {
 						view.hideProgress();
 						view.showRecordingStop();
 					}
+				}
+
+				@Override
+				public void onRecordShort() {
+					Log.d(TAG,"录音时间太短的回调 删除文件");
+					deleteRecord = true;
+					view.showRecordTooShortTipView();
 				}
 			};
 		}
@@ -362,11 +374,13 @@ public class TalkPresenter implements TalkContract.UserActionsListener {
 
 	@Override
 	public void stopRecording(boolean delete) {
+		Log.d(TAG,"停止录音 逻辑执行 判断下是否正在录音的状态："+appRecorder.isRecording());
 		if (appRecorder.isRecording()) {
 			deleteRecord = delete;
 			if (view != null) {
 				view.showProgress();
 				view.waveFormToStart();
+				view.hideTipView();
 			}
 			audioPlayer.seek(0);
 			appRecorder.stopRecording();
@@ -723,6 +737,42 @@ public class TalkPresenter implements TalkContract.UserActionsListener {
 	@Override
 	public void enablePlaybackProgressListener() {
 		listenPlaybackProgress = true;
+	}
+
+	@Override
+	public void startRecording(String path) {
+//		appRecorder.setRecorder(recorder);
+		try {
+			if (fileRepository.hasAvailableSpace(injector.getContext())) {
+				if (!appRecorder.isRecording()) {
+					if (audioPlayer.isPlaying() || audioPlayer.isPaused()) {
+						audioPlayer.stop();
+					}
+					recordingsTasks.postRunnable(() -> {
+						try {
+							Record record = localRepository.insertEmptyFile(path);
+							prefs.setActiveRecord(record.getId());
+							AndroidUtils.runOnUIThread(() -> appRecorder.startRecording(
+									path,
+									prefs.getSettingChannelCount(),
+									prefs.getSettingSampleRate(),
+									prefs.getSettingBitrate()
+							));
+						} catch (IOException | OutOfMemoryError | IllegalStateException e) {
+							Timber.e(e);
+						}
+					});
+				}
+			} else {
+				showError(R.string.error_no_available_space);
+			}
+		} catch (IllegalArgumentException e) {
+			showError(R.string.error_failed_access_to_storage);
+		}
+	}
+
+	public void showError(int resId) {
+		Toast.makeText(injector.getContext(), resId, Toast.LENGTH_LONG).show();
 	}
 
 	private void migrateDb3() {

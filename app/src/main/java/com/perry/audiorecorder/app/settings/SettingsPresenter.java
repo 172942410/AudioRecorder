@@ -228,6 +228,11 @@ public class SettingsPresenter implements SettingsContract.UserActionsListener {
 				}
 				@Override public void onRecordingProgress(long mills, int amp) { }
 				@Override public void onError(AppException throwable) { }
+
+				@Override
+				public void onRecordShort() {
+
+				}
 			};
 			appRecorder.addRecordingCallback(appRecorderCallback);
 		} else {

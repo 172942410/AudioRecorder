@@ -159,6 +159,9 @@ class MoveRecordsViewModel(
 				override fun onError(e: AppException) {
 					setState(uiState.value.copy(playState = PlayState.IDLE))
 				}
+
+			override fun onRecordShort() {
+			}
 			}
 		appRecorder.addRecordingCallback(appRecorderCallback)
 	}

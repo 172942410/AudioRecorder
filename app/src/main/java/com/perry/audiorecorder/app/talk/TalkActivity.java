@@ -27,7 +27,9 @@ import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.IBinder;
+import android.os.Message;
 import android.util.Log;
 import android.view.MenuInflater;
 import android.view.View;
@@ -115,6 +117,8 @@ public class TalkActivity extends Activity implements TalkContract.View, View.On
 	RecordAudioButton mBtnVoice;//底部录制按钮
 	private RecordVoicePopWindow mRecordVoicePopWindow;//提示
 
+	int delayMillis = 0;//是否需要延迟关闭对话框
+
 	private final ServiceConnection connection = new ServiceConnection() {
 
 		@Override
@@ -185,16 +189,15 @@ public class TalkActivity extends Activity implements TalkContract.View, View.On
 		mBtnVoice.setOnVoiceButtonCallBack(new RecordAudioButton.OnVoiceButtonCallBack() {
 			@Override
 			public void onStartRecord() {
-				showNormalTipView();
 				startRecordingService();
+//				startRecording();
 				Log.d(TAG,"开始录音");
 			}
 
 			@Override
 			public void onStopRecord() {
 				presenter.stopRecording(false);
-				hideTipView();
-				Log.d(TAG,"停止录音；录音完毕");
+				Log.d(TAG,"停止录音；最终执行：录音完毕");
 			}
 
 			@Override
@@ -203,6 +206,12 @@ public class TalkActivity extends Activity implements TalkContract.View, View.On
 //				presenter.willCancelRecord();
 				Log.d(TAG,"即将取消录音；只在界面UI上有所变化录音继续");
 				showCancelTipView();
+			}
+
+			@Override
+			public void onCancelRecord() {
+				//TODO 取消发送录音；删除录音文件
+				presenter.stopRecording(true);
 			}
 
 			@Override
@@ -298,19 +307,47 @@ public class TalkActivity extends Activity implements TalkContract.View, View.On
 	}
 
 	@Override
+	public void showRecordTooShortTipView(){
+		delayMillis = 500;
+		if (mRecordVoicePopWindow != null) {
+			if(mRecordVoicePopWindow.isShowing()){
+				Log.d(TAG,"这里判断弹框在 显示中...");
+			}else {
+				Log.d(TAG,"这里判断弹框 没有显示");
+				mRecordVoicePopWindow.showAsDropDown(mRoot);
+				handlerClosePop.sendEmptyMessageDelayed(0,delayMillis);
+			}
+			mRecordVoicePopWindow.showRecordTooShortTipView();
+		}
+	}
+	@Override
 	public void updateCurrentVolume(int db) {
 		if (mRecordVoicePopWindow != null) {
 			mRecordVoicePopWindow.updateCurrentVolume(db);
 		}
 	}
-
+	//延迟关闭窗口
+	Handler handlerClosePop = new Handler(new Handler.Callback() {
+		@Override
+		public boolean handleMessage(@NonNull Message message) {
+			if (mRecordVoicePopWindow != null) {
+				mRecordVoicePopWindow.dismiss();
+			}
+			return false;
+		}
+	});
 	/**
 	 * 语音录入完毕 隐藏提示view
 	 */
 	@Override
 	public void hideTipView(){
 		if (mRecordVoicePopWindow != null) {
-			mRecordVoicePopWindow.dismiss();
+			if(delayMillis > 0){
+				handlerClosePop.sendEmptyMessageDelayed(0,delayMillis);
+			}else{
+				mRecordVoicePopWindow.dismiss();
+			}
+
 		}
 	}
 	@Override
@@ -319,6 +356,7 @@ public class TalkActivity extends Activity implements TalkContract.View, View.On
 			mRecordVoicePopWindow = new RecordVoicePopWindow(TalkActivity.this);
 		}
 		mRecordVoicePopWindow.showAsDropDown(mRoot);
+		delayMillis = 0;
 	}
 	/**
 	 * 按住说话的状态显示界面
@@ -590,9 +628,19 @@ public class TalkActivity extends Activity implements TalkContract.View, View.On
 		startActivity(WelcomeActivity.getStartIntent(getApplicationContext()));
 		finish();
 	}
-
+	@Override
+	public void startRecording() {
+		showNormalTipView();
+		try {
+			String path = fileRepository.provideRecordFile().getAbsolutePath();
+			presenter.startRecording(path);
+		} catch (CantCreateFileException e) {
+			showError(ErrorParser.parseException(e));
+		}
+	}
 	@Override
 	public void startRecordingService() {
+		showNormalTipView();
 		try {
 			String path = fileRepository.provideRecordFile().getAbsolutePath();
 			Intent intent = new Intent(getApplicationContext(), RecordingService.class);
