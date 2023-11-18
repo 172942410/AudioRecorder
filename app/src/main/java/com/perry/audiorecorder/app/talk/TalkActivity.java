@@ -28,6 +28,7 @@ import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.util.Log;
 import android.view.MenuInflater;
 import android.view.View;
 import android.view.WindowManager;
@@ -58,6 +59,8 @@ import com.perry.audiorecorder.app.moverecords.MoveRecordsActivity;
 import com.perry.audiorecorder.app.records.RecordsActivity;
 import com.perry.audiorecorder.app.settings.SettingsActivity;
 import com.perry.audiorecorder.app.welcome.WelcomeActivity;
+import com.perry.audiorecorder.app.widget.RecordAudioButton;
+import com.perry.audiorecorder.app.widget.RecordVoicePopWindow;
 import com.perry.audiorecorder.app.widget.RecordingWaveformView;
 import com.perry.audiorecorder.app.widget.WaveformViewNew;
 import com.perry.audiorecorder.audio.AudioDecoder;
@@ -76,13 +79,7 @@ import java.util.List;
 import timber.log.Timber;
 
 public class TalkActivity extends Activity implements TalkContract.View, View.OnClickListener {
-
-// TODO: Fix waveform when long record (there is no waveform)
-// TODO: Ability to scroll up from the bottom of the list
-//	TODO: Bluetooth micro support
-//	TODO: Mp3 support
-//	TODO: Add Noise gate
-
+	private static final String TAG = TalkActivity.class.getName();
 	public static final int REQ_CODE_REC_AUDIO_AND_WRITE_EXTERNAL = 101;
 	public static final int REQ_CODE_RECORD_AUDIO = 303;
 	public static final int REQ_CODE_WRITE_EXTERNAL_STORAGE = 404;
@@ -91,6 +88,7 @@ public class TalkActivity extends Activity implements TalkContract.View, View.On
 	public static final int REQ_CODE_READ_EXTERNAL_STORAGE_DOWNLOAD = 407;
 	public static final int REQ_CODE_IMPORT_AUDIO = 11;
 
+	LinearLayout mRoot;
 	private WaveformViewNew waveformView;
 	private RecordingWaveformView recordingWaveformView;
 	private TextView txtProgress;
@@ -104,10 +102,8 @@ public class TalkActivity extends Activity implements TalkContract.View, View.On
 	private ImageButton btnDelete;
 	private ImageButton btnRecordingStop;
 	private ImageButton btnShare;
-	private ImageButton btnImport;
 	private ProgressBar progressBar;
 	private SeekBar playProgress;
-	private LinearLayout pnlImportProgress;
 	private LinearLayout pnlRecordProcessing;
 	private ImageView ivPlaceholder;
 
@@ -115,6 +111,9 @@ public class TalkActivity extends Activity implements TalkContract.View, View.On
 	private ColorMap colorMap;
 	private FileRepository fileRepository;
 	private ColorMap.OnThemeColorChangeListener onThemeColorChangeListener;
+
+	RecordAudioButton mBtnVoice;//底部录制按钮
+	private RecordVoicePopWindow mRecordVoicePopWindow;//提示
 
 	private final ServiceConnection connection = new ServiceConnection() {
 
@@ -161,7 +160,7 @@ public class TalkActivity extends Activity implements TalkContract.View, View.On
 		setTheme(colorMap.getAppThemeResource());
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_talk);
-
+		mRoot = findViewById(R.id.root);
 		waveformView = findViewById(R.id.record);
 		recordingWaveformView = findViewById(R.id.recording_view);
 		txtProgress = findViewById(R.id.txt_progress);
@@ -177,14 +176,42 @@ public class TalkActivity extends Activity implements TalkContract.View, View.On
 		ImageButton btnRecordsList = findViewById(R.id.btn_records_list);
 		ImageButton btnSettings = findViewById(R.id.btn_settings);
 		btnShare = findViewById(R.id.btn_share);
-		btnImport = findViewById(R.id.btn_import);
 		progressBar = findViewById(R.id.progress);
 		playProgress = findViewById(R.id.play_progress);
-		pnlImportProgress = findViewById(R.id.pnl_import_progress);
 		pnlRecordProcessing = findViewById(R.id.pnl_record_processing);
 		ivPlaceholder = findViewById(R.id.placeholder);
 		ivPlaceholder.setImageResource(R.drawable.waveform);
+		mBtnVoice = findViewById(R.id.btnVoice);
+		mBtnVoice.setOnVoiceButtonCallBack(new RecordAudioButton.OnVoiceButtonCallBack() {
+			@Override
+			public void onStartRecord() {
+				showNormalTipView();
+				startRecordingService();
+				Log.d(TAG,"开始录音");
+			}
 
+			@Override
+			public void onStopRecord() {
+				presenter.stopRecording(false);
+				hideTipView();
+				Log.d(TAG,"停止录音；录音完毕");
+			}
+
+			@Override
+			public void onWillCancelRecord() {
+//				presenter.stopRecording(true);
+//				presenter.willCancelRecord();
+				Log.d(TAG,"即将取消录音；只在界面UI上有所变化录音继续");
+				showCancelTipView();
+			}
+
+			@Override
+			public void onContinueRecord() {
+//				presenter.continueRecord();
+				Log.d(TAG,"持续录音中");
+				showRecordingTipView();
+			}
+		});
 		txtProgress.setText(TimeUtils.formatTimeIntervalHourMinSec2(0));
 
 		btnDelete.setVisibility(View.INVISIBLE);
@@ -200,7 +227,6 @@ public class TalkActivity extends Activity implements TalkContract.View, View.On
 		btnRecordsList.setOnClickListener(this);
 		btnSettings.setOnClickListener(this);
 		btnShare.setOnClickListener(this);
-		btnImport.setOnClickListener(this);
 		txtName.setOnClickListener(this);
 		space = getResources().getDimension(R.dimen.spacing_xnormal);
 
@@ -268,6 +294,49 @@ public class TalkActivity extends Activity implements TalkContract.View, View.On
 					startRecordingService();
 				}
 			}
+		}
+	}
+
+	@Override
+	public void updateCurrentVolume(int db) {
+		if (mRecordVoicePopWindow != null) {
+			mRecordVoicePopWindow.updateCurrentVolume(db);
+		}
+	}
+
+	/**
+	 * 语音录入完毕 隐藏提示view
+	 */
+	@Override
+	public void hideTipView(){
+		if (mRecordVoicePopWindow != null) {
+			mRecordVoicePopWindow.dismiss();
+		}
+	}
+	@Override
+	public void showNormalTipView() {
+		if (mRecordVoicePopWindow == null) {
+			mRecordVoicePopWindow = new RecordVoicePopWindow(TalkActivity.this);
+		}
+		mRecordVoicePopWindow.showAsDropDown(mRoot);
+	}
+	/**
+	 * 按住说话的状态显示界面
+	 */
+	@Override
+	public void showRecordingTipView() {
+		if (mRecordVoicePopWindow != null) {
+			mRecordVoicePopWindow.showRecordingTipView();
+		}
+	}
+
+	/**
+	 * 向上滑动取消录音的UI界面显示
+	 */
+	@Override
+	public void showCancelTipView() {
+		if (mRecordVoicePopWindow != null) {
+			mRecordVoicePopWindow.showCancelTipView();
 		}
 	}
 
@@ -369,9 +438,6 @@ public class TalkActivity extends Activity implements TalkContract.View, View.On
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		super.onActivityResult(requestCode, resultCode, data);
-		if (requestCode == REQ_CODE_IMPORT_AUDIO && resultCode == RESULT_OK){
-			presenter.importAudioFile(getApplicationContext(), data.getData());
-		}
 	}
 
 	@Override
@@ -419,10 +485,8 @@ public class TalkActivity extends Activity implements TalkContract.View, View.On
 		txtDuration.setVisibility(View.INVISIBLE);
 		btnRecord.setImageResource(R.drawable.ic_pause_circle_filled);
 		btnPlay.setEnabled(false);
-		btnImport.setEnabled(false);
 		btnShare.setEnabled(false);
 		btnPlay.setVisibility(View.GONE);
-		btnImport.setVisibility(View.GONE);
 		btnShare.setVisibility(View.GONE);
 		btnDelete.setVisibility(View.VISIBLE);
 		btnDelete.setEnabled(true);
@@ -447,10 +511,8 @@ public class TalkActivity extends Activity implements TalkContract.View, View.On
 //		txtName.setVisibility(View.INVISIBLE);
 		btnRecord.setImageResource(R.drawable.ic_record);
 		btnPlay.setEnabled(true);
-		btnImport.setEnabled(true);
 		btnShare.setEnabled(true);
 		btnPlay.setVisibility(View.VISIBLE);
-		btnImport.setVisibility(View.VISIBLE);
 		btnShare.setVisibility(View.VISIBLE);
 		playProgress.setEnabled(true);
 		btnDelete.setVisibility(View.INVISIBLE);
@@ -471,10 +533,8 @@ public class TalkActivity extends Activity implements TalkContract.View, View.On
 		txtName.setText(R.string.recording_paused);
 		txtName.setVisibility(View.VISIBLE);
 		btnPlay.setEnabled(false);
-		btnImport.setEnabled(false);
 		btnShare.setEnabled(false);
 		btnPlay.setVisibility(View.GONE);
-		btnImport.setVisibility(View.GONE);
 		btnShare.setVisibility(View.GONE);
 		btnRecord.setImageResource(R.drawable.ic_record_rec);
 		btnDelete.setVisibility(View.VISIBLE);
@@ -497,10 +557,8 @@ public class TalkActivity extends Activity implements TalkContract.View, View.On
 		txtDuration.setVisibility(View.INVISIBLE);
 		btnRecord.setImageResource(R.drawable.ic_pause_circle_filled);
 		btnPlay.setEnabled(false);
-		btnImport.setEnabled(false);
 		btnShare.setEnabled(false);
 		btnPlay.setVisibility(View.GONE);
-		btnImport.setVisibility(View.GONE);
 		btnShare.setVisibility(View.GONE);
 		btnDelete.setVisibility(View.VISIBLE);
 		btnDelete.setEnabled(true);
@@ -522,6 +580,8 @@ public class TalkActivity extends Activity implements TalkContract.View, View.On
 		runOnUiThread(() ->{
 			txtProgress.setText(TimeUtils.formatTimeIntervalHourMinSec2(mills));
 			recordingWaveformView.addRecordAmp(amp, mills);
+			Log.d(TAG,"amp:"+amp);
+			updateCurrentVolume(amp);
 		});
 	}
 
@@ -732,18 +792,6 @@ public class TalkActivity extends Activity implements TalkContract.View, View.On
 		playProgress.setProgress(percent);
 		waveformView.setPlayback(mills);
 		txtProgress.setText(TimeUtils.formatTimeIntervalHourMinSec2(mills));
-	}
-
-	@Override
-	public void showImportStart() {
-		btnImport.setVisibility(View.INVISIBLE);
-		pnlImportProgress.setVisibility(View.VISIBLE);
-	}
-
-	@Override
-	public void hideImportProgress() {
-		pnlImportProgress.setVisibility(View.INVISIBLE);
-		btnImport.setVisibility(View.VISIBLE);
 	}
 
 	@Override

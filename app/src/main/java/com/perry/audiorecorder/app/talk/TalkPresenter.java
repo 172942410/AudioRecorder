@@ -78,8 +78,6 @@ public class TalkPresenter implements TalkContract.UserActionsListener {
 
 	/** Flag true defines that presenter called to show import progress when view was not bind.
 	 * And after view bind we need to show import progress.*/
-	private boolean showImportProgress = false;
-
 	public TalkPresenter(final Prefs prefs, final FileRepository fileRepository,
                          final LocalRepository localRepository,
                          PlayerContractNew.Player audioPlayer,
@@ -104,11 +102,6 @@ public class TalkPresenter implements TalkContract.UserActionsListener {
 	@Override
 	public void bindView(final TalkContract.View v) {
 		this.view = v;
-		if (showImportProgress) {
-			view.showImportStart();
-		} else {
-			view.hideImportProgress();
-		}
 
 		if (!prefs.isMigratedDb3()) {
 			migrateDb3();
@@ -730,88 +723,6 @@ public class TalkPresenter implements TalkContract.UserActionsListener {
 	@Override
 	public void enablePlaybackProgressListener() {
 		listenPlaybackProgress = true;
-	}
-
-	@Override
-	public void importAudioFile(final Context context, final Uri uri) {
-		if (view != null) {
-			view.showImportStart();
-		}
-		showImportProgress = true;
-
-		importTasks.postRunnable(new Runnable() {
-			long id = -1;
-
-			@Override
-			public void run() {
-				try {
-					ParcelFileDescriptor parcelFileDescriptor = context.getContentResolver().openFileDescriptor(uri, "r");
-					FileDescriptor fileDescriptor = parcelFileDescriptor.getFileDescriptor();
-					String name = extractFileName(context, uri);
-
-					File newFile = fileRepository.provideRecordFile(name);
-					if (FileUtil.copyFile(fileDescriptor, newFile)) {
-						RecordInfo info = AudioDecoder.readRecordInfo(newFile);
-
-						//Do 2 step import: 1) Import record with empty waveform. 2) Process and update waveform in background.
-						Record r = new Record(
-								Record.NO_ID,
-								FileUtil.removeFileExtension(newFile.getName()),
-								info.getDuration() >= 0 ? info.getDuration() : 0,
-								newFile.lastModified(),
-								new Date().getTime(),
-								Long.MAX_VALUE,
-								newFile.getAbsolutePath(),
-								info.getFormat(),
-								info.getSize(),
-								info.getSampleRate(),
-								info.getChannelCount(),
-								info.getBitrate(),
-								false,
-								false,
-								new int[ARApplication.getLongWaveformSampleCount()]);
-						record = localRepository.insertRecord(r);
-						final Record rec = record;
-						if (rec != null) {
-							id = rec.getId();
-							prefs.setActiveRecord(id);
-							songDuration = info.getDuration();
-							AndroidUtils.runOnUIThread(() -> {
-								if (view != null) {
-									audioPlayer.stop();
-									view.showWaveForm(rec.getAmps(), songDuration, 0);
-									view.showName(rec.getName());
-									view.showDuration(TimeUtils.formatTimeIntervalHourMinSec2(songDuration / 1000));
-									view.hideProgress();
-									view.hideImportProgress();
-									view.showOptionsMenu();
-									updateInformation(rec.getFormat(), rec.getSampleRate(), rec.getSize());
-								}
-							});
-							decodeRecord(rec.getId());
-						}
-					}
-				} catch (SecurityException e) {
-					Timber.e(e);
-					AndroidUtils.runOnUIThread(() -> {
-						if (view != null) view.showError(R.string.error_permission_denied);
-					});
-				} catch (IOException | OutOfMemoryError | IllegalStateException e) {
-					Timber.e(e);
-					AndroidUtils.runOnUIThread(() -> {
-						if (view != null) view.showError(R.string.error_unable_to_read_sound_file);
-					});
-				} catch (final CantCreateFileException ex) {
-					AndroidUtils.runOnUIThread(() -> {
-						if (view != null) view.showError(ErrorParser.parseException(ex));
-					});
-				}
-				AndroidUtils.runOnUIThread(() -> {
-					if (view != null) { view.hideImportProgress(); }
-				});
-				showImportProgress = false;
-			}
-		});
 	}
 
 	private void migrateDb3() {

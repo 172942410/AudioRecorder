@@ -32,6 +32,29 @@ public interface TalkContract {
 
 	interface View extends Contract.View {
 
+		/**
+		 * 显示提示控件
+		 */
+		void showNormalTipView();
+		/**
+		 * 正常录制
+		 */
+		void showRecordingTipView();
+		/**
+		 * 松开手指，取消发送
+		 */
+		void showCancelTipView();
+		/**
+		 * 语音录入完毕 隐藏提示view
+		 */
+		void hideTipView();
+		/**
+		 * 语音说话时的高低峰值差 调整当前音量
+		 *
+		 * @param db
+		 */
+		void updateCurrentVolume(int db);
+
 		void keepScreenOn(boolean on);
 		void showRecordingStart();
 		void showRecordingStop();
@@ -50,9 +73,6 @@ public interface TalkContract {
 		void showPlayPause();
 		void showPlayStop();
 		void onPlayProgress(long mills, int percent);
-
-		void showImportStart();
-		void hideImportProgress();
 
 		void showOptionsMenu();
 		void hideOptionsMenu();
@@ -112,8 +132,6 @@ public interface TalkContract {
 		void checkPublicStorageRecords();
 
 		void setAskToRename(boolean value);
-
-		void importAudioFile(Context context, Uri uri);
 
 		void updateRecordingDir(Context context);
 

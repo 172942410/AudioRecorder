@@ -4,6 +4,7 @@
 		xmlns:android="http://schemas.android.com/apk/res/android"
 		xmlns:tools="http://schemas.android.com/tools"
 		tools:viewBindingIgnore="true"
+	android:id="@+id/root"
 		android:layout_width="match_parent"
 		android:layout_height="match_parent"
 		android:orientation="vertical"
@@ -51,32 +52,6 @@
 				android:layout_gravity="end"
 				android:scaleType="center"
 				android:src="@drawable/ic_more_vert"/>
-
-	</LinearLayout>
-
-	<LinearLayout
-			android:id="@+id/pnl_import_progress"
-			android:layout_width="match_parent"
-			android:layout_height="wrap_content"
-			android:gravity="center_horizontal"
-			android:visibility="invisible"
-			android:orientation="horizontal"
-			android:layout_marginBottom="@dimen/spacing_tiny"
-			tools:visibility="visible">
-
-		<ProgressBar
-				style="?android:attr/progressBarStyleSmall"
-				android:layout_width="wrap_content"
-				android:layout_height="wrap_content"
-				android:layout_gravity="center"/>
-
-		<TextView
-				android:layout_width="wrap_content"
-				android:layout_height="wrap_content"
-				android:layout_marginStart="@dimen/spacing_small"
-				android:textColor="@color/white"
-				android:textSize="@dimen/text_small"
-				android:text="@string/import_progress"/>
 
 	</LinearLayout>
 
@@ -343,4 +318,14 @@
 
 	</FrameLayout>
 
+	<com.perry.audiorecorder.app.widget.RecordAudioButton
+		android:id="@+id/btnVoice"
+		style="?android:attr/borderlessButtonStyle"
+		android:layout_width="match_parent"
+		android:layout_height="40dp"
+		android:layout_margin="10dp"
+		android:background="@drawable/btn_chat_press_normal"
+		android:text="按住 说话"
+		android:textColor="#7e7e7e"
+		/>
 </LinearLayout>
