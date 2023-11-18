@@ -75,6 +75,7 @@ public class TalkPresenter implements TalkContract.UserActionsListener {
     private boolean listenPlaybackProgress = true;
 
     private boolean showBookmarks = false;
+
     /**
      * Flag true defines that presenter called to show import progress when view was not bind.
      * And after view bind we need to show import progress.
@@ -901,6 +902,27 @@ public class TalkPresenter implements TalkContract.UserActionsListener {
                 });
             });
         }
+    }
+
+    @Override
+    public void deleteRecords(List<Long> ids) {
+        recordingsTasks.postRunnable(() -> {
+            for (Long id : ids) {
+                localRepository.deleteRecord(id.intValue());
+                AndroidUtils.runOnUIThread(() -> {
+                    if (view != null) {
+                        view.showTrashBtn();
+                        view.onDeleteRecord(id);
+                    }
+                });
+            }
+            AndroidUtils.runOnUIThread(() -> {
+                if (view != null) {
+                    view.cancelMultiSelect();
+                    view.showMessage(R.string.selected_records_moved_into_trash);
+                }
+            });
+        });
     }
 
     @Override

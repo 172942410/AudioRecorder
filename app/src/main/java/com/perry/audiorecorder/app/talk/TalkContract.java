@@ -33,10 +33,15 @@ public interface TalkContract {
 
     interface View extends Contract.View {
         void addRecords(List<ListItem> records, int order);
+
         void showEmptyBookmarksList();
+
         void showActiveRecord(int id);
+
         void bookmarksUnselected();
+
         void bookmarksSelected();
+
         void showEmptyList();
 
         void hidePlayPanel();
@@ -246,8 +251,13 @@ public interface TalkContract {
         void removeFromBookmarks(int id);
 
         void deleteRecord(long id, String path);
+
         void loadRecords();
+
         void applyBookmarksFilter();
+
         void loadRecordsPage(int page);
+
+        void deleteRecords(List<Long> ids);
     }
 }

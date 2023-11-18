@@ -119,6 +119,11 @@ public class TalkActivity extends Activity implements TalkContract.View, View.On
     private TextView txtTitle;
     private ProgressBar progressBar;
 
+    private ImageButton btnCloseMulti;
+    private ImageButton btnShareMulti;
+    private ImageButton btnDeleteMulti;
+    private ImageButton btnDownloadMulti;
+
     private final ServiceConnection connection = new ServiceConnection() {
 
         @Override
@@ -179,6 +184,14 @@ public class TalkActivity extends Activity implements TalkContract.View, View.On
         playProgress = findViewById(R.id.play_progress);
 
 
+        btnCloseMulti = findViewById(R.id.btn_close_multi_select);
+        btnCloseMulti.setOnClickListener(this);
+        btnShareMulti = findViewById(R.id.btn_share_multi);
+        btnDeleteMulti = findViewById(R.id.btn_delete_multi);
+        btnDownloadMulti = findViewById(R.id.btn_download_multi);
+        btnShareMulti.setOnClickListener(this);
+        btnDeleteMulti.setOnClickListener(this);
+        btnDownloadMulti.setOnClickListener(this);
         progressBar = findViewById(R.id.progress);
         txtTitle = findViewById(R.id.txt_title);
         btnBookmarks = findViewById(R.id.btn_bookmarks);
@@ -813,7 +826,50 @@ public class TalkActivity extends Activity implements TalkContract.View, View.On
             presenter.checkBookmarkActiveRecord();
         } else if (id == R.id.btn_bookmarks) {
             presenter.applyBookmarksFilter();
+        } else if (id == R.id.btn_close_multi_select) {
+            cancelMultiSelect();
+        } else if (id == R.id.btn_delete_multi) {
+            int count = talkAdapter.getSelected().size();
+            AndroidUtils.showDialogYesNo(
+                    TalkActivity.this,
+                    R.drawable.ic_delete_forever_dark,
+                    getString(R.string.warning),
+                    this.getResources().getQuantityString(R.plurals.delete_selected_records, count, count),
+                    v -> deleteSelectedRecords()
+            );
+        } else if (id == R.id.btn_share_multi) {
+            shareSelectedRecords();
+        } else if (id == R.id.btn_download_multi) {
+            int count = talkAdapter.getSelected().size();
+            AndroidUtils.showDialogYesNo(
+                    TalkActivity.this,
+                    R.drawable.ic_save_alt_dark,
+                    getString(R.string.save_as),
+                    this.getResources().getQuantityString(R.plurals.download_selected_records, count, count),
+                    v -> downloadSelectedRecords()
+            );
         }
+    }
+
+    private void shareSelectedRecords() {
+        List<Integer> selected = talkAdapter.getSelected();
+        List<String> share = new ArrayList<>();
+        for (int i = 0; i < selected.size(); i++) {
+            ListItem item = talkAdapter.getItem(selected.get(i));
+            share.add(item.getPath());
+        }
+        AndroidUtils.shareAudioFiles(getApplicationContext(), share);
+        cancelMultiSelect();
+    }
+
+    private void deleteSelectedRecords() {
+        List<Long> ids = new ArrayList<>();
+        List<Integer> selected = talkAdapter.getSelected();
+        for (int i = 0; i < selected.size(); i++) {
+            ListItem item = talkAdapter.getItem(selected.get(i));
+            ids.add(item.getId());
+        }
+        presenter.deleteRecords(ids);
     }
 
     private void startFileSelector() {
