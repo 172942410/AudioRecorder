@@ -317,7 +317,16 @@
 				android:src="@drawable/ic_list"/>
 
 	</FrameLayout>
+	<androidx.recyclerview.widget.RecyclerView
+		android:id="@+id/rvMsg"
+		android:layout_width="match_parent"
+		android:layout_height="0dp"
+		android:layout_weight="1" />
 
+	<View
+		android:layout_width="match_parent"
+		android:layout_height="1dp"
+		android:background="#ccc" />
 	<com.perry.audiorecorder.app.widget.RecordAudioButton
 		android:id="@+id/btnVoice"
 		style="?android:attr/borderlessButtonStyle"

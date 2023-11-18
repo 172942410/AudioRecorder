@@ -44,7 +44,10 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
+import com.chad.library.adapter.base.BaseQuickAdapter;
 import com.perry.audiorecorder.ARApplication;
 import com.perry.audiorecorder.ColorMap;
 import com.perry.audiorecorder.IntArrayList;
@@ -119,6 +122,9 @@ public class TalkActivity extends Activity implements TalkContract.View, View.On
 
 	int delayMillis = 0;//是否需要延迟关闭对话框
 
+	private ItemAdapter mAdapter = new ItemAdapter();//适配器
+	RecyclerView msgRecyclerView;//消息列表
+
 	private final ServiceConnection connection = new ServiceConnection() {
 
 		@Override
@@ -128,11 +134,13 @@ public class TalkActivity extends Activity implements TalkContract.View, View.On
 			decodeService.setDecodeListener(new DecodeServiceListener() {
 				@Override
 				public void onStartProcessing() {
+					Log.d(TAG,"onStartProcessing");
 					runOnUiThread(TalkActivity.this::showRecordProcessing);
 				}
 
 				@Override
 				public void onFinishProcessing() {
+					Log.d(TAG,"onFinishProcessing");
 					runOnUiThread(() -> {
 						hideRecordProcessing();
 						presenter.loadActiveRecord();
@@ -186,6 +194,19 @@ public class TalkActivity extends Activity implements TalkContract.View, View.On
 		ivPlaceholder = findViewById(R.id.placeholder);
 		ivPlaceholder.setImageResource(R.drawable.waveform);
 		mBtnVoice = findViewById(R.id.btnVoice);
+		msgRecyclerView = findViewById(R.id.rvMsg);
+		msgRecyclerView.setLayoutManager(new LinearLayoutManager(TalkActivity.this));
+		mAdapter.setOnItemChildClickListener(new BaseQuickAdapter.OnItemChildClickListener() {
+			@Override
+			public void onItemChildClick(BaseQuickAdapter adapter, View view, int position) {
+				if (R.id.iv_voice == view.getId()) {
+//					presenter.startPlayRecord(position);
+					presenter.startPlayback();
+				}
+			}
+		});
+		msgRecyclerView.setAdapter(mAdapter);
+
 		mBtnVoice.setOnVoiceButtonCallBack(new RecordAudioButton.OnVoiceButtonCallBack() {
 			@Override
 			public void onStartRecord() {
@@ -304,6 +325,16 @@ public class TalkActivity extends Activity implements TalkContract.View, View.On
 				}
 			}
 		}
+	}
+
+	@Override
+	public void startPlayAnim(int position) {
+		mAdapter.startPlayAnim(position);
+	}
+
+	@Override
+	public void stopPlayAnim() {
+		mAdapter.stopPlayAnim();
 	}
 
 	@Override
@@ -629,16 +660,6 @@ public class TalkActivity extends Activity implements TalkContract.View, View.On
 		finish();
 	}
 	@Override
-	public void startRecording() {
-		showNormalTipView();
-		try {
-			String path = fileRepository.provideRecordFile().getAbsolutePath();
-			presenter.startRecording(path);
-		} catch (CantCreateFileException e) {
-			showError(ErrorParser.parseException(e));
-		}
-	}
-	@Override
 	public void startRecordingService() {
 		showNormalTipView();
 		try {
@@ -833,6 +854,11 @@ public class TalkActivity extends Activity implements TalkContract.View, View.On
 				},
 				v -> {}
 		);
+	}
+
+	@Override
+	public void showList(List<File> list) {
+		mAdapter.setNewData(list);
 	}
 
 	@Override

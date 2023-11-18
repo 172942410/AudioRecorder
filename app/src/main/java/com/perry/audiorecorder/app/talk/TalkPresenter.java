@@ -739,41 +739,6 @@ public class TalkPresenter implements TalkContract.UserActionsListener {
 		listenPlaybackProgress = true;
 	}
 
-	@Override
-	public void startRecording(String path) {
-//		appRecorder.setRecorder(recorder);
-		try {
-			if (fileRepository.hasAvailableSpace(injector.getContext())) {
-				if (!appRecorder.isRecording()) {
-					if (audioPlayer.isPlaying() || audioPlayer.isPaused()) {
-						audioPlayer.stop();
-					}
-					recordingsTasks.postRunnable(() -> {
-						try {
-							Record record = localRepository.insertEmptyFile(path);
-							prefs.setActiveRecord(record.getId());
-							AndroidUtils.runOnUIThread(() -> appRecorder.startRecording(
-									path,
-									prefs.getSettingChannelCount(),
-									prefs.getSettingSampleRate(),
-									prefs.getSettingBitrate()
-							));
-						} catch (IOException | OutOfMemoryError | IllegalStateException e) {
-							Timber.e(e);
-						}
-					});
-				}
-			} else {
-				showError(R.string.error_no_available_space);
-			}
-		} catch (IllegalArgumentException e) {
-			showError(R.string.error_failed_access_to_storage);
-		}
-	}
-
-	public void showError(int resId) {
-		Toast.makeText(injector.getContext(), resId, Toast.LENGTH_LONG).show();
-	}
 
 	private void migrateDb3() {
 		processingTasks.postRunnable(() -> {

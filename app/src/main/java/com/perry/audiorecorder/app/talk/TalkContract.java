@@ -58,23 +58,20 @@ public interface TalkContract {
 		 * 发送语音时：录制时间太短
 		 */
 		void showRecordTooShortTipView();
-
 		/**
-		 * 开始录音
+		 * 发送语音时：开始录音启动录音服务
 		 */
-		void startRecording();
-		void keepScreenOn(boolean on);
 		void showRecordingStart();
-		void showRecordingStop();
-		void showRecordingPause();
-		void showRecordingResume();
-
 		/**
-		 * 这里是获取 音频amp 最大振幅 的地方
+		 * 发送语音时：这里是获取 音频amp 最大振幅 的地方
 		 * @param mills
 		 * @param amp
 		 */
 		void onRecordingProgress(long mills, int amp);
+		void keepScreenOn(boolean on);
+		void showRecordingStop();
+		void showRecordingPause();
+		void showRecordingResume();
 		void startWelcomeScreen();
 
 		void askRecordingNewName(long id, File file,  boolean showCheckbox);
@@ -119,6 +116,21 @@ public interface TalkContract {
 		void downloadRecord(Record record);
 
 		void showMigratePublicStorageWarning();
+		/**
+		 * 显示对话列表
+		 */
+		void showList(List<File> list);
+		/**
+		 * 开始播放动画
+		 *
+		 * @param position
+		 */
+		void startPlayAnim(int position);
+
+		/**
+		 * 停止播放动画
+		 */
+		void stopPlayAnim();
 	}
 
 	interface UserActionsListener extends Contract.UserActionsListener<TalkContract.View> {
@@ -173,10 +185,5 @@ public interface TalkContract {
 		void disablePlaybackProgressListener();
 
 		void enablePlaybackProgressListener();
-
-		/**
-		 * 开始录音
-		 */
-		void startRecording(String path);
 	}
 }
