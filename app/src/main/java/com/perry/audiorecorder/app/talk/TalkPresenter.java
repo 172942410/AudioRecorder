@@ -846,7 +846,7 @@ public class TalkPresenter implements TalkContract.UserActionsListener {
                 record = rec;
                 AndroidUtils.runOnUIThread(() -> {
                     if (view != null) {
-                        view.showRecords(Mapper.recordsToListItems(recordList), order);
+                        view.showRecords(Mapper.recordsToItemType(recordList), order);
                         if (audioPlayer.isPaused() || audioPlayer.isPlaying()) {
                             if (rec != null) {
                                 if (audioPlayer.isPaused()) {
@@ -894,7 +894,7 @@ public class TalkPresenter implements TalkContract.UserActionsListener {
                 final List<Record> recordList = localRepository.getRecords(page, order);
                 AndroidUtils.runOnUIThread(() -> {
                     if (view != null) {
-                        view.addRecords(Mapper.recordsToListItems(recordList), order);
+                        view.addRecords(Mapper.recordsToItemType(recordList), order);
                         view.hideProgress();
                         view.hidePanelProgress();
                         view.bookmarksUnselected();
@@ -942,7 +942,7 @@ public class TalkPresenter implements TalkContract.UserActionsListener {
                     final List<Record> recordList = localRepository.getBookmarks();
                     AndroidUtils.runOnUIThread(() -> {
                         if (view != null) {
-                            view.showRecords(Mapper.recordsToListItems(recordList), AppConstants.SORT_DATE);
+                            view.showRecords(Mapper.recordsToItemType(recordList), AppConstants.SORT_DATE);
                             view.hideProgress();
                             view.hidePanelProgress();
                             view.bookmarksSelected();

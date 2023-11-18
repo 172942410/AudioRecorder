@@ -2,6 +2,7 @@ package com.perry.audiorecorder;
 
 import com.perry.audiorecorder.app.info.RecordInfo;
 import com.perry.audiorecorder.app.lostrecords.RecordItem;
+import com.perry.audiorecorder.app.talk.ItemType;
 import com.perry.audiorecorder.data.database.Record;
 import com.perry.audiorecorder.app.records.ListItem;
 import com.perry.audiorecorder.util.TimeUtils;
@@ -11,6 +12,26 @@ import java.util.List;
 
 public class Mapper {
 	private Mapper() {}
+
+	public static ItemType recordToItemType(Record record) {
+		if (record == null) return null;
+		return new ItemType(
+				record.getId(),
+				ListItem.ITEM_TYPE_NORMAL,
+				record.getName(),
+				record.getFormat(),
+				TimeUtils.formatTimeIntervalHourMinSec2(record.getDuration()/1000),
+				record.getDuration(),
+				record.getSize(),
+				record.getCreated(),
+				record.getAdded(),
+				record.getPath(),
+				record.getSampleRate(),
+				record.getChannelCount(),
+				record.getBitrate(),
+				record.isBookmarked(),
+				record.getAmps());
+	}
 
 	public static ListItem recordToListItem(Record record) {
 		if (record == null) return null;
@@ -32,12 +53,36 @@ public class Mapper {
 				record.getAmps());
 	}
 
+	public static List<ItemType> recordsToItemType(List<Record> records) {
+		List<ItemType> items = new ArrayList<>(records.size());
+		for (int i = 0; i < records.size(); i++) {
+			items.add(recordToItemType(records.get(i)));
+		}
+		return items;
+	}
+
 	public static List<ListItem> recordsToListItems(List<Record> records) {
 		List<ListItem> items = new ArrayList<>(records.size());
 		for (int i = 0; i < records.size(); i++) {
 			items.add(recordToListItem(records.get(i)));
 		}
 		return items;
+	}
+
+	public static RecordInfo toRecordInfo(ItemType record) {
+		if (record == null) return null;
+		return new RecordInfo(
+				record.getName(),
+				record.getFormat(),
+				record.getDuration(),
+				record.getSize(),
+				record.getPath(),
+				record.getCreated(),
+				record.getSampleRate(),
+				record.getChannelCount(),
+				record.getBitrate(),
+				false
+		);
 	}
 
 	public static RecordInfo toRecordInfo(ListItem record) {

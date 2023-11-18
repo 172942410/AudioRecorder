@@ -32,7 +32,7 @@ import java.util.List;
 public interface TalkContract {
 
     interface View extends Contract.View {
-        void addRecords(List<ListItem> records, int order);
+        void addRecords(List<ItemType> records, int order);
 
         void showEmptyBookmarksList();
 
@@ -52,7 +52,7 @@ public interface TalkContract {
 
         void cancelMultiSelect();
 
-        void showRecords(List<ListItem> records, int order);
+        void showRecords(List<ItemType> records, int order);
 
         void showPlayerPanel();
 

@@ -43,7 +43,6 @@ import com.perry.audiorecorder.app.RecordingService;
 import com.perry.audiorecorder.app.info.ActivityInformation;
 import com.perry.audiorecorder.app.info.RecordInfo;
 import com.perry.audiorecorder.app.moverecords.MoveRecordsActivity;
-import com.perry.audiorecorder.app.records.ListItem;
 import com.perry.audiorecorder.app.records.RecordsActivity;
 import com.perry.audiorecorder.app.records.RecordsContract;
 import com.perry.audiorecorder.app.settings.SettingsActivity;
@@ -230,8 +229,8 @@ public class TalkActivity extends Activity implements TalkContract.View, View.On
         mBtnVoice = findViewById(R.id.btnVoice);
         recyclerView = findViewById(R.id.recycler_view);
         recyclerView.setLayoutManager(new LinearLayoutManager(TalkActivity.this));
-
-        talkAdapter = new TalkAdapter(ARApplication.getInjector().provideSettingsMapper());
+        presenter = ARApplication.getInjector().provideTalkPresenter();
+        talkAdapter = new TalkAdapter(ARApplication.getInjector().provideSettingsMapper(),TalkActivity.this,colorMap,presenter);
         talkAdapter.setItemClickListener((view, id, path, position) -> presenter.setActiveRecord(id, new RecordsContract.Callback() {
             @Override
             public void onSuccess() {
@@ -367,7 +366,6 @@ public class TalkActivity extends Activity implements TalkContract.View, View.On
             }
         });
 
-        presenter = ARApplication.getInjector().provideTalkPresenter();
         fileRepository = ARApplication.getInjector().provideFileRepository();
 
         waveformView.setOnSeekListener(new WaveformViewNew.OnSeekListener() {
@@ -429,7 +427,7 @@ public class TalkActivity extends Activity implements TalkContract.View, View.On
     }
 
     @Override
-    public void addRecords(List<ListItem> records, int order) {
+    public void addRecords(List<ItemType> records, int order) {
         talkAdapter.addData(records, order);
         txtEmpty.setVisibility(View.GONE);
     }
@@ -510,7 +508,7 @@ public class TalkActivity extends Activity implements TalkContract.View, View.On
     }
 
     @Override
-    public void showRecords(List<ListItem> records, int order) {
+    public void showRecords(List<ItemType> records, int order) {
         if (records.size() == 0) {
             txtEmpty.setVisibility(View.VISIBLE);
             talkAdapter.setData(new ArrayList<>(), order);
@@ -654,7 +652,7 @@ public class TalkActivity extends Activity implements TalkContract.View, View.On
         downloadRecords.clear();
         List<Integer> selected = talkAdapter.getSelected();
         for (int i = 0; i < selected.size(); i++) {
-            ListItem item = talkAdapter.getItem(selected.get(i));
+            ItemType item = talkAdapter.getItem(selected.get(i));
             downloadRecords.add(item.getPath());
         }
         boolean hasPublicDir = false;
@@ -855,7 +853,7 @@ public class TalkActivity extends Activity implements TalkContract.View, View.On
         List<Integer> selected = talkAdapter.getSelected();
         List<String> share = new ArrayList<>();
         for (int i = 0; i < selected.size(); i++) {
-            ListItem item = talkAdapter.getItem(selected.get(i));
+            ItemType item = talkAdapter.getItem(selected.get(i));
             share.add(item.getPath());
         }
         AndroidUtils.shareAudioFiles(getApplicationContext(), share);
@@ -866,7 +864,7 @@ public class TalkActivity extends Activity implements TalkContract.View, View.On
         List<Long> ids = new ArrayList<>();
         List<Integer> selected = talkAdapter.getSelected();
         for (int i = 0; i < selected.size(); i++) {
-            ListItem item = talkAdapter.getItem(selected.get(i));
+            ItemType item = talkAdapter.getItem(selected.get(i));
             ids.add(item.getId());
         }
         presenter.deleteRecords(ids);
@@ -1069,6 +1067,7 @@ public class TalkActivity extends Activity implements TalkContract.View, View.On
         btnPlay.setImageResource(R.drawable.ic_play);
         waveformView.moveToStart();
         playProgress.setProgress(0);
+        talkAdapter.setProgress(0);
         txtProgress.setText(TimeUtils.formatTimeIntervalHourMinSec2(0));
         AnimationUtil.viewAnimationX(btnPlay, 0f, new Animator.AnimatorListener() {
             @Override
@@ -1195,6 +1194,7 @@ public class TalkActivity extends Activity implements TalkContract.View, View.On
     @Override
     public void onPlayProgress(final long mills, int percent) {
         playProgress.setProgress(percent);
+        talkAdapter.setProgress(percent);
         waveformView.setPlayback(mills);
         txtProgress.setText(TimeUtils.formatTimeIntervalHourMinSec2(mills));
     }

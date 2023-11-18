@@ -1,23 +1,15 @@
-/*
- * Copyright 2018 Dmytro Ponomarenko
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.perry.audiorecorder.app.talk;
 
+import static androidx.core.app.ActivityCompat.requestPermissions;
+import static androidx.core.content.PermissionChecker.checkSelfPermission;
+
+import android.Manifest;
+import android.app.Activity;
 import android.content.Context;
 import android.graphics.Typeface;
+import android.graphics.drawable.Drawable;
+import android.os.Build;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -27,18 +19,24 @@ import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.PopupMenu;
+import android.widget.SeekBar;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.widget.AppCompatTextView;
 import androidx.core.content.ContextCompat;
+import androidx.core.content.PermissionChecker;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.perry.audiorecorder.AppConstants;
+import com.perry.audiorecorder.ColorMap;
 import com.perry.audiorecorder.R;
-import com.perry.audiorecorder.app.records.ListItem;
 import com.perry.audiorecorder.app.settings.SettingsMapper;
+import com.perry.audiorecorder.app.widget.CircleImageView;
 import com.perry.audiorecorder.app.widget.SimpleWaveformView;
+import com.perry.audiorecorder.app.widget.WaveformViewNew;
 import com.perry.audiorecorder.util.AndroidUtils;
+import com.perry.audiorecorder.util.FileUtil;
 import com.perry.audiorecorder.util.TimeUtils;
 
 import java.util.ArrayList;
@@ -47,7 +45,8 @@ import java.util.List;
 
 public class TalkAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
-    private List<ListItem> data;
+    private final static String TAG = TalkAdapter.class.getName();
+    private List<ItemType> data;
     private List<Integer> selected;
     private boolean isMultiSelectMode = false;
 
@@ -63,6 +62,15 @@ public class TalkAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     private OnItemOptionListener onItemOptionListener = null;
     private OnMultiSelectModeListener onMultiSelectModeListener = null;
 
+    ColorMap colorMap;
+    TalkContract.UserActionsListener presenter;
+    Activity activity;
+    TalkAdapter(SettingsMapper mapper, Activity activity,ColorMap colorMap,TalkContract.UserActionsListener presenter) {
+        this(mapper);
+        this.colorMap = colorMap;
+        this.presenter = presenter;
+        this.activity = activity;
+    }
     TalkAdapter(SettingsMapper mapper) {
         this.data = new ArrayList<>();
         this.selected = new ArrayList<>();
@@ -72,9 +80,9 @@ public class TalkAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     @NonNull
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int type) {
-        if (type == ListItem.ITEM_TYPE_HEADER) {
+        if (type == ItemType.ITEM_TYPE_HEADER) {
             return new UniversalViewHolder(createHeaderView(viewGroup.getContext()));
-        } else if (type == ListItem.ITEM_TYPE_FOOTER) {
+        } else if (type == ItemType.ITEM_TYPE_FOOTER) {
             View view = new View(viewGroup.getContext());
             int height = (int) viewGroup.getContext().getResources().getDimension(R.dimen.panel_height);
 
@@ -82,7 +90,7 @@ public class TalkAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                     LinearLayout.LayoutParams.MATCH_PARENT, height);
             view.setLayoutParams(lp);
             return new UniversalViewHolder(view);
-        } else if (type == ListItem.ITEM_TYPE_DATE) {
+        } else if (type == ItemType.ITEM_TYPE_DATE) {
             //Create date list item layout programmatically.
             TextView textView = new TextView(viewGroup.getContext());
             ViewGroup.LayoutParams lp = new ViewGroup.LayoutParams(
@@ -99,8 +107,8 @@ public class TalkAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
             return new UniversalViewHolder(textView);
         } else {
-            View v = LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.list_item, viewGroup, false);
-            return new ItemViewHolder(v, position -> {
+            View v = LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.item_talk_send_voice, viewGroup, false);
+            return new ItemViewHolder(v, (position,itemViewHolder) -> {
                 if (isMultiSelectMode) {
                     if (!selected.contains(position) && data.get(position).getDuration() != 0) {
                         selected.add(position);
@@ -123,6 +131,7 @@ public class TalkAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                     notifyItemChanged(position);
                 } else {
                     if (itemClickListener != null && data.size() > position) {
+                        itemViewHolderCur = itemViewHolder;
                         itemClickListener.onItemClick(v, data.get(position).getId(), data.get(position).getPath(), position);
                     }
                 }
@@ -153,17 +162,22 @@ public class TalkAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
     @Override
     public void onBindViewHolder(@NonNull final RecyclerView.ViewHolder viewHolder, final int pos) {
-        if (viewHolder.getItemViewType() == ListItem.ITEM_TYPE_NORMAL) {
+        if (viewHolder.getItemViewType() == ItemType.ITEM_TYPE_NORMAL) {
             final ItemViewHolder holder = (ItemViewHolder) viewHolder;
             final int p = holder.getAbsoluteAdapterPosition();
-            final ListItem item = data.get(p);
+            final ItemType item = data.get(p);
             holder.name.setText(item.getName());
             holder.description.setText(item.getDurationStr());
             holder.created.setText(item.getAddedTimeStr());
             if (item.isBookmarked()) {
-                holder.btnBookmark.setImageResource(R.drawable.ic_bookmark_small);
+                Drawable drawable = ContextCompat.getDrawable(viewHolder.itemView.getContext(), R.drawable.ic_bookmark_small);
+                holder.btnBookmark.setCompoundDrawablesWithIntrinsicBounds(drawable,null,null,null);
+
+//                holder.btnBookmark.setCompoundDrawablesWithIntrinsicBounds(R.drawable.ic_bookmark_small,0,0,0);
             } else {
-                holder.btnBookmark.setImageResource(R.drawable.ic_bookmark_bordered_small);
+                Drawable drawable = ContextCompat.getDrawable(viewHolder.itemView.getContext(), R.drawable.ic_bookmark_bordered_small);
+                holder.btnBookmark.setCompoundDrawablesWithIntrinsicBounds(drawable,null,null,null);
+//                holder.btnBookmark.setCompoundDrawablesWithIntrinsicBounds(R.drawable.ic_bookmark_bordered_small,0,0,0);
             }
             if (viewHolder.getLayoutPosition() == activeItem) {
                 holder.view.setBackgroundResource(R.color.selected_item_color);
@@ -185,14 +199,14 @@ public class TalkAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                 }
             });
             holder.btnMore.setOnClickListener(v -> showMenu(v, p));
-            holder.waveformView.setWaveform(item.getAmps());
+            holder.waveformViewItem.setWaveform(item.getAmps());
             if (isMultiSelectMode || item.getDuration() == 0) {
                 holder.btnMore.setVisibility(View.GONE);
             } else {
                 holder.btnMore.setVisibility(View.VISIBLE);
             }
             updateInformation(holder.info, item.getFormat(), item.getSampleRate(), item.getSize());
-        } else if (viewHolder.getItemViewType() == ListItem.ITEM_TYPE_DATE) {
+        } else if (viewHolder.getItemViewType() == ItemType.ITEM_TYPE_DATE) {
             UniversalViewHolder holder = (UniversalViewHolder) viewHolder;
             ((TextView) holder.view).setText(
                     TimeUtils.formatDateSmartLocale(
@@ -206,7 +220,7 @@ public class TalkAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     @Override
     public void onViewAttachedToWindow(@NonNull RecyclerView.ViewHolder holder) {
         super.onViewAttachedToWindow(holder);
-        if (holder.getItemViewType() == ListItem.ITEM_TYPE_HEADER) {
+        if (holder.getItemViewType() == ItemType.ITEM_TYPE_HEADER) {
             btnTrash = holder.itemView.findViewById(R.id.btn_trash);
             if (btnTrash != null) {
                 if (btnTrashClickListener != null) {
@@ -224,7 +238,7 @@ public class TalkAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     @Override
     public void onViewDetachedFromWindow(@NonNull RecyclerView.ViewHolder holder) {
         super.onViewDetachedFromWindow(holder);
-        if (holder.getItemViewType() == ListItem.ITEM_TYPE_HEADER) {
+        if (holder.getItemViewType() == ItemType.ITEM_TYPE_HEADER) {
             btnTrash = null;
         }
     }
@@ -289,23 +303,23 @@ public class TalkAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         return data.get(position).getType();
     }
 
-    void setData(List<ListItem> d, int order) {
+    void setData(List<ItemType> d, int order) {
         updateShowHeader(order);
         if (showDateHeaders) {
             data = addDateHeaders(d);
         } else {
             data = d;
         }
-        data.add(0, ListItem.createHeaderItem());
+        data.add(0, ItemType.createHeaderItem());
         notifyDataSetChanged();
     }
 
-//	public void addData(List<ListItem> d) {
+//	public void addData(List<ItemType> d) {
 //		this.data.addAll(addDateHeaders(d));
 //		notifyItemRangeInserted(data.size() - d.size(), d.size());
 //	}
 
-    void addData(List<ListItem> d, int order) {
+    void addData(List<ItemType> d, int order) {
         if (data.size() > 0) {
             updateShowHeader(order);
             if (showDateHeaders) {
@@ -333,14 +347,14 @@ public class TalkAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         }
     }
 
-    public ListItem getItem(int pos) {
+    public ItemType getItem(int pos) {
         return data.get(pos);
     }
 
-    private List<ListItem> addDateHeaders(List<ListItem> data) {
+    private List<ItemType> addDateHeaders(List<ItemType> data) {
         if (data.size() > 0) {
             if (!hasDateHeader(data, data.get(0).getAdded())) {
-                data.add(0, ListItem.createDateItem(data.get(0).getAdded()));
+                data.add(0, ItemType.createDateItem(data.get(0).getAdded()));
             }
             Calendar d1 = Calendar.getInstance();
             d1.setTimeInMillis(data.get(0).getAdded());
@@ -349,7 +363,7 @@ public class TalkAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                 d1.setTimeInMillis(data.get(i - 1).getAdded());
                 d2.setTimeInMillis(data.get(i).getAdded());
                 if (!TimeUtils.isSameDay(d1, d2) && !hasDateHeader(data, data.get(i).getAdded())) {
-                    data.add(i, ListItem.createDateItem(data.get(i).getAdded()));
+                    data.add(i, ItemType.createDateItem(data.get(i).getAdded()));
                 }
             }
         }
@@ -377,7 +391,7 @@ public class TalkAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     int getAudioRecordsCount() {
         int count = 0;
         for (int i = 0; i < data.size(); i++) {
-            if (data.get(i).getType() == ListItem.ITEM_TYPE_NORMAL) {
+            if (data.get(i).getType() == ItemType.ITEM_TYPE_NORMAL) {
                 count++;
             }
         }
@@ -386,7 +400,7 @@ public class TalkAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
     public void showFooter() {
         if (findFooter() == -1) {
-            this.data.add(ListItem.createFooterItem());
+            this.data.add(ItemType.createFooterItem());
             notifyItemInserted(data.size() - 1);
         }
     }
@@ -431,7 +445,7 @@ public class TalkAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
     private int findFooter() {
         for (int i = data.size() - 1; i >= 0; i--) {
-            if (data.get(i).getType() == ListItem.ITEM_TYPE_FOOTER) {
+            if (data.get(i).getType() == ItemType.ITEM_TYPE_FOOTER) {
                 return i;
             }
         }
@@ -480,9 +494,9 @@ public class TalkAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         }
     }
 
-    private boolean hasDateHeader(List<ListItem> data, long time) {
+    private boolean hasDateHeader(List<ItemType> data, long time) {
         for (int i = data.size() - 1; i >= 0; i--) {
-            if (data.get(i).getType() == ListItem.ITEM_TYPE_DATE) {
+            if (data.get(i).getType() == ItemType.ITEM_TYPE_DATE) {
                 Calendar d1 = Calendar.getInstance();
                 d1.setTimeInMillis(data.get(i).getAdded());
                 Calendar d2 = Calendar.getInstance();
@@ -583,6 +597,28 @@ public class TalkAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         this.onAddToBookmarkListener = onAddToBookmarkListener;
     }
 
+    public void setColorMap(ColorMap colorMap) {
+        this.colorMap = colorMap;
+    }
+
+    public void setPresenter(TalkContract.UserActionsListener presenter) {
+        this.presenter = presenter;
+    }
+
+    public void setProgress(int percent) {
+        if(itemViewHolderCur != null){
+            Log.d(TAG,"setProgress:"+percent);
+            itemViewHolderCur.playProgress.setProgress(percent);
+            notifyItemChanged(posCur);
+        }
+//        if(playProgressCur != null) {
+//            Log.d(TAG,"setProgress:"+percent);
+//            playProgressCur.setProgress(percent);
+//            notifyItemChanged(posCur);
+//        }
+    }
+
+
     public interface ItemClickListener {
         void onItemClick(View view, long id, String path, int position);
     }
@@ -606,19 +642,25 @@ public class TalkAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     }
 
     interface OnItemOptionListener {
-        void onItemOptionSelected(int menuId, ListItem item);
+        void onItemOptionSelected(int menuId, ItemType item);
     }
-
-    static class ItemViewHolder extends RecyclerView.ViewHolder {
+    ItemViewHolder itemViewHolderCur;
+    SeekBar playProgressCur;
+    int posCur;
+    class ItemViewHolder extends RecyclerView.ViewHolder {
         TextView name;
         TextView description;
         TextView created;
         TextView info;
-        ImageButton btnBookmark;
-        ImageButton btnMore;
-        SimpleWaveformView waveformView;
+        AppCompatTextView btnBookmark;
+        CircleImageView btnMore;
+        SimpleWaveformView waveformViewItem;
         View view;
 
+        LinearLayout touchLayout;
+
+        ImageButton btnPlay;
+        SeekBar playProgress;
         ItemViewHolder(
                 View itemView,
                 OnItemClickListener onItemClickListener,
@@ -627,9 +669,11 @@ public class TalkAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             super(itemView);
             view = itemView;
             view.setOnClickListener(v -> {
+                playProgressCur = playProgress;
                 int pos = getAbsoluteAdapterPosition();
+                posCur = pos;
                 if (pos != RecyclerView.NO_POSITION && onItemClickListener != null) {
-                    onItemClickListener.onItemClick(pos);
+                    onItemClickListener.onItemClick(pos,this);
                 }
             });
             view.setOnLongClickListener(v -> {
@@ -644,9 +688,75 @@ public class TalkAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             created = itemView.findViewById(R.id.list_item_date);
             info = itemView.findViewById(R.id.list_item_info);
             btnBookmark = itemView.findViewById(R.id.list_item_bookmark);
-            waveformView = itemView.findViewById(R.id.list_item_waveform);
-            btnMore = itemView.findViewById(R.id.list_item_more);
+//            waveformView = itemView.findViewById(R.id.list_item_waveform);
+            btnMore = itemView.findViewById(R.id.item_iv_avatar);
+            waveformViewItem = itemView.findViewById(R.id.item_waveform);
+            playProgress = itemView.findViewById(R.id.item_play_progress);
+            touchLayout = itemView.findViewById(R.id.touch_layout);
+            if(colorMap != null) {
+                touchLayout.setBackgroundResource(colorMap.getPlaybackPanelBackground());
+            }
+            btnPlay = itemView.findViewById(R.id.btn_play);
+            btnPlay.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    int pos = getAbsoluteAdapterPosition();
+                    posCur = pos;
+                    if (pos != RecyclerView.NO_POSITION && onItemClickListener != null) {
+                        onItemClickListener.onItemClick(pos,ItemViewHolder.this);
+                    }
+
+//                    String path = presenter.getActiveRecordPath();
+//                    //This method Starts or Pause playback.
+//                    if (FileUtil.isFileInExternalStorage(activity, path)) {
+//                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+//                            AndroidUtils.showRecordFileNotAvailable(activity, path);
+//                        } else if (checkStoragePermissionPlayback()) {
+//                            presenter.startPlayback();
+//                        }
+//                    } else {
+//                        presenter.startPlayback();
+//                    }
+
+                    playProgressCur = playProgress;
+                }
+            });
+
+            playProgress.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+                @Override
+                public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                    if (fromUser) {
+//                        int val = (int) AndroidUtils.dpToPx(progress * waveformView.getWaveformLength() / 1000);
+//                        waveformView.seekPx(val);
+//                        //TODO: Find a better way to convert px to mills here
+//                        presenter.seekPlayback(waveformView.pxToMill(val));
+//                        presenter.seekPlayback(progress);
+                    }
+                }
+
+                @Override
+                public void onStartTrackingTouch(SeekBar seekBar) {
+//                    presenter.disablePlaybackProgressListener();
+                }
+
+                @Override
+                public void onStopTrackingTouch(SeekBar seekBar) {
+//                    presenter.enablePlaybackProgressListener();
+                }
+            });
+
         }
+
+    }
+
+    private boolean checkStoragePermissionPlayback() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (checkSelfPermission(activity,Manifest.permission.WRITE_EXTERNAL_STORAGE) != PermissionChecker.PERMISSION_GRANTED && checkSelfPermission(activity,Manifest.permission.READ_EXTERNAL_STORAGE) != PermissionChecker.PERMISSION_GRANTED) {
+                requestPermissions(activity,new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE}, TalkActivity.REQ_CODE_READ_EXTERNAL_STORAGE_PLAYBACK);
+                return false;
+            }
+        }
+        return true;
     }
 
     static class UniversalViewHolder extends RecyclerView.ViewHolder {
@@ -659,7 +769,7 @@ public class TalkAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     }
 
     private interface OnItemClickListener {
-        void onItemClick(int position);
+        void onItemClick(int position,ItemViewHolder itemViewHolder);
     }
 
     private interface OnItemLongClickListener {
