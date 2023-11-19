@@ -42,7 +42,6 @@ import com.perry.audiorecorder.data.Prefs;
 import com.perry.audiorecorder.data.database.LocalRepository;
 import com.perry.audiorecorder.data.database.Record;
 import com.perry.audiorecorder.exception.AppException;
-import com.perry.audiorecorder.exception.CantCreateFileException;
 import com.perry.audiorecorder.exception.ErrorParser;
 import com.perry.audiorecorder.util.AndroidUtils;
 import com.perry.audiorecorder.util.FileUtil;
@@ -78,6 +77,7 @@ public class TalkPresenter implements TalkContract.UserActionsListener {
     private boolean showBookmarks = false;
 
     int position;//item当前选择的那个播放
+
     /**
      * Flag true defines that presenter called to show import progress when view was not bind.
      * And after view bind we need to show import progress.
@@ -176,7 +176,7 @@ public class TalkPresenter implements TalkContract.UserActionsListener {
                         }
                         updateInformation(rec.getFormat(), rec.getSampleRate(), rec.getSize());
                         //每次录音完成这里其实可以只添加最后一条的
-                        Log.d(TAG,"每次录音完成这里其实可以只添加最后一条的");
+                        Log.d(TAG, "每次录音完成这里其实可以只添加最后一条的");
 //                        loadRecords();
                         addLastNewRecord(record);
                     }
@@ -231,7 +231,7 @@ public class TalkPresenter implements TalkContract.UserActionsListener {
                 public void onStartPlay() {
                     if (record != null && view != null) {
                         view.startPlaybackService(record.getName());
-                        view.showPlayStart(true,position);
+                        view.showPlayStart(true, position);
                     }
                 }
 
@@ -278,7 +278,7 @@ public class TalkPresenter implements TalkContract.UserActionsListener {
         this.audioPlayer.addPlayerCallback(playerCallback);
 
         if (audioPlayer.isPlaying()) {
-            view.showPlayStart(false,position);
+            view.showPlayStart(false, position);
         } else if (audioPlayer.isPaused()) {
             view.showPlayPause(position);
         } else {
@@ -311,9 +311,9 @@ public class TalkPresenter implements TalkContract.UserActionsListener {
     }
 
     private void addLastNewRecord(Record record) {
-        if(view != null) {
+        if (view != null) {
             final int order = prefs.getRecordsOrder();
-            ArrayList list = new ArrayList<ItemType>();
+            ArrayList list = new ArrayList<ItemData>();
             list.add(Mapper.recordToItemType(record));
             view.addRecords(list, order);
         }
@@ -435,7 +435,7 @@ public class TalkPresenter implements TalkContract.UserActionsListener {
 
     @Override
     public void stopPlayback(int position) {
-        if(this.position != position){
+        if (this.position != position) {
             audioPlayer.stop();
         }
     }
@@ -484,7 +484,9 @@ public class TalkPresenter implements TalkContract.UserActionsListener {
                                 record.getBitrate(),
                                 record.isBookmarked(),
                                 record.isWaveformProcessed(),
-                                record.getAmps());
+                                record.getAmps(),
+                                0,
+                                null);
                         if (localRepository.updateRecord(TalkPresenter.this.record)) {
                             AndroidUtils.runOnUIThread(() -> {
                                 if (view != null) {
@@ -1025,7 +1027,9 @@ public class TalkPresenter implements TalkContract.UserActionsListener {
                                 info.getBitrate(),
                                 rec.isBookmarked(),
                                 rec.isWaveformProcessed(),
-                                rec.getAmps()));
+                                rec.getAmps(),
+                                0,
+                                null));
                     }
                 }
             }
@@ -1052,7 +1056,9 @@ public class TalkPresenter implements TalkContract.UserActionsListener {
                                 info.getBitrate(),
                                 trashRecord.isBookmarked(),
                                 trashRecord.isWaveformProcessed(),
-                                trashRecord.getAmps()));
+                                trashRecord.getAmps(),
+                                0,
+                                null));
                     }
                 }
             }

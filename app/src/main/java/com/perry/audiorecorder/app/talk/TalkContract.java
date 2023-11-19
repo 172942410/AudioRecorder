@@ -17,11 +17,9 @@
 package com.perry.audiorecorder.app.talk;
 
 import android.content.Context;
-import android.net.Uri;
 
 import com.perry.audiorecorder.Contract;
 import com.perry.audiorecorder.app.info.RecordInfo;
-import com.perry.audiorecorder.app.records.ListItem;
 import com.perry.audiorecorder.app.records.RecordsContract;
 import com.perry.audiorecorder.audio.recorder.RecorderContract;
 import com.perry.audiorecorder.data.database.Record;
@@ -32,7 +30,7 @@ import java.util.List;
 public interface TalkContract {
 
     interface View extends Contract.View {
-        void addRecords(List<ItemType> records, int order);
+        void addRecords(List<ItemData> records, int order);
 
         void showEmptyBookmarksList();
 
@@ -52,7 +50,7 @@ public interface TalkContract {
 
         void cancelMultiSelect();
 
-        void showRecords(List<ItemType> records, int order);
+        void showRecords(List<ItemData> records, int order);
 
         void showPlayerPanel();
 
@@ -125,7 +123,7 @@ public interface TalkContract {
 
         void startPlaybackService(String name);
 
-        void showPlayStart(boolean animate,int index);
+        void showPlayStart(boolean animate, int index);
 
         void showPlayPause(int index);
 

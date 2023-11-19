@@ -45,7 +45,7 @@ import java.util.List;
 public class TalkAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
     private final static String TAG = TalkAdapter.class.getName();
-    private List<ItemType> data;
+    private List<ItemData> data;
     private List<Integer> selected;
     private boolean isMultiSelectMode = false;
 
@@ -81,10 +81,9 @@ public class TalkAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     @NonNull
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int type) {
-        if (type == ItemType.ITEM_TYPE_HEADER) {
+        if (type == ItemData.ITEM_TYPE_HEADER) {
             return new UniversalViewHolder(createHeaderView(viewGroup.getContext()));
-        } else
-            if (type == ItemType.ITEM_TYPE_FOOTER) {
+        } else if (type == ItemData.ITEM_TYPE_FOOTER) {
             View view = new View(viewGroup.getContext());
             int height = (int) viewGroup.getContext().getResources().getDimension(R.dimen.panel_height);
 
@@ -92,7 +91,7 @@ public class TalkAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                     LinearLayout.LayoutParams.MATCH_PARENT, height);
             view.setLayoutParams(lp);
             return new UniversalViewHolder(view);
-        } else if (type == ItemType.ITEM_TYPE_DATE) {
+        } else if (type == ItemData.ITEM_TYPE_DATE) {
             //Create date list item layout programmatically.
             TextView textView = new TextView(viewGroup.getContext());
             ViewGroup.LayoutParams lp = new ViewGroup.LayoutParams(
@@ -174,10 +173,10 @@ public class TalkAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
     @Override
     public void onBindViewHolder(@NonNull final RecyclerView.ViewHolder viewHolder, final int pos) {
-        if (viewHolder.getItemViewType() == ItemType.ITEM_TYPE_NORMAL) {
+        if (viewHolder.getItemViewType() == ItemData.ITEM_TYPE_NORMAL) {
             final ItemViewHolder holder = (ItemViewHolder) viewHolder;
             final int p = holder.getAbsoluteAdapterPosition();
-            final ItemType item = data.get(p);
+            final ItemData item = data.get(p);
             Log.d(TAG, "item:" + item);
             holder.name.setText(item.getName());
 //            duration=4639875 4秒
@@ -220,7 +219,7 @@ public class TalkAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                 holder.btnMore.setVisibility(View.VISIBLE);
             }
             updateInformation(holder.info, item.getFormat(), item.getSampleRate(), item.getSize());
-        } else if (viewHolder.getItemViewType() == ItemType.ITEM_TYPE_DATE) {
+        } else if (viewHolder.getItemViewType() == ItemData.ITEM_TYPE_DATE) {
             UniversalViewHolder holder = (UniversalViewHolder) viewHolder;
             ((TextView) holder.view).setText(
                     TimeUtils.formatDateSmartLocale(
@@ -234,7 +233,7 @@ public class TalkAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     @Override
     public void onViewAttachedToWindow(@NonNull RecyclerView.ViewHolder holder) {
         super.onViewAttachedToWindow(holder);
-        if (holder.getItemViewType() == ItemType.ITEM_TYPE_HEADER) {
+        if (holder.getItemViewType() == ItemData.ITEM_TYPE_HEADER) {
             btnTrash = holder.itemView.findViewById(R.id.btn_trash);
             if (btnTrash != null) {
                 if (btnTrashClickListener != null) {
@@ -252,7 +251,7 @@ public class TalkAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     @Override
     public void onViewDetachedFromWindow(@NonNull RecyclerView.ViewHolder holder) {
         super.onViewDetachedFromWindow(holder);
-        if (holder.getItemViewType() == ItemType.ITEM_TYPE_HEADER) {
+        if (holder.getItemViewType() == ItemData.ITEM_TYPE_HEADER) {
             btnTrash = null;
         }
     }
@@ -317,7 +316,7 @@ public class TalkAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         return data.get(position).getType();
     }
 
-    void setData(List<ItemType> d, int order) {
+    void setData(List<ItemData> d, int order) {
 //        updateShowHeader(order);
         if (showDateHeaders) {
             data = addDateHeaders(d);
@@ -333,7 +332,7 @@ public class TalkAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 //		notifyItemRangeInserted(data.size() - d.size(), d.size());
 //	}
 
-    void addData(List<ItemType> d, int order) {
+    void addData(List<ItemData> d, int order) {
         if (data.size() > 0) {
 //            updateShowHeader(order);
             if (showDateHeaders) {
@@ -361,14 +360,14 @@ public class TalkAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         }
     }
 
-    public ItemType getItem(int pos) {
+    public ItemData getItem(int pos) {
         return data.get(pos);
     }
 
-    private List<ItemType> addDateHeaders(List<ItemType> data) {
+    private List<ItemData> addDateHeaders(List<ItemData> data) {
         if (data.size() > 0) {
             if (!hasDateHeader(data, data.get(0).getAdded())) {
-                data.add(0, ItemType.createDateItem(data.get(0).getAdded()));
+                data.add(0, ItemData.createDateItem(data.get(0).getAdded()));
             }
             Calendar d1 = Calendar.getInstance();
             d1.setTimeInMillis(data.get(0).getAdded());
@@ -377,7 +376,7 @@ public class TalkAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                 d1.setTimeInMillis(data.get(i - 1).getAdded());
                 d2.setTimeInMillis(data.get(i).getAdded());
                 if (!TimeUtils.isSameDay(d1, d2) && !hasDateHeader(data, data.get(i).getAdded())) {
-                    data.add(i, ItemType.createDateItem(data.get(i).getAdded()));
+                    data.add(i, ItemData.createDateItem(data.get(i).getAdded()));
                 }
             }
         }
@@ -405,7 +404,7 @@ public class TalkAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     int getAudioRecordsCount() {
         int count = 0;
         for (int i = 0; i < data.size(); i++) {
-            if (data.get(i).getType() == ItemType.ITEM_TYPE_NORMAL) {
+            if (data.get(i).getType() == ItemData.ITEM_TYPE_NORMAL) {
                 count++;
             }
         }
@@ -414,7 +413,7 @@ public class TalkAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
     public void showFooter() {
         if (findFooter() == -1) {
-            this.data.add(ItemType.createFooterItem());
+            this.data.add(ItemData.createFooterItem());
             notifyItemInserted(data.size() - 1);
         }
     }
@@ -459,7 +458,7 @@ public class TalkAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
     private int findFooter() {
         for (int i = data.size() - 1; i >= 0; i--) {
-            if (data.get(i).getType() == ItemType.ITEM_TYPE_FOOTER) {
+            if (data.get(i).getType() == ItemData.ITEM_TYPE_FOOTER) {
                 return i;
             }
         }
@@ -508,9 +507,9 @@ public class TalkAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         }
     }
 
-    private boolean hasDateHeader(List<ItemType> data, long time) {
+    private boolean hasDateHeader(List<ItemData> data, long time) {
         for (int i = data.size() - 1; i >= 0; i--) {
-            if (data.get(i).getType() == ItemType.ITEM_TYPE_DATE) {
+            if (data.get(i).getType() == ItemData.ITEM_TYPE_DATE) {
                 Calendar d1 = Calendar.getInstance();
                 d1.setTimeInMillis(data.get(i).getAdded());
                 Calendar d2 = Calendar.getInstance();
@@ -609,6 +608,7 @@ public class TalkAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
     /**
      * 此功能已注释掉了
+     *
      * @param onAddToBookmarkListener
      */
     void setOnAddToBookmarkListener(OnAddToBookmarkListener onAddToBookmarkListener) {
@@ -708,7 +708,7 @@ public class TalkAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     }
 
     interface OnItemOptionListener {
-        void onItemOptionSelected(int menuId, ItemType item);
+        void onItemOptionSelected(int menuId, ItemData item);
     }
 
     int posPrev = -1;
@@ -833,7 +833,7 @@ public class TalkAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                 //voiceLayout跟进时长计算长度；目测最小 ：40dp 或 60dp ：最长 200dp 语音最少1秒最多60秒
                 FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) voiceLayout.getLayoutParams();
                 int width = 50 + durationInt * 4;
-                if(width > 200){
+                if (width > 200) {
                     width = 200;
                 }
 //                params.width = (int) AndroidUtils.dpToPx(40);

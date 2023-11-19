@@ -263,7 +263,7 @@ public class TalkActivity extends Activity implements TalkContract.View, View.On
                         startRecordingService();
                         Log.d(TAG, "开始录音");
                     }
-                }else{
+                } else {
                     Toast.makeText(TalkActivity.this, "如果多次拒绝后就需要手动开启录音权限了", Toast.LENGTH_SHORT).show();
                 }
             }
@@ -309,12 +309,12 @@ public class TalkActivity extends Activity implements TalkContract.View, View.On
 
         //Check start recording shortcut
 //        if ("android.intent.action.ACTION_RUN".equals(getIntent().getAction())) {
-            if (checkRecordPermission2()) {
-                if (checkStoragePermission2()) {
-                    //Start or stop recording
+        if (checkRecordPermission2()) {
+            if (checkStoragePermission2()) {
+                //Start or stop recording
 //                    startRecordingService();
-                }
             }
+        }
 //        }
     }
 
@@ -332,10 +332,10 @@ public class TalkActivity extends Activity implements TalkContract.View, View.On
     }
 
     @Override
-    public void addRecords(List<ItemType> records, int order) {
+    public void addRecords(List<ItemData> records, int order) {
         talkAdapter.addData(records, order);
         txtEmpty.setVisibility(View.GONE);
-        recyclerView.scrollToPosition(talkAdapter.getItemCount()-1);
+        recyclerView.scrollToPosition(talkAdapter.getItemCount() - 1);
     }
 
     @Override
@@ -414,14 +414,14 @@ public class TalkActivity extends Activity implements TalkContract.View, View.On
     }
 
     @Override
-    public void showRecords(List<ItemType> records, int order) {
+    public void showRecords(List<ItemData> records, int order) {
         if (records.size() == 0) {
             txtEmpty.setVisibility(View.VISIBLE);
             talkAdapter.setData(new ArrayList<>(), order);
         } else {
             talkAdapter.setData(records, order);
             txtEmpty.setVisibility(View.GONE);
-            recyclerView.scrollToPosition(records.size()-1);
+            recyclerView.scrollToPosition(records.size() - 1);
         }
     }
 
@@ -493,7 +493,7 @@ public class TalkActivity extends Activity implements TalkContract.View, View.On
         downloadRecords.clear();
         List<Integer> selected = talkAdapter.getSelected();
         for (int i = 0; i < selected.size(); i++) {
-            ItemType item = talkAdapter.getItem(selected.get(i));
+            ItemData item = talkAdapter.getItem(selected.get(i));
             downloadRecords.add(item.getPath());
         }
         boolean hasPublicDir = false;
@@ -620,13 +620,13 @@ public class TalkActivity extends Activity implements TalkContract.View, View.On
     @Override
     public void onClick(View view) {
         int id = view.getId();
-         if (id == R.id.btn_records_list) {
+        if (id == R.id.btn_records_list) {
             startActivity(RecordsActivity.getStartIntent(getApplicationContext()));
         } else if (id == R.id.btn_settings) {
             startActivity(SettingsActivity.getStartIntent(getApplicationContext()));
         } else if (id == R.id.btn_share) {
-             Toast.makeText(this, "敬请期待...", Toast.LENGTH_SHORT).show();
-             startActivity(RecordsActivity.getStartIntent(TalkActivity.this));
+            Toast.makeText(this, "敬请期待...", Toast.LENGTH_SHORT).show();
+            startActivity(RecordsActivity.getStartIntent(TalkActivity.this));
 //            showMenu(view);
         } else if (id == R.id.btn_bookmarks) {
             presenter.applyBookmarksFilter();
@@ -659,7 +659,7 @@ public class TalkActivity extends Activity implements TalkContract.View, View.On
         List<Integer> selected = talkAdapter.getSelected();
         List<String> share = new ArrayList<>();
         for (int i = 0; i < selected.size(); i++) {
-            ItemType item = talkAdapter.getItem(selected.get(i));
+            ItemData item = talkAdapter.getItem(selected.get(i));
             share.add(item.getPath());
         }
         AndroidUtils.shareAudioFiles(getApplicationContext(), share);
@@ -670,7 +670,7 @@ public class TalkActivity extends Activity implements TalkContract.View, View.On
         List<Long> ids = new ArrayList<>();
         List<Integer> selected = talkAdapter.getSelected();
         for (int i = 0; i < selected.size(); i++) {
-            ItemType item = talkAdapter.getItem(selected.get(i));
+            ItemData item = talkAdapter.getItem(selected.get(i));
             ids.add(item.getId());
         }
         presenter.deleteRecords(ids);
@@ -793,8 +793,8 @@ public class TalkActivity extends Activity implements TalkContract.View, View.On
     }
 
     @Override
-    public void showPlayStart(boolean animate,int index) {
-        talkAdapter.showPlayStart(animate,index);
+    public void showPlayStart(boolean animate, int index) {
+        talkAdapter.showPlayStart(animate, index);
     }
 
     @Override
@@ -818,7 +818,7 @@ public class TalkActivity extends Activity implements TalkContract.View, View.On
 
     @Override
     public void showDuration(final String duration) {
-        Log.d(TAG,"showDuration:"+duration);
+        Log.d(TAG, "showDuration:" + duration);
     }
 
     @Override
@@ -894,7 +894,7 @@ public class TalkActivity extends Activity implements TalkContract.View, View.On
 
     @Override
     public void onPlayProgress(final long mills, int percent) {
-        talkAdapter.setProgress(mills,percent);
+        talkAdapter.setProgress(mills, percent);
     }
 
     @Override
@@ -985,7 +985,7 @@ public class TalkActivity extends Activity implements TalkContract.View, View.On
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             if (checkSelfPermission(Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
                 requestPermissions(new String[]{Manifest.permission.RECORD_AUDIO}, REQ_CODE_RECORD_AUDIO);
-                Log.d(TAG,"没有录音权限；拒绝嘞");
+                Log.d(TAG, "没有录音权限；拒绝嘞");
                 return false;
             }
         }
@@ -1014,7 +1014,7 @@ public class TalkActivity extends Activity implements TalkContract.View, View.On
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        Log.d(TAG,"onRequestPermissionsResult permissions:"+ Arrays.toString(permissions)+",grantResults:"+Arrays.toString(grantResults));
+        Log.d(TAG, "onRequestPermissionsResult permissions:" + Arrays.toString(permissions) + ",grantResults:" + Arrays.toString(grantResults));
         if (requestCode == REQ_CODE_REC_AUDIO_AND_WRITE_EXTERNAL && grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED && grantResults[1] == PackageManager.PERMISSION_GRANTED && grantResults[2] == PackageManager.PERMISSION_GRANTED) {
 //            startRecordingService();
         } else if (requestCode == REQ_CODE_RECORD_AUDIO && grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
