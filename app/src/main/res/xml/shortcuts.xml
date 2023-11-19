@@ -9,7 +9,7 @@
 			android:shortcutShortLabel="@string/start_recording">
 		<intent
 				android:action="android.intent.action.ACTION_RUN"
-				android:targetClass="com.perry.audiorecorder.app.main.MainActivity"
+				android:targetClass="com.perry.audiorecorder.app.talk.TalkActivity"
 				android:targetPackage="com.perry.audiorecorder" />
 	</shortcut>
 </shortcuts>

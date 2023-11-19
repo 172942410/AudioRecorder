@@ -31,9 +31,9 @@ import com.perry.audiorecorder.ARApplication;
 import com.perry.audiorecorder.AppConstants;
 import com.perry.audiorecorder.ColorMap;
 import com.perry.audiorecorder.R;
-import com.perry.audiorecorder.app.main.MainActivity;
 import com.perry.audiorecorder.app.settings.AppSpinnerAdapter;
 import com.perry.audiorecorder.app.settings.SettingsMapper;
+import com.perry.audiorecorder.app.talk.TalkActivity;
 import com.perry.audiorecorder.app.widget.SettingView;
 import com.perry.audiorecorder.util.AndroidUtils;
 import com.perry.audiorecorder.util.FileUtil;
@@ -210,7 +210,7 @@ public class SetupActivity extends Activity implements SetupContract.View, View.
 		int id = v.getId();
 		if (id == R.id.btn_apply) {
 			presenter.executeFirstRun();
-			startActivity(MainActivity.getStartIntent(getApplicationContext()));
+			startActivity(TalkActivity.getStartIntent(getApplicationContext()));
 			finish();
 		} else if (id == R.id.btn_reset) {
 			presenter.resetSettings();

@@ -110,7 +110,7 @@ public class TalkPresenter implements TalkContract.UserActionsListener {
             migrateDb3();
         }
         if (!prefs.hasAskToRenameAfterStopRecordingSetting()) {
-            prefs.setAskToRenameAfterStopRecording(true);
+            prefs.setAskToRenameAfterStopRecording(false);
         }
 
         if (appRecorderCallback == null) {

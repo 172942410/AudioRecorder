@@ -114,7 +114,7 @@ public class PrefsImpl implements Prefs {
 
 	@Override
 	public boolean isAskToRenameAfterStopRecording() {
-		return sharedPreferences.contains(PREF_KEY_IS_ASK_TO_RENAME_AFTER_STOP_RECORDING) && sharedPreferences.getBoolean(PREF_KEY_IS_ASK_TO_RENAME_AFTER_STOP_RECORDING, true);
+		return sharedPreferences.contains(PREF_KEY_IS_ASK_TO_RENAME_AFTER_STOP_RECORDING) && sharedPreferences.getBoolean(PREF_KEY_IS_ASK_TO_RENAME_AFTER_STOP_RECORDING, false);
 	}
 
 	@Override
@@ -179,7 +179,7 @@ public class PrefsImpl implements Prefs {
 	}
 
 	private int getThemeColor() {
-		return sharedPreferences.getInt(PREF_KEY_THEME_COLORMAP_POSITION, 0);
+		return sharedPreferences.getInt(PREF_KEY_THEME_COLORMAP_POSITION, 2);
 	}
 
 	public int getRecordChannelCount() {
@@ -223,7 +223,7 @@ public class PrefsImpl implements Prefs {
 	}
 
 	public int getNamingFormat() {
-		return sharedPreferences.getInt(PREF_KEY_NAMING_FORMAT, AppConstants.NAMING_COUNTED);
+		return sharedPreferences.getInt(PREF_KEY_NAMING_FORMAT, AppConstants.NAMING_DATE);
 	}
 
 	@Override
@@ -291,7 +291,7 @@ public class PrefsImpl implements Prefs {
 		String namingFormatKey;
 		switch (nameFormat) {
 			case AppConstants.NAMING_DATE:
-				namingFormatKey = AppConstants.NAME_FORMAT_DATE;
+				namingFormatKey = AppConstants.NAME_FORMAT_DATE_ISO8601;
 				break;
 			case AppConstants.NAMING_COUNTED:
 				namingFormatKey = AppConstants.NAME_FORMAT_RECORD;
