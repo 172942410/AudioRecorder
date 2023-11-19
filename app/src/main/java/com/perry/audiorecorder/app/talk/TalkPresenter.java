@@ -49,6 +49,7 @@ import com.perry.audiorecorder.util.FileUtil;
 import com.perry.audiorecorder.util.TimeUtils;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 
 import timber.log.Timber;
@@ -112,7 +113,7 @@ public class TalkPresenter implements TalkContract.UserActionsListener {
         if (!prefs.hasAskToRenameAfterStopRecordingSetting()) {
             prefs.setAskToRenameAfterStopRecording(false);
         }
-
+        prefs.setRecordOrder(AppConstants.SORT_DATE_DESC);//这里默认日期从最底下出来
         if (appRecorderCallback == null) {
             appRecorderCallback = new AppRecorderCallback() {
 
@@ -174,7 +175,10 @@ public class TalkPresenter implements TalkContract.UserActionsListener {
                             view.showOptionsMenu();
                         }
                         updateInformation(rec.getFormat(), rec.getSampleRate(), rec.getSize());
-                        loadRecords();
+                        //每次录音完成这里其实可以只添加最后一条的
+                        Log.d(TAG,"每次录音完成这里其实可以只添加最后一条的");
+//                        loadRecords();
+                        addLastNewRecord(record);
                     }
                     if (view != null) {
                         view.keepScreenOn(false);
@@ -304,6 +308,15 @@ public class TalkPresenter implements TalkContract.UserActionsListener {
         );
 
         this.localRepository.setOnRecordsLostListener(list -> view.showRecordsLostMessage(list));
+    }
+
+    private void addLastNewRecord(Record record) {
+        if(view != null) {
+            final int order = prefs.getRecordsOrder();
+            ArrayList list = new ArrayList<ItemType>();
+            list.add(Mapper.recordToItemType(record));
+            view.addRecords(list, order);
+        }
     }
 
     @Override

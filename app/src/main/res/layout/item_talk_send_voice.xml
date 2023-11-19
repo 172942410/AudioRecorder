@@ -33,7 +33,7 @@
                 android:adjustViewBounds="true"
                 android:background="?android:selectableItemBackgroundBorderless"
                 android:contentDescription="@null"
-                android:scaleType="center"
+                android:scaleType="fitCenter"
                 android:src="@drawable/ic_play"
                 android:tint="@color/white"
 

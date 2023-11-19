@@ -335,6 +335,7 @@ public class TalkActivity extends Activity implements TalkContract.View, View.On
     public void addRecords(List<ItemType> records, int order) {
         talkAdapter.addData(records, order);
         txtEmpty.setVisibility(View.GONE);
+        recyclerView.scrollToPosition(talkAdapter.getItemCount()-1);
     }
 
     @Override
@@ -420,6 +421,7 @@ public class TalkActivity extends Activity implements TalkContract.View, View.On
         } else {
             talkAdapter.setData(records, order);
             txtEmpty.setVisibility(View.GONE);
+            recyclerView.scrollToPosition(records.size()-1);
         }
     }
 
@@ -624,6 +626,7 @@ public class TalkActivity extends Activity implements TalkContract.View, View.On
             startActivity(SettingsActivity.getStartIntent(getApplicationContext()));
         } else if (id == R.id.btn_share) {
              Toast.makeText(this, "敬请期待...", Toast.LENGTH_SHORT).show();
+             startActivity(RecordsActivity.getStartIntent(TalkActivity.this));
 //            showMenu(view);
         } else if (id == R.id.btn_bookmarks) {
             presenter.applyBookmarksFilter();
