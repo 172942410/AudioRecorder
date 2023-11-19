@@ -1,7 +1,6 @@
 package com.perry.audiorecorder.app.talk;
 
 import android.Manifest;
-import android.animation.Animator;
 import android.app.Activity;
 import android.content.ActivityNotFoundException;
 import android.content.ComponentName;
@@ -17,19 +16,18 @@ import android.os.Message;
 import android.util.Log;
 import android.view.MenuInflater;
 import android.view.View;
-import android.view.ViewPropertyAnimator;
 import android.view.WindowManager;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.PopupMenu;
 import android.widget.ProgressBar;
-import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.recyclerview.widget.SimpleItemAnimator;
 
 import com.perry.audiorecorder.ARApplication;
 import com.perry.audiorecorder.ColorMap;
@@ -51,8 +49,6 @@ import com.perry.audiorecorder.app.welcome.WelcomeActivity;
 import com.perry.audiorecorder.app.widget.RecordAudioButton;
 import com.perry.audiorecorder.app.widget.RecordVoicePopWindow;
 import com.perry.audiorecorder.app.widget.SimpleWaveformView;
-import com.perry.audiorecorder.app.widget.TouchLayout;
-import com.perry.audiorecorder.app.widget.WaveformViewNew;
 import com.perry.audiorecorder.audio.AudioDecoder;
 import com.perry.audiorecorder.data.FileRepository;
 import com.perry.audiorecorder.data.database.Record;
@@ -61,7 +57,6 @@ import com.perry.audiorecorder.exception.ErrorParser;
 import com.perry.audiorecorder.util.AndroidUtils;
 import com.perry.audiorecorder.util.AnimationUtil;
 import com.perry.audiorecorder.util.FileUtil;
-import com.perry.audiorecorder.util.TimeUtils;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -80,14 +75,7 @@ public class TalkActivity extends Activity implements TalkContract.View, View.On
     public static final int REQ_CODE_IMPORT_AUDIO = 11;
 
     LinearLayout mRoot;
-    private WaveformViewNew waveformView;
-    private TextView txtProgress;
-    private TextView txtDuration;
-    private TextView txtName;
-    private ImageButton btnPlay;
-    private ImageButton btnStop;
     private ImageButton btnShare;
-    private SeekBar playProgress;
 
     private TalkContract.UserActionsListener presenter;
     private ColorMap colorMap;
@@ -102,11 +90,7 @@ public class TalkActivity extends Activity implements TalkContract.View, View.On
     private TalkAdapter talkAdapter; //适配器
     RecyclerView recyclerView;//消息列表
 
-    private ProgressBar panelProgress;
 
-    private ImageButton btnCheckBookmark;
-
-    private TouchLayout touchLayout;
     private TextView txtEmpty;
     private TextView txtSelectedCount;
     final private List<String> downloadRecords = new ArrayList<>();
@@ -172,16 +156,8 @@ public class TalkActivity extends Activity implements TalkContract.View, View.On
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_talk);
         mRoot = findViewById(R.id.root);
-        waveformView = findViewById(R.id.record);
-        txtProgress = findViewById(R.id.txt_progress);
-        txtDuration = findViewById(R.id.txt_duration);
-        txtName = findViewById(R.id.txt_name);
-        btnPlay = findViewById(R.id.btn_play);
-        btnStop = findViewById(R.id.btn_stop);
         ImageButton btnSettings = findViewById(R.id.btn_settings);
         btnShare = findViewById(R.id.btn_share);
-        playProgress = findViewById(R.id.play_progress);
-
 
         btnCloseMulti = findViewById(R.id.btn_close_multi_select);
         btnCloseMulti.setOnClickListener(this);
@@ -200,42 +176,16 @@ public class TalkActivity extends Activity implements TalkContract.View, View.On
         multiSelectPanel.setBackgroundResource(colorMap.getPrimaryDarkColorRes());
         txtSelectedCount = findViewById(R.id.txt_selected_multi);
         txtEmpty = findViewById(R.id.txtEmpty);
-        touchLayout = findViewById(R.id.touch_layout);
-        touchLayout.setBackgroundResource(colorMap.getPlaybackPanelBackground());
-        touchLayout.setOnThresholdListener(new TouchLayout.ThresholdListener() {
-            @Override
-            public void onTopThreshold() {
-                hidePanel();
-                presenter.stopPlayback();
-            }
-
-            @Override
-            public void onBottomThreshold() {
-                hidePanel();
-                presenter.stopPlayback();
-            }
-
-            @Override
-            public void onTouchDown() {
-            }
-
-            @Override
-            public void onTouchUp() {
-            }
-        });
-        btnCheckBookmark = findViewById(R.id.btn_check_bookmark);
-        btnCheckBookmark.setOnClickListener(this);
-        panelProgress = findViewById(R.id.wave_progress);
         mBtnVoice = findViewById(R.id.btnVoice);
         recyclerView = findViewById(R.id.recycler_view);
         recyclerView.setLayoutManager(new LinearLayoutManager(TalkActivity.this));
         presenter = ARApplication.getInjector().provideTalkPresenter();
-        talkAdapter = new TalkAdapter(ARApplication.getInjector().provideSettingsMapper(),TalkActivity.this,colorMap,presenter);
+        talkAdapter = new TalkAdapter(ARApplication.getInjector().provideSettingsMapper(), TalkActivity.this, colorMap, presenter);
         talkAdapter.setItemClickListener((view, id, path, position) -> presenter.setActiveRecord(id, new RecordsContract.Callback() {
             @Override
             public void onSuccess() {
-                presenter.stopPlayback();
-                if (startPlayback()) {
+                presenter.stopPlayback(position);
+                if (startPlayback(position)) {
                     talkAdapter.setActiveItem(position);
                 }
             }
@@ -299,6 +249,8 @@ public class TalkActivity extends Activity implements TalkContract.View, View.On
             }
         });
         recyclerView.setAdapter(talkAdapter);
+//        下面这行代码很重要就是说话的时候seek进度条不闪动了
+        ((SimpleItemAnimator) recyclerView.getItemAnimator()).setSupportsChangeAnimations(false);
 
 
         mBtnVoice.setOnVoiceButtonCallBack(new RecordAudioButton.OnVoiceButtonCallBack() {
@@ -336,66 +288,12 @@ public class TalkActivity extends Activity implements TalkContract.View, View.On
                 showRecordingTipView();
             }
         });
-        txtProgress.setText(TimeUtils.formatTimeIntervalHourMinSec2(0));
-        btnPlay.setOnClickListener(this);
-        btnStop.setOnClickListener(this);
         btnSettings.setOnClickListener(this);
         btnShare.setOnClickListener(this);
-        txtName.setOnClickListener(this);
         space = getResources().getDimension(R.dimen.spacing_xnormal);
-
-        playProgress.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-            @Override
-            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                if (fromUser) {
-                    int val = (int) AndroidUtils.dpToPx(progress * waveformView.getWaveformLength() / 1000);
-                    waveformView.seekPx(val);
-                    //TODO: Find a better way to convert px to mills here
-                    presenter.seekPlayback(waveformView.pxToMill(val));
-                }
-            }
-
-            @Override
-            public void onStartTrackingTouch(SeekBar seekBar) {
-                presenter.disablePlaybackProgressListener();
-            }
-
-            @Override
-            public void onStopTrackingTouch(SeekBar seekBar) {
-                presenter.enablePlaybackProgressListener();
-            }
-        });
 
         fileRepository = ARApplication.getInjector().provideFileRepository();
 
-        waveformView.setOnSeekListener(new WaveformViewNew.OnSeekListener() {
-            @Override
-            public void onStartSeek() {
-                presenter.disablePlaybackProgressListener();
-            }
-
-            @Override
-            public void onSeek(int px, long mills) {
-                presenter.enablePlaybackProgressListener();
-                //TODO: Find a better way to convert px to mills here
-                presenter.seekPlayback(waveformView.pxToMill(px));
-
-                int length = waveformView.getWaveformLength();
-                if (length > 0) {
-                    playProgress.setProgress(1000 * (int) AndroidUtils.pxToDp(px) / length);
-                }
-                txtProgress.setText(TimeUtils.formatTimeIntervalHourMinSec2(mills));
-            }
-
-            @Override
-            public void onSeeking(int px, long mills) {
-                int length = waveformView.getWaveformLength();
-                if (length > 0) {
-                    playProgress.setProgress(1000 * (int) AndroidUtils.pxToDp(px) / length);
-                }
-                txtProgress.setText(TimeUtils.formatTimeIntervalHourMinSec2(mills));
-            }
-        });
         onThemeColorChangeListener = colorKey -> {
             setTheme(colorMap.getAppThemeResource());
             recreate();
@@ -476,7 +374,7 @@ public class TalkActivity extends Activity implements TalkContract.View, View.On
     }
 
     private void stopPlayback() {
-        presenter.stopPlayback();
+        presenter.stopPlayback(0);
         hidePanel();
     }
 
@@ -490,18 +388,18 @@ public class TalkActivity extends Activity implements TalkContract.View, View.On
 //		mAdapter.stopPlayAnim();
     }
 
-    private boolean startPlayback() {
+    private boolean startPlayback(int position) {
         String path = presenter.getActiveRecordPath();
         if (FileUtil.isFileInExternalStorage(getApplicationContext(), path)) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                 AndroidUtils.showRecordFileNotAvailable(this, path);
                 return false;
             } else if (checkStoragePermissionPlayback()) {
-                presenter.startPlayback();
+                presenter.startPlayback(position);
                 return true;
             }
         } else {
-            presenter.startPlayback();
+            presenter.startPlayback(position);
             return true;
         }
         return false;
@@ -515,9 +413,6 @@ public class TalkActivity extends Activity implements TalkContract.View, View.On
         } else {
             talkAdapter.setData(records, order);
             txtEmpty.setVisibility(View.GONE);
-            if (touchLayout.getVisibility() == View.VISIBLE) {
-                talkAdapter.showFooter();
-            }
         }
     }
 
@@ -526,38 +421,11 @@ public class TalkActivity extends Activity implements TalkContract.View, View.On
     }
 
     public void hidePanel() {
-        if (touchLayout.getVisibility() == View.VISIBLE) {
-            talkAdapter.hideFooter();
-            showToolbar();
-            final ViewPropertyAnimator animator = touchLayout.animate();
-            animator.translationY(touchLayout.getHeight())
-                    .setDuration(200)
-                    .setListener(new Animator.AnimatorListener() {
-                        @Override
-                        public void onAnimationStart(Animator animation) {
-                        }
-
-                        @Override
-                        public void onAnimationEnd(Animator animation) {
-                            touchLayout.setVisibility(View.GONE);
-                            animator.setListener(null);
-                        }
-
-                        @Override
-                        public void onAnimationCancel(Animator animation) {
-                        }
-
-                        @Override
-                        public void onAnimationRepeat(Animator animation) {
-                        }
-                    })
-                    .start();
-        }
     }
 
     @Override
     public void showPanelProgress() {
-        panelProgress.setVisibility(View.VISIBLE);
+//        panelProgress.setVisibility(View.VISIBLE);
     }
 
     @Override
@@ -610,42 +478,6 @@ public class TalkActivity extends Activity implements TalkContract.View, View.On
 
     @Override
     public void showPlayerPanel() {
-        if (touchLayout.getVisibility() != View.VISIBLE) {
-            touchLayout.setVisibility(View.VISIBLE);
-            if (touchLayout.getHeight() == 0) {
-                touchLayout.setTranslationY(AndroidUtils.dpToPx(800));
-            } else {
-                touchLayout.setTranslationY(touchLayout.getHeight());
-            }
-            talkAdapter.showFooter();
-            final ViewPropertyAnimator animator = touchLayout.animate();
-            animator.translationY(0)
-                    .setDuration(200)
-                    .setListener(new Animator.AnimatorListener() {
-                        @Override
-                        public void onAnimationStart(Animator animation) {
-                        }
-
-                        @Override
-                        public void onAnimationEnd(Animator animation) {
-                            int o = recyclerView.computeVerticalScrollOffset();
-                            int r = recyclerView.computeVerticalScrollRange();
-                            int e = recyclerView.computeVerticalScrollExtent();
-                            float k = (float) o / (float) (r - e);
-                            recyclerView.smoothScrollBy(0, (int) (touchLayout.getHeight() * k));
-                            animator.setListener(null);
-                        }
-
-                        @Override
-                        public void onAnimationCancel(Animator animation) {
-                        }
-
-                        @Override
-                        public void onAnimationRepeat(Animator animation) {
-                        }
-                    })
-                    .start();
-        }
     }
 
     private void downloadSelectedRecords() {
@@ -689,28 +521,28 @@ public class TalkActivity extends Activity implements TalkContract.View, View.On
 
     @Override
     public void hidePanelProgress() {
-        panelProgress.setVisibility(View.GONE);
+//        panelProgress.setVisibility(View.GONE);
     }
 
     @Override
     public void addedToBookmarks(int id, boolean isActive) {
         if (isActive) {
-            btnCheckBookmark.setImageResource(R.drawable.ic_bookmark);
+//            btnCheckBookmark.setImageResource(R.drawable.ic_bookmark);
         }
         talkAdapter.markAddedToBookmarks(id);
     }
 
     @Override
     public void removedFromBookmarks(int id, boolean isActive) {
-        if (isActive) {
-            btnCheckBookmark.setImageResource(R.drawable.ic_bookmark_bordered);
-        }
+//        if (isActive) {
+//            btnCheckBookmark.setImageResource(R.drawable.ic_bookmark_bordered);
+//        }
         talkAdapter.markRemovedFromBookmarks(id);
     }
 
     @Override
     public void showRecordName(String name) {
-        txtName.setText(name);
+//        txtName.setText(name);
     }
 
     @Override
@@ -778,50 +610,12 @@ public class TalkActivity extends Activity implements TalkContract.View, View.On
     @Override
     public void onClick(View view) {
         int id = view.getId();
-        if (id == R.id.btn_play) {
-            String path = presenter.getActiveRecordPath();
-            //This method Starts or Pause playback.
-            if (FileUtil.isFileInExternalStorage(getApplicationContext(), path)) {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                    AndroidUtils.showRecordFileNotAvailable(this, path);
-                } else if (checkStoragePermissionPlayback()) {
-                    presenter.startPlayback();
-                }
-            } else {
-                presenter.startPlayback();
-            }
-        } else if (id == R.id.btn_record) {
-            if (checkRecordPermission2()) {
-                if (checkStoragePermission2()) {
-                    //Start or stop recording
-                    startRecordingService();
-                    presenter.pauseUnpauseRecording(getApplicationContext());
-                }
-            }
-        } else if (id == R.id.btn_record_stop) {
-            presenter.stopRecording(false);
-        } else if (id == R.id.btn_record_delete) {
-            presenter.cancelRecording();
-        } else if (id == R.id.btn_stop) {
-            presenter.stopPlayback();
-        } else if (id == R.id.btn_records_list) {
+         if (id == R.id.btn_records_list) {
             startActivity(RecordsActivity.getStartIntent(getApplicationContext()));
         } else if (id == R.id.btn_settings) {
             startActivity(SettingsActivity.getStartIntent(getApplicationContext()));
         } else if (id == R.id.btn_share) {
             showMenu(view);
-        } else if (id == R.id.btn_import) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                startFileSelector();
-            } else {
-                if (checkStoragePermissionImport()) {
-                    startFileSelector();
-                }
-            }
-        } else if (id == R.id.txt_name) {
-            presenter.onRenameRecordClick();
-        } else if (id == R.id.btn_check_bookmark) {
-            presenter.checkBookmarkActiveRecord();
         } else if (id == R.id.btn_bookmarks) {
             presenter.applyBookmarksFilter();
         } else if (id == R.id.btn_close_multi_select) {
@@ -925,66 +719,26 @@ public class TalkActivity extends Activity implements TalkContract.View, View.On
 
     @Override
     public void showRecordingStart() {
-        txtName.setClickable(false);
-        txtName.setFocusable(false);
-        txtName.setCompoundDrawables(null, null, null, null);
-        txtName.setVisibility(View.VISIBLE);
-        txtName.setText(R.string.recording_progress);
-        txtDuration.setVisibility(View.INVISIBLE);
-        btnPlay.setEnabled(false);
         btnShare.setEnabled(false);
-        btnPlay.setVisibility(View.GONE);
         btnShare.setVisibility(View.GONE);
-        playProgress.setProgress(0);
-        playProgress.setEnabled(false);
-        txtDuration.setText(R.string.zero_time);
-        waveformView.setVisibility(View.GONE);
     }
 
     @Override
     public void showRecordingStop() {
-        txtName.setClickable(true);
-        txtName.setFocusable(true);
-        txtDuration.setVisibility(View.VISIBLE);
-        txtName.setCompoundDrawablesWithIntrinsicBounds(null, null, getDrawable(R.drawable.ic_pencil_small), null);
-        btnPlay.setEnabled(true);
         btnShare.setEnabled(true);
-        btnPlay.setVisibility(View.VISIBLE);
         btnShare.setVisibility(View.VISIBLE);
-        playProgress.setEnabled(true);
-        waveformView.setVisibility(View.VISIBLE);
-        txtProgress.setText(TimeUtils.formatTimeIntervalHourMinSec2(0));
     }
 
     @Override
     public void showRecordingPause() {
-        txtName.setClickable(false);
-        txtName.setFocusable(false);
-        txtName.setCompoundDrawables(null, null, null, null);
-        txtName.setText(R.string.recording_paused);
-        txtName.setVisibility(View.VISIBLE);
-        btnPlay.setEnabled(false);
         btnShare.setEnabled(false);
-        btnPlay.setVisibility(View.GONE);
         btnShare.setVisibility(View.GONE);
-        playProgress.setEnabled(false);
     }
 
     @Override
     public void showRecordingResume() {
-        txtName.setClickable(false);
-        txtName.setFocusable(false);
-        txtName.setCompoundDrawables(null, null, null, null);
-        txtName.setVisibility(View.VISIBLE);
-        txtName.setText(R.string.recording_progress);
-        txtDuration.setVisibility(View.INVISIBLE);
-        btnPlay.setEnabled(false);
         btnShare.setEnabled(false);
-        btnPlay.setVisibility(View.GONE);
         btnShare.setVisibility(View.GONE);
-        playProgress.setProgress(0);
-        playProgress.setEnabled(false);
-        txtDuration.setText(R.string.zero_time);
     }
 
     @Override
@@ -995,7 +749,7 @@ public class TalkActivity extends Activity implements TalkContract.View, View.On
     @Override
     public void onRecordingProgress(long mills, int amp) {
         runOnUiThread(() -> {
-            txtProgress.setText(TimeUtils.formatTimeIntervalHourMinSec2(mills));
+//            txtProgress.setText(TimeUtils.formatTimeIntervalHourMinSec2(mills));
             Log.d(TAG, "amp:" + amp);
             updateCurrentVolume(amp);
         });
@@ -1027,105 +781,39 @@ public class TalkActivity extends Activity implements TalkContract.View, View.On
     }
 
     @Override
-    public void showPlayStart(boolean animate) {
-        if (animate) {
-            AnimationUtil.viewAnimationX(btnPlay, -space, new Animator.AnimatorListener() {
-                @Override
-                public void onAnimationStart(Animator animation) {
-                }
-
-                @Override
-                public void onAnimationEnd(Animator animation) {
-                    btnStop.setVisibility(View.VISIBLE);
-                    btnPlay.setImageResource(R.drawable.ic_pause);
-                }
-
-                @Override
-                public void onAnimationCancel(Animator animation) {
-                }
-
-                @Override
-                public void onAnimationRepeat(Animator animation) {
-                }
-            });
-        } else {
-            btnPlay.setTranslationX(-space);
-            btnStop.setVisibility(View.VISIBLE);
-            btnPlay.setImageResource(R.drawable.ic_pause);
-        }
+    public void showPlayStart(boolean animate,int index) {
+        talkAdapter.showPlayStart(animate,index);
     }
 
     @Override
-    public void showPlayPause() {
-        btnStop.setVisibility(View.VISIBLE);
-        btnPlay.setTranslationX(-space);
-        btnPlay.setImageResource(R.drawable.ic_play);
+    public void showPlayPause(int index) {
+        talkAdapter.showPlayPause(index);
     }
 
     @Override
-    public void showPlayStop() {
-        btnPlay.setImageResource(R.drawable.ic_play);
-        waveformView.moveToStart();
-        playProgress.setProgress(0);
-        talkAdapter.setProgress(0);
-        txtProgress.setText(TimeUtils.formatTimeIntervalHourMinSec2(0));
-        AnimationUtil.viewAnimationX(btnPlay, 0f, new Animator.AnimatorListener() {
-            @Override
-            public void onAnimationStart(Animator animation) {
-            }
-
-            @Override
-            public void onAnimationEnd(Animator animation) {
-                btnStop.setVisibility(View.GONE);
-            }
-
-            @Override
-            public void onAnimationCancel(Animator animation) {
-            }
-
-            @Override
-            public void onAnimationRepeat(Animator animation) {
-            }
-        });
+    public void showPlayStop(int index) {
+        talkAdapter.showPlayStop(index);
+//        txtProgress.setText(TimeUtils.formatTimeIntervalHourMinSec2(0));
     }
 
     @Override
     public void showWaveForm(int[] waveForm, long duration, long playbackMills) {
-        if (waveForm.length > 0) {
-            btnPlay.setVisibility(View.VISIBLE);
-            txtDuration.setVisibility(View.VISIBLE);
-            waveformView.setVisibility(View.VISIBLE);
-        } else {
-            btnPlay.setVisibility(View.INVISIBLE);
-            txtDuration.setVisibility(View.INVISIBLE);
-            waveformView.setVisibility(View.INVISIBLE);
-        }
-        waveformView.setWaveform(waveForm, duration / 1000, playbackMills);
     }
 
     @Override
     public void waveFormToStart() {
-        waveformView.seekPx(0);
     }
 
     @Override
     public void showDuration(final String duration) {
-        txtDuration.setText(duration);
     }
 
     @Override
     public void showRecordingProgress(String progress) {
-        txtProgress.setText(progress);
     }
 
     @Override
     public void showName(String name) {
-        if (name == null || name.isEmpty()) {
-            txtName.setVisibility(View.INVISIBLE);
-        } else {
-            txtName.setVisibility(View.VISIBLE);
-        }
-        txtName.setText(name);
     }
 
     @Override
@@ -1193,10 +881,7 @@ public class TalkActivity extends Activity implements TalkContract.View, View.On
 
     @Override
     public void onPlayProgress(final long mills, int percent) {
-        playProgress.setProgress(percent);
         talkAdapter.setProgress(percent);
-        waveformView.setPlayback(mills);
-        txtProgress.setText(TimeUtils.formatTimeIntervalHourMinSec2(mills));
     }
 
     @Override
@@ -1330,7 +1015,7 @@ public class TalkActivity extends Activity implements TalkContract.View, View.On
         } else if (requestCode == REQ_CODE_READ_EXTERNAL_STORAGE_DOWNLOAD && grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED && grantResults[1] == PackageManager.PERMISSION_GRANTED) {
             presenter.onSaveAsClick();
         } else if (requestCode == REQ_CODE_READ_EXTERNAL_STORAGE_PLAYBACK && grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED && grantResults[1] == PackageManager.PERMISSION_GRANTED) {
-            presenter.startPlayback();
+//            presenter.startPlayback();
         } else if (requestCode == REQ_CODE_WRITE_EXTERNAL_STORAGE && grantResults.length > 0 && (grantResults[0] == PackageManager.PERMISSION_DENIED || grantResults[1] == PackageManager.PERMISSION_DENIED)) {
             presenter.setStoragePrivate(getApplicationContext());
             startRecordingService();

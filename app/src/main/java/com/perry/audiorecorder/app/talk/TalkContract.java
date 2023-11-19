@@ -125,11 +125,11 @@ public interface TalkContract {
 
         void startPlaybackService(String name);
 
-        void showPlayStart(boolean animate);
+        void showPlayStart(boolean animate,int index);
 
-        void showPlayPause();
+        void showPlayPause(int index);
 
-        void showPlayStop();
+        void showPlayStop(int index);
 
         void onPlayProgress(long mills, int percent);
 
@@ -199,11 +199,11 @@ public interface TalkContract {
 
         void cancelRecording();
 
-        void startPlayback();
+        void startPlayback(int position);
 
         void seekPlayback(long mills);
 
-        void stopPlayback();
+        void stopPlayback(int position);
 
         void renameRecord(long id, String name, String extension);
 

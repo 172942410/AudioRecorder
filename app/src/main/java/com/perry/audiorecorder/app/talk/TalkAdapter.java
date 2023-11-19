@@ -34,9 +34,7 @@ import com.perry.audiorecorder.R;
 import com.perry.audiorecorder.app.settings.SettingsMapper;
 import com.perry.audiorecorder.app.widget.CircleImageView;
 import com.perry.audiorecorder.app.widget.SimpleWaveformView;
-import com.perry.audiorecorder.app.widget.WaveformViewNew;
 import com.perry.audiorecorder.util.AndroidUtils;
-import com.perry.audiorecorder.util.FileUtil;
 import com.perry.audiorecorder.util.TimeUtils;
 
 import java.util.ArrayList;
@@ -65,12 +63,14 @@ public class TalkAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     ColorMap colorMap;
     TalkContract.UserActionsListener presenter;
     Activity activity;
-    TalkAdapter(SettingsMapper mapper, Activity activity,ColorMap colorMap,TalkContract.UserActionsListener presenter) {
+
+    TalkAdapter(SettingsMapper mapper, Activity activity, ColorMap colorMap, TalkContract.UserActionsListener presenter) {
         this(mapper);
         this.colorMap = colorMap;
         this.presenter = presenter;
         this.activity = activity;
     }
+
     TalkAdapter(SettingsMapper mapper) {
         this.data = new ArrayList<>();
         this.selected = new ArrayList<>();
@@ -108,7 +108,7 @@ public class TalkAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             return new UniversalViewHolder(textView);
         } else {
             View v = LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.item_talk_send_voice, viewGroup, false);
-            return new ItemViewHolder(v, (position,itemViewHolder) -> {
+            return new ItemViewHolder(v, (position, itemViewHolder) -> {
                 if (isMultiSelectMode) {
                     if (!selected.contains(position) && data.get(position).getDuration() != 0) {
                         selected.add(position);
@@ -131,8 +131,18 @@ public class TalkAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                     notifyItemChanged(position);
                 } else {
                     if (itemClickListener != null && data.size() > position) {
+                        if( posTemp != -1 && position != posTemp) {
+                            itemViewHolderPrev = itemViewHolderCur;//这样可能不行
+                        }
                         itemViewHolderCur = itemViewHolder;
+                        if(position == posTemp){
+                            Log.d(TAG,"上一个item view和这个一样的");
+                        }else{
+                            Log.d(TAG,"上一个item view和现在点击的是不同的俩个");
+                        }
+                        posPrev = posTemp;
                         itemClickListener.onItemClick(v, data.get(position).getId(), data.get(position).getPath(), position);
+                        posTemp = position;
                     }
                 }
             }, position -> {
@@ -169,16 +179,13 @@ public class TalkAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             holder.name.setText(item.getName());
             holder.description.setText(item.getDurationStr());
             holder.created.setText(item.getAddedTimeStr());
+            Drawable drawable;
             if (item.isBookmarked()) {
-                Drawable drawable = ContextCompat.getDrawable(viewHolder.itemView.getContext(), R.drawable.ic_bookmark_small);
-                holder.btnBookmark.setCompoundDrawablesWithIntrinsicBounds(drawable,null,null,null);
-
-//                holder.btnBookmark.setCompoundDrawablesWithIntrinsicBounds(R.drawable.ic_bookmark_small,0,0,0);
+                drawable = ContextCompat.getDrawable(viewHolder.itemView.getContext(), R.drawable.ic_bookmark_small);
             } else {
-                Drawable drawable = ContextCompat.getDrawable(viewHolder.itemView.getContext(), R.drawable.ic_bookmark_bordered_small);
-                holder.btnBookmark.setCompoundDrawablesWithIntrinsicBounds(drawable,null,null,null);
-//                holder.btnBookmark.setCompoundDrawablesWithIntrinsicBounds(R.drawable.ic_bookmark_bordered_small,0,0,0);
+                drawable = ContextCompat.getDrawable(viewHolder.itemView.getContext(), R.drawable.ic_bookmark_bordered_small);
             }
+            holder.btnBookmark.setCompoundDrawablesWithIntrinsicBounds(drawable, null, null, null);
             if (viewHolder.getLayoutPosition() == activeItem) {
                 holder.view.setBackgroundResource(R.color.selected_item_color);
             } else {
@@ -269,9 +276,9 @@ public class TalkAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     }
 
     void setActiveItem(int activeItem) {
-        int prev = this.activeItem;
+        int prevItem = this.activeItem;
         this.activeItem = activeItem;
-        notifyItemChanged(prev);
+        notifyItemChanged(prevItem);
         notifyItemChanged(activeItem);
     }
 
@@ -607,17 +614,53 @@ public class TalkAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
     public void setProgress(int percent) {
         if(itemViewHolderCur != null){
-            Log.d(TAG,"setProgress:"+percent);
-            itemViewHolderCur.playProgress.setProgress(percent);
-            notifyItemChanged(posCur);
-        }
-//        if(playProgressCur != null) {
 //            Log.d(TAG,"setProgress:"+percent);
+            itemViewHolderCur.playProgress.setProgress(percent);
+            notifyItemChanged(activeItem);
+        }
+//        if (playProgressCur != null) {
+////            Log.d(TAG,"setProgress:"+percent);
 //            playProgressCur.setProgress(percent);
 //            notifyItemChanged(posCur);
 //        }
     }
 
+    public void showPlayStart(boolean animate,int index) {
+        if(itemViewHolderCur != null) {
+            Log.d(TAG,"index:"+index+",activeItem:"+activeItem+",posPrev:"+posPrev);
+            if(index == posPrev){
+                itemViewHolderCur.btnPlay.setImageResource(R.drawable.ic_pause);
+            }else{
+                if(itemViewHolderPrev != null) {
+                    itemViewHolderPrev.btnPlay.setImageResource(R.drawable.ic_play);
+                    itemViewHolderPrev.playProgress.setProgress(0);
+                }
+                itemViewHolderCur.btnPlay.setImageResource(R.drawable.ic_pause);
+                itemViewHolderCur.playProgress.setProgress(0);
+            }
+        }
+    }
+    public void showPlayPause(int index) {
+        if(itemViewHolderCur != null) {
+            if(index == activeItem) {
+                itemViewHolderCur.btnPlay.setImageResource(R.drawable.ic_play);
+            }else{
+                itemViewHolderCur.btnPlay.setImageResource(R.drawable.ic_stop);
+                itemViewHolderCur.playProgress.setProgress(0);
+            }
+        }
+    }
+    public void showPlayStop(int index) {
+        if(itemViewHolderCur != null) {
+            if(index == activeItem) {
+                itemViewHolderCur.btnPlay.setImageResource(R.drawable.ic_play);
+                itemViewHolderCur.playProgress.setProgress(0);
+            }else{
+
+            }
+        }
+        setActiveItem(-1);
+    }
 
     public interface ItemClickListener {
         void onItemClick(View view, long id, String path, int position);
@@ -644,9 +687,13 @@ public class TalkAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     interface OnItemOptionListener {
         void onItemOptionSelected(int menuId, ItemType item);
     }
+
+    int posPrev = -1;
+    int posTemp = -1;
+    ItemViewHolder itemViewHolderPrev;
     ItemViewHolder itemViewHolderCur;
     SeekBar playProgressCur;
-    int posCur;
+
     class ItemViewHolder extends RecyclerView.ViewHolder {
         TextView name;
         TextView description;
@@ -661,6 +708,7 @@ public class TalkAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
         ImageButton btnPlay;
         SeekBar playProgress;
+
         ItemViewHolder(
                 View itemView,
                 OnItemClickListener onItemClickListener,
@@ -671,9 +719,8 @@ public class TalkAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             view.setOnClickListener(v -> {
                 playProgressCur = playProgress;
                 int pos = getAbsoluteAdapterPosition();
-                posCur = pos;
                 if (pos != RecyclerView.NO_POSITION && onItemClickListener != null) {
-                    onItemClickListener.onItemClick(pos,this);
+                    onItemClickListener.onItemClick(pos, this);
                 }
             });
             view.setOnLongClickListener(v -> {
@@ -693,7 +740,7 @@ public class TalkAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             waveformViewItem = itemView.findViewById(R.id.item_waveform);
             playProgress = itemView.findViewById(R.id.item_play_progress);
             touchLayout = itemView.findViewById(R.id.touch_layout);
-            if(colorMap != null) {
+            if (colorMap != null) {
                 touchLayout.setBackgroundResource(colorMap.getPlaybackPanelBackground());
             }
             btnPlay = itemView.findViewById(R.id.btn_play);
@@ -701,11 +748,9 @@ public class TalkAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                 @Override
                 public void onClick(View view) {
                     int pos = getAbsoluteAdapterPosition();
-                    posCur = pos;
                     if (pos != RecyclerView.NO_POSITION && onItemClickListener != null) {
-                        onItemClickListener.onItemClick(pos,ItemViewHolder.this);
+                        onItemClickListener.onItemClick(pos, ItemViewHolder.this);
                     }
-
 //                    String path = presenter.getActiveRecordPath();
 //                    //This method Starts or Pause playback.
 //                    if (FileUtil.isFileInExternalStorage(activity, path)) {
@@ -717,7 +762,6 @@ public class TalkAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 //                    } else {
 //                        presenter.startPlayback();
 //                    }
-
                     playProgressCur = playProgress;
                 }
             });
@@ -730,18 +774,18 @@ public class TalkAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 //                        waveformView.seekPx(val);
 //                        //TODO: Find a better way to convert px to mills here
 //                        presenter.seekPlayback(waveformView.pxToMill(val));
-//                        presenter.seekPlayback(progress);
+                        presenter.seekPlayback(progress);
                     }
                 }
 
                 @Override
                 public void onStartTrackingTouch(SeekBar seekBar) {
-//                    presenter.disablePlaybackProgressListener();
+                    presenter.disablePlaybackProgressListener();
                 }
 
                 @Override
                 public void onStopTrackingTouch(SeekBar seekBar) {
-//                    presenter.enablePlaybackProgressListener();
+                    presenter.enablePlaybackProgressListener();
                 }
             });
 
@@ -751,8 +795,8 @@ public class TalkAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
     private boolean checkStoragePermissionPlayback() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            if (checkSelfPermission(activity,Manifest.permission.WRITE_EXTERNAL_STORAGE) != PermissionChecker.PERMISSION_GRANTED && checkSelfPermission(activity,Manifest.permission.READ_EXTERNAL_STORAGE) != PermissionChecker.PERMISSION_GRANTED) {
-                requestPermissions(activity,new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE}, TalkActivity.REQ_CODE_READ_EXTERNAL_STORAGE_PLAYBACK);
+            if (checkSelfPermission(activity, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PermissionChecker.PERMISSION_GRANTED && checkSelfPermission(activity, Manifest.permission.READ_EXTERNAL_STORAGE) != PermissionChecker.PERMISSION_GRANTED) {
+                requestPermissions(activity, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE}, TalkActivity.REQ_CODE_READ_EXTERNAL_STORAGE_PLAYBACK);
                 return false;
             }
         }
@@ -769,7 +813,7 @@ public class TalkAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     }
 
     private interface OnItemClickListener {
-        void onItemClick(int position,ItemViewHolder itemViewHolder);
+        void onItemClick(int position, ItemViewHolder itemViewHolder);
     }
 
     private interface OnItemLongClickListener {

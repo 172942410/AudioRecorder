@@ -76,6 +76,7 @@ public class TalkPresenter implements TalkContract.UserActionsListener {
 
     private boolean showBookmarks = false;
 
+    int position;//item当前选择的那个播放
     /**
      * Flag true defines that presenter called to show import progress when view was not bind.
      * And after view bind we need to show import progress.
@@ -226,7 +227,7 @@ public class TalkPresenter implements TalkContract.UserActionsListener {
                 public void onStartPlay() {
                     if (record != null && view != null) {
                         view.startPlaybackService(record.getName());
-                        view.showPlayStart(true);
+                        view.showPlayStart(true,position);
                     }
                 }
 
@@ -244,7 +245,7 @@ public class TalkPresenter implements TalkContract.UserActionsListener {
                 public void onStopPlay() {
                     if (view != null) {
                         audioPlayer.seek(0);
-                        view.showPlayStop();
+                        view.showPlayStop(position);
                         view.showDuration(TimeUtils.formatTimeIntervalHourMinSec2(songDuration / 1000));
                     }
                 }
@@ -252,7 +253,7 @@ public class TalkPresenter implements TalkContract.UserActionsListener {
                 @Override
                 public void onPausePlay() {
                     if (view != null) {
-                        view.showPlayPause();
+                        view.showPlayPause(position);
                     }
                 }
 
@@ -273,12 +274,12 @@ public class TalkPresenter implements TalkContract.UserActionsListener {
         this.audioPlayer.addPlayerCallback(playerCallback);
 
         if (audioPlayer.isPlaying()) {
-            view.showPlayStart(false);
+            view.showPlayStart(false,position);
         } else if (audioPlayer.isPaused()) {
-            view.showPlayPause();
+            view.showPlayPause(position);
         } else {
             audioPlayer.seek(0);
-            view.showPlayStop();
+            view.showPlayStop(position);
         }
 
         if (appRecorder.isPaused()) {
@@ -400,7 +401,8 @@ public class TalkPresenter implements TalkContract.UserActionsListener {
     }
 
     @Override
-    public void startPlayback() {
+    public void startPlayback(int position) {
+        this.position = position;
         if (record != null) {
             if (audioPlayer.isPlaying()) {
                 audioPlayer.pause();
@@ -419,8 +421,10 @@ public class TalkPresenter implements TalkContract.UserActionsListener {
     }
 
     @Override
-    public void stopPlayback() {
-        audioPlayer.stop();
+    public void stopPlayback(int position) {
+        if(this.position != position){
+            audioPlayer.stop();
+        }
     }
 
     @Override
