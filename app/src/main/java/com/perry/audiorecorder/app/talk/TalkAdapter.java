@@ -16,6 +16,7 @@ import android.view.LayoutInflater;
 import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.PopupMenu;
@@ -131,14 +132,14 @@ public class TalkAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                     notifyItemChanged(position);
                 } else {
                     if (itemClickListener != null && data.size() > position) {
-                        if( posTemp != -1 && position != posTemp) {
+                        if (posTemp != -1 && position != posTemp) {
                             itemViewHolderPrev = itemViewHolderCur;//这样可能不行
                         }
                         itemViewHolderCur = itemViewHolder;
-                        if(position == posTemp){
-                            Log.d(TAG,"上一个item view和这个一样的");
-                        }else{
-                            Log.d(TAG,"上一个item view和现在点击的是不同的俩个");
+                        if (position == posTemp) {
+                            Log.d(TAG, "上一个item view和这个一样的");
+                        } else {
+                            Log.d(TAG, "上一个item view和现在点击的是不同的俩个");
                         }
                         posPrev = posTemp;
                         itemClickListener.onItemClick(v, data.get(position).getId(), data.get(position).getPath(), position);
@@ -176,8 +177,13 @@ public class TalkAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             final ItemViewHolder holder = (ItemViewHolder) viewHolder;
             final int p = holder.getAbsoluteAdapterPosition();
             final ItemType item = data.get(p);
+            Log.d(TAG, "item:" + item);
             holder.name.setText(item.getName());
-            holder.description.setText(item.getDurationStr());
+//            duration=4639875 4秒
+            holder.setDurationInt((int) (item.getDuration() / 1000000));
+            Log.d(TAG, "获取到的 durationInt：" + holder.durationInt);
+            String durationStr = holder.durationInt + "\"";
+            holder.duration.setText(durationStr);
             holder.created.setText(item.getAddedTimeStr());
             Drawable drawable;
             if (item.isBookmarked()) {
@@ -612,10 +618,14 @@ public class TalkAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         this.presenter = presenter;
     }
 
-    public void setProgress(int percent) {
-        if(itemViewHolderCur != null){
-//            Log.d(TAG,"setProgress:"+percent);
+    public void setProgress(long mills, int percent) {
+        Log.d(TAG, "setProgress mills:" + mills + ",percent:" + percent);
+        if (itemViewHolderCur != null) {
+            Log.d(TAG, "setProgress:" + percent);
             itemViewHolderCur.playProgress.setProgress(percent);
+            String curTime = mills / 1000 + "";
+            itemViewHolderCur.durationCur.setText(curTime + "/");
+            itemViewHolderCur.durationCur.setVisibility(View.VISIBLE);
             notifyItemChanged(activeItem);
         }
 //        if (playProgressCur != null) {
@@ -625,37 +635,45 @@ public class TalkAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 //        }
     }
 
-    public void showPlayStart(boolean animate,int index) {
-        if(itemViewHolderCur != null) {
-            Log.d(TAG,"index:"+index+",activeItem:"+activeItem+",posPrev:"+posPrev);
-            if(index == posPrev){
+    public void showPlayStart(boolean animate, int index) {
+        if (itemViewHolderCur != null) {
+            Log.d(TAG, "index:" + index + ",activeItem:" + activeItem + ",posPrev:" + posPrev);
+            if (index == posPrev) {
                 itemViewHolderCur.btnPlay.setImageResource(R.drawable.ic_pause);
-            }else{
-                if(itemViewHolderPrev != null) {
+            } else {
+                if (itemViewHolderPrev != null) {
                     itemViewHolderPrev.btnPlay.setImageResource(R.drawable.ic_play);
                     itemViewHolderPrev.playProgress.setProgress(0);
+                    itemViewHolderPrev.durationCur.setText("0/");
+                    itemViewHolderPrev.durationCur.setVisibility(View.INVISIBLE);
                 }
                 itemViewHolderCur.btnPlay.setImageResource(R.drawable.ic_pause);
                 itemViewHolderCur.playProgress.setProgress(0);
             }
         }
     }
+
     public void showPlayPause(int index) {
-        if(itemViewHolderCur != null) {
-            if(index == activeItem) {
+        if (itemViewHolderCur != null) {
+            if (index == activeItem) {
                 itemViewHolderCur.btnPlay.setImageResource(R.drawable.ic_play);
-            }else{
+            } else {
                 itemViewHolderCur.btnPlay.setImageResource(R.drawable.ic_stop);
                 itemViewHolderCur.playProgress.setProgress(0);
+                itemViewHolderCur.durationCur.setText("0/");
+                itemViewHolderCur.durationCur.setVisibility(View.INVISIBLE);
             }
         }
     }
+
     public void showPlayStop(int index) {
-        if(itemViewHolderCur != null) {
-            if(index == activeItem) {
+        if (itemViewHolderCur != null) {
+            if (index == activeItem) {
                 itemViewHolderCur.btnPlay.setImageResource(R.drawable.ic_play);
                 itemViewHolderCur.playProgress.setProgress(0);
-            }else{
+                itemViewHolderCur.durationCur.setText("0/");
+                itemViewHolderCur.durationCur.setVisibility(View.INVISIBLE);
+            } else {
 
             }
         }
@@ -695,8 +713,10 @@ public class TalkAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     SeekBar playProgressCur;
 
     class ItemViewHolder extends RecyclerView.ViewHolder {
+        public int durationInt;
         TextView name;
-        TextView description;
+        TextView duration;
+        TextView durationCur;
         TextView created;
         TextView info;
         AppCompatTextView btnBookmark;
@@ -704,7 +724,7 @@ public class TalkAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         SimpleWaveformView waveformViewItem;
         View view;
 
-        LinearLayout touchLayout;
+        LinearLayout voiceLayout;
 
         ImageButton btnPlay;
         SeekBar playProgress;
@@ -731,7 +751,8 @@ public class TalkAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                 return false;
             });
             name = itemView.findViewById(R.id.list_item_name);
-            description = itemView.findViewById(R.id.list_item_description);
+            duration = itemView.findViewById(R.id.item_duration);
+            durationCur = itemView.findViewById(R.id.item_duration_cur);
             created = itemView.findViewById(R.id.list_item_date);
             info = itemView.findViewById(R.id.list_item_info);
             btnBookmark = itemView.findViewById(R.id.list_item_bookmark);
@@ -739,9 +760,10 @@ public class TalkAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             btnMore = itemView.findViewById(R.id.item_iv_avatar);
             waveformViewItem = itemView.findViewById(R.id.item_waveform);
             playProgress = itemView.findViewById(R.id.item_play_progress);
-            touchLayout = itemView.findViewById(R.id.touch_layout);
+//            10秒之内不用显示进度条了；太小了
+            voiceLayout = itemView.findViewById(R.id.voice_layout);
             if (colorMap != null) {
-                touchLayout.setBackgroundResource(colorMap.getPlaybackPanelBackground());
+                voiceLayout.setBackgroundResource(colorMap.getPlaybackPanelBackground());
             }
             btnPlay = itemView.findViewById(R.id.btn_play);
             btnPlay.setOnClickListener(new View.OnClickListener() {
@@ -791,6 +813,26 @@ public class TalkAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
         }
 
+        public void setDurationInt(int durationInt) {
+            this.durationInt = durationInt;
+            Log.d(TAG, "durationInt:" + durationInt);
+            if (playProgress != null) {
+                if (durationInt < 10) {
+                    playProgress.setVisibility(View.INVISIBLE);
+                } else {
+                    playProgress.setVisibility(View.VISIBLE);
+                }
+            }
+            if (durationInt > 0 && voiceLayout != null) {
+                //voiceLayout跟进时长计算长度；目测最小 ：40dp 或 60dp ：最长 200dp 语音最少1秒最多60秒
+                FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) voiceLayout.getLayoutParams();
+                int width = 50 + durationInt * 2;
+//                params.width = (int) AndroidUtils.dpToPx(40);
+                params.width = (int) AndroidUtils.dpToPx(width);
+//            params.width = (int) AndroidUtils.dpToPx(60);
+//            Log.d(TAG,"params.width:" + params.width);
+            }
+        }
     }
 
     private boolean checkStoragePermissionPlayback() {

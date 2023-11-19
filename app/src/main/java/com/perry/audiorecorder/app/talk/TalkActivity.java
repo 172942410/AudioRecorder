@@ -806,6 +806,7 @@ public class TalkActivity extends Activity implements TalkContract.View, View.On
 
     @Override
     public void showDuration(final String duration) {
+        Log.d(TAG,"showDuration:"+duration);
     }
 
     @Override
@@ -881,7 +882,7 @@ public class TalkActivity extends Activity implements TalkContract.View, View.On
 
     @Override
     public void onPlayProgress(final long mills, int percent) {
-        talkAdapter.setProgress(percent);
+        talkAdapter.setProgress(mills,percent);
     }
 
     @Override

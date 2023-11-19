@@ -43,4 +43,10 @@
 	<dimen name="panel_corner_radius">8dp</dimen>
 
 	<dimen name="menu_item_icon_size">24dp</dimen>
+
+	<dimen name="item_talk">50dp</dimen>
+	<dimen name="item_avatar">40dp</dimen>
+	<dimen name="item_voice_height">30dp</dimen>
+	<dimen name="item_margin_zero">0dp</dimen>
+	<dimen name="item_margin_lr">4dp</dimen>
 </resources>
