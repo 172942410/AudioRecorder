@@ -60,6 +60,7 @@ import com.perry.audiorecorder.util.FileUtil;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import timber.log.Timber;
@@ -256,9 +257,14 @@ public class TalkActivity extends Activity implements TalkContract.View, View.On
         mBtnVoice.setOnVoiceButtonCallBack(new RecordAudioButton.OnVoiceButtonCallBack() {
             @Override
             public void onStartRecord() {
-                startRecordingService();
-//				startRecording();
-                Log.d(TAG, "开始录音");
+                if (checkRecordPermission2()) {
+                    if (checkStoragePermission2()) {
+                        startRecordingService();
+                        Log.d(TAG, "开始录音");
+                    }
+                }else{
+                    Toast.makeText(TalkActivity.this, "如果多次拒绝后就需要手动开启录音权限了", Toast.LENGTH_SHORT).show();
+                }
             }
 
             @Override
@@ -301,14 +307,14 @@ public class TalkActivity extends Activity implements TalkContract.View, View.On
         colorMap.addOnThemeColorChangeListener(onThemeColorChangeListener);
 
         //Check start recording shortcut
-        if ("android.intent.action.ACTION_RUN".equals(getIntent().getAction())) {
+//        if ("android.intent.action.ACTION_RUN".equals(getIntent().getAction())) {
             if (checkRecordPermission2()) {
                 if (checkStoragePermission2()) {
                     //Start or stop recording
-                    startRecordingService();
+//                    startRecordingService();
                 }
             }
-        }
+//        }
     }
 
     @Override
@@ -583,7 +589,8 @@ public class TalkActivity extends Activity implements TalkContract.View, View.On
             presenter.storeInPrivateDir(getApplicationContext());
 //			presenter.checkPublicStorageRecords();
         }
-        presenter.checkFirstRun();
+//        TODO 此行代码注释掉就不会有第一次的提示了
+//        presenter.checkFirstRun();
         presenter.setAudioRecorder(ARApplication.getInjector().provideAudioRecorder());
         presenter.updateRecordingDir(getApplicationContext());
         presenter.loadActiveRecord();
@@ -973,6 +980,7 @@ public class TalkActivity extends Activity implements TalkContract.View, View.On
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             if (checkSelfPermission(Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
                 requestPermissions(new String[]{Manifest.permission.RECORD_AUDIO}, REQ_CODE_RECORD_AUDIO);
+                Log.d(TAG,"没有录音权限；拒绝嘞");
                 return false;
             }
         }
@@ -1001,15 +1009,16 @@ public class TalkActivity extends Activity implements TalkContract.View, View.On
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        Log.d(TAG,"onRequestPermissionsResult permissions:"+ Arrays.toString(permissions)+",grantResults:"+Arrays.toString(grantResults));
         if (requestCode == REQ_CODE_REC_AUDIO_AND_WRITE_EXTERNAL && grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED && grantResults[1] == PackageManager.PERMISSION_GRANTED && grantResults[2] == PackageManager.PERMISSION_GRANTED) {
-            startRecordingService();
+//            startRecordingService();
         } else if (requestCode == REQ_CODE_RECORD_AUDIO && grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
             if (checkStoragePermission2()) {
-                startRecordingService();
+//                startRecordingService();
             }
         } else if (requestCode == REQ_CODE_WRITE_EXTERNAL_STORAGE && grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED && grantResults[1] == PackageManager.PERMISSION_GRANTED) {
             if (checkRecordPermission2()) {
-                startRecordingService();
+//                startRecordingService();
             }
         } else if (requestCode == REQ_CODE_READ_EXTERNAL_STORAGE_IMPORT && grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED && grantResults[1] == PackageManager.PERMISSION_GRANTED) {
             startFileSelector();
@@ -1018,8 +1027,8 @@ public class TalkActivity extends Activity implements TalkContract.View, View.On
         } else if (requestCode == REQ_CODE_READ_EXTERNAL_STORAGE_PLAYBACK && grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED && grantResults[1] == PackageManager.PERMISSION_GRANTED) {
 //            presenter.startPlayback();
         } else if (requestCode == REQ_CODE_WRITE_EXTERNAL_STORAGE && grantResults.length > 0 && (grantResults[0] == PackageManager.PERMISSION_DENIED || grantResults[1] == PackageManager.PERMISSION_DENIED)) {
-            presenter.setStoragePrivate(getApplicationContext());
-            startRecordingService();
+//            presenter.setStoragePrivate(getApplicationContext());
+//            startRecordingService();
         }
     }
 }
