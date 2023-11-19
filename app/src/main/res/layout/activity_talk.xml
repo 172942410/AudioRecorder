@@ -54,7 +54,9 @@
                 android:contentDescription="@null"
                 android:layout_gravity="center_vertical|end"
                 android:background="?android:selectableItemBackgroundBorderless"
-                android:src="@drawable/ic_bookmark_bordered"/>
+                android:src="@drawable/ic_bookmark_bordered"
+                android:visibility="gone"
+                />
 
             <ImageButton
                 android:id="@+id/btn_share"
@@ -63,8 +65,8 @@
                 android:adjustViewBounds="true"
                 android:background="?android:selectableItemBackgroundBorderless"
                 android:contentDescription="@null"
-                android:scaleType="center"
-                android:src="@drawable/ic_more_vert"
+                android:scaleType="fitCenter"
+                android:src="@drawable/waveform"
                 android:layout_gravity="center_vertical|end"
                 />
 
@@ -102,7 +104,9 @@
                 android:paddingEnd="@dimen/spacing_normal"
                 android:paddingRight="@dimen/spacing_normal"
                 android:text="@string/selected"
-                android:textColor="@color/text_primary_light" />
+                android:textColor="@color/text_primary_light"
+                android:textSize="@dimen/text_large"
+                />
 
             <ImageButton
                 android:id="@+id/btn_share_multi"

@@ -50,7 +50,7 @@ public class TalkAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     private boolean isMultiSelectMode = false;
 
     private final SettingsMapper settingsMapper;
-    private boolean showDateHeaders = true;
+    private boolean showDateHeaders = false;
     private int activeItem = -1;
     private View btnTrash;
     private boolean showTrash = false;
@@ -83,7 +83,8 @@ public class TalkAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int type) {
         if (type == ItemType.ITEM_TYPE_HEADER) {
             return new UniversalViewHolder(createHeaderView(viewGroup.getContext()));
-        } else if (type == ItemType.ITEM_TYPE_FOOTER) {
+        } else
+            if (type == ItemType.ITEM_TYPE_FOOTER) {
             View view = new View(viewGroup.getContext());
             int height = (int) viewGroup.getContext().getResources().getDimension(R.dimen.panel_height);
 
@@ -147,26 +148,26 @@ public class TalkAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                     }
                 }
             }, position -> {
-                isMultiSelectMode = !isMultiSelectMode;
-                notifyDataSetChanged();
-                if (onMultiSelectModeListener != null) {
-                    onMultiSelectModeListener.onMultiSelectMode(isMultiSelectMode);
-                }
-                if (isMultiSelectMode) {
-                    if (!selected.contains(position) && data.get(position).getDuration() != 0) {
-                        selected.add(position);
-                        notifyItemChanged(position);
-                    }
-                } else {
-                    selected.clear();
-                    if (onMultiSelectModeListener != null) {
-                        onMultiSelectModeListener.onMultiSelectMode(false);
-                    }
-                    notifyDataSetChanged();
-                }
-                if (onMultiSelectModeListener != null) {
-                    onMultiSelectModeListener.onSelectDeselect(selected.size());
-                }
+//                isMultiSelectMode = !isMultiSelectMode;
+//                notifyDataSetChanged();
+//                if (onMultiSelectModeListener != null) {
+//                    onMultiSelectModeListener.onMultiSelectMode(isMultiSelectMode);
+//                }
+//                if (isMultiSelectMode) {
+//                    if (!selected.contains(position) && data.get(position).getDuration() != 0) {
+//                        selected.add(position);
+//                        notifyItemChanged(position);
+//                    }
+//                } else {
+//                    selected.clear();
+//                    if (onMultiSelectModeListener != null) {
+//                        onMultiSelectModeListener.onMultiSelectMode(false);
+//                    }
+//                    notifyDataSetChanged();
+//                }
+//                if (onMultiSelectModeListener != null) {
+//                    onMultiSelectModeListener.onSelectDeselect(selected.size());
+//                }
             });
         }
     }
@@ -202,15 +203,15 @@ public class TalkAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                 }
             }
 
-            holder.btnBookmark.setOnClickListener(v -> {
-                if (onAddToBookmarkListener != null && data.size() > p) {
-                    if (item.isBookmarked()) {
-                        onAddToBookmarkListener.onRemoveFromBookmarks((int) item.getId());
-                    } else {
-                        onAddToBookmarkListener.onAddToBookmarks((int) item.getId());
-                    }
-                }
-            });
+//            holder.btnBookmark.setOnClickListener(v -> {
+//                if (onAddToBookmarkListener != null && data.size() > p) {
+//                    if (item.isBookmarked()) {
+//                        onAddToBookmarkListener.onRemoveFromBookmarks((int) item.getId());
+//                    } else {
+//                        onAddToBookmarkListener.onAddToBookmarks((int) item.getId());
+//                    }
+//                }
+//            });
             holder.btnMore.setOnClickListener(v -> showMenu(v, p));
             holder.waveformViewItem.setWaveform(item.getAmps());
             if (isMultiSelectMode || item.getDuration() == 0) {
@@ -317,13 +318,13 @@ public class TalkAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     }
 
     void setData(List<ItemType> d, int order) {
-        updateShowHeader(order);
+//        updateShowHeader(order);
         if (showDateHeaders) {
             data = addDateHeaders(d);
         } else {
             data = d;
         }
-        data.add(0, ItemType.createHeaderItem());
+//        data.add(0, ItemType.createHeaderItem());
         notifyDataSetChanged();
     }
 
@@ -334,7 +335,7 @@ public class TalkAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
     void addData(List<ItemType> d, int order) {
         if (data.size() > 0) {
-            updateShowHeader(order);
+//            updateShowHeader(order);
             if (showDateHeaders) {
                 if (findFooter() >= 0) {
                     data.addAll(data.size() - 1, addDateHeaders(d));
@@ -606,6 +607,10 @@ public class TalkAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         this.itemClickListener = itemClickListener;
     }
 
+    /**
+     * 此功能已注释掉了
+     * @param onAddToBookmarkListener
+     */
     void setOnAddToBookmarkListener(OnAddToBookmarkListener onAddToBookmarkListener) {
         this.onAddToBookmarkListener = onAddToBookmarkListener;
     }
@@ -724,7 +729,7 @@ public class TalkAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         SimpleWaveformView waveformViewItem;
         View view;
 
-        LinearLayout voiceLayout;
+        FrameLayout voiceLayout;
 
         ImageButton btnPlay;
         SeekBar playProgress;
@@ -820,13 +825,17 @@ public class TalkAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                 if (durationInt < 10) {
                     playProgress.setVisibility(View.INVISIBLE);
                 } else {
-                    playProgress.setVisibility(View.VISIBLE);
+//                    先隐藏了不显示；之后再做这里
+                    playProgress.setVisibility(View.INVISIBLE);
                 }
             }
             if (durationInt > 0 && voiceLayout != null) {
                 //voiceLayout跟进时长计算长度；目测最小 ：40dp 或 60dp ：最长 200dp 语音最少1秒最多60秒
                 FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) voiceLayout.getLayoutParams();
-                int width = 50 + durationInt * 2;
+                int width = 50 + durationInt * 4;
+                if(width > 200){
+                    width = 200;
+                }
 //                params.width = (int) AndroidUtils.dpToPx(40);
                 params.width = (int) AndroidUtils.dpToPx(width);
 //            params.width = (int) AndroidUtils.dpToPx(60);

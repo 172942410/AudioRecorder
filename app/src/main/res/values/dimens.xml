@@ -49,4 +49,5 @@
 	<dimen name="item_voice_height">30dp</dimen>
 	<dimen name="item_margin_zero">0dp</dimen>
 	<dimen name="item_margin_lr">4dp</dimen>
+	<dimen name="text_ss">8sp</dimen>
 </resources>

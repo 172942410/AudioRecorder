@@ -196,6 +196,7 @@ public class TalkActivity extends Activity implements TalkContract.View, View.On
                 Timber.e(e);
             }
         }));
+//        此功能已注释掉了
         talkAdapter.setOnAddToBookmarkListener(new TalkAdapter.OnAddToBookmarkListener() {
             @Override
             public void onAddToBookmarks(int id) {
@@ -353,7 +354,7 @@ public class TalkActivity extends Activity implements TalkContract.View, View.On
     @Override
     public void bookmarksUnselected() {
         btnBookmarks.setImageResource(R.drawable.ic_bookmark_bordered);
-        txtTitle.setText(R.string.records);
+//        txtTitle.setText(R.string.records);
     }
 
     @Override
@@ -622,7 +623,8 @@ public class TalkActivity extends Activity implements TalkContract.View, View.On
         } else if (id == R.id.btn_settings) {
             startActivity(SettingsActivity.getStartIntent(getApplicationContext()));
         } else if (id == R.id.btn_share) {
-            showMenu(view);
+             Toast.makeText(this, "敬请期待...", Toast.LENGTH_SHORT).show();
+//            showMenu(view);
         } else if (id == R.id.btn_bookmarks) {
             presenter.applyBookmarksFilter();
         } else if (id == R.id.btn_close_multi_select) {
@@ -727,7 +729,7 @@ public class TalkActivity extends Activity implements TalkContract.View, View.On
     @Override
     public void showRecordingStart() {
         btnShare.setEnabled(false);
-        btnShare.setVisibility(View.GONE);
+        btnShare.setVisibility(View.INVISIBLE);
     }
 
     @Override
@@ -739,13 +741,13 @@ public class TalkActivity extends Activity implements TalkContract.View, View.On
     @Override
     public void showRecordingPause() {
         btnShare.setEnabled(false);
-        btnShare.setVisibility(View.GONE);
+        btnShare.setVisibility(View.INVISIBLE);
     }
 
     @Override
     public void showRecordingResume() {
         btnShare.setEnabled(false);
-        btnShare.setVisibility(View.GONE);
+        btnShare.setVisibility(View.INVISIBLE);
     }
 
     @Override
