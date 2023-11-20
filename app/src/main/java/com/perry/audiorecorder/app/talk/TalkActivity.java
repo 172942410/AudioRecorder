@@ -1,6 +1,7 @@
 package com.perry.audiorecorder.app.talk;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.ActivityNotFoundException;
 import android.content.ComponentName;
@@ -13,22 +14,29 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.MenuInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.PopupMenu;
 import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.widget.AppCompatButton;
+import androidx.appcompat.widget.AppCompatImageButton;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.SimpleItemAnimator;
 
+import com.google.android.material.textfield.TextInputEditText;
 import com.perry.audiorecorder.ARApplication;
 import com.perry.audiorecorder.ColorMap;
 import com.perry.audiorecorder.Mapper;
@@ -57,6 +65,7 @@ import com.perry.audiorecorder.exception.ErrorParser;
 import com.perry.audiorecorder.util.AndroidUtils;
 import com.perry.audiorecorder.util.AnimationUtil;
 import com.perry.audiorecorder.util.FileUtil;
+import com.perry.audiorecorder.util.KeyboardsUtils;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -107,7 +116,12 @@ public class TalkActivity extends Activity implements TalkContract.View, View.On
     private ImageButton btnShareMulti;
     private ImageButton btnDeleteMulti;
     private ImageButton btnDownloadMulti;
+    private TextInputEditText editText;
 
+    AppCompatImageButton buttonSwitchText, buttonSwitchVoice;
+    AppCompatButton buttonSend;
+    RelativeLayout relativeText;
+    LinearLayout linearVoice;
     private final ServiceConnection connection = new ServiceConnection() {
 
         @Override
@@ -149,6 +163,7 @@ public class TalkActivity extends Activity implements TalkContract.View, View.On
         return new Intent(context, TalkActivity.class);
     }
 
+    @SuppressLint({"WrongViewCast", "MissingInflatedId"})
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         colorMap = ARApplication.getInjector().provideColorMap();
@@ -160,6 +175,48 @@ public class TalkActivity extends Activity implements TalkContract.View, View.On
         ImageButton btnSettings = findViewById(R.id.btn_settings);
         btnShare = findViewById(R.id.btn_share);
 
+        linearVoice = findViewById(R.id.linear_voice);
+        relativeText = findViewById(R.id.relative_text);
+        buttonSwitchVoice = findViewById(R.id.button_switch_voice);
+        buttonSwitchText = findViewById(R.id.button_switch_text);
+        buttonSend = findViewById(R.id.button_send);
+        buttonSwitchVoice.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                relativeText.setVisibility(View.GONE);
+                linearVoice.setVisibility(View.VISIBLE);
+            }
+        });
+        buttonSwitchText.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                relativeText.setVisibility(View.VISIBLE);
+                linearVoice.setVisibility(View.GONE);
+            }
+        });
+        buttonSend.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Log.d(TAG, "发送消息事件");
+            }
+        });
+        editText = findViewById(R.id.edit_text);
+        editText.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+                Log.d(TAG, "beforeTextChanged:" + charSequence);
+            }
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+                Log.d(TAG, "onTextChanged:" + charSequence);
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+                Log.d(TAG, "afterTextChanged:" + editable);
+            }
+        });
         btnCloseMulti = findViewById(R.id.btn_close_multi_select);
         btnCloseMulti.setOnClickListener(this);
         btnShareMulti = findViewById(R.id.btn_share_multi);
@@ -333,6 +390,7 @@ public class TalkActivity extends Activity implements TalkContract.View, View.On
 
     @Override
     public void addRecords(List<ItemData> records, int order) {
+        //TODO 这里获取的录音数据的数组不一样；是个bug；需要寻找问题
         talkAdapter.addData(records, order);
         txtEmpty.setVisibility(View.GONE);
         recyclerView.scrollToPosition(talkAdapter.getItemCount() - 1);
@@ -928,6 +986,21 @@ public class TalkActivity extends Activity implements TalkContract.View, View.On
         inflater.inflate(R.menu.menu_more, popup.getMenu());
         AndroidUtils.insertMenuItemIcons(v.getContext(), popup);
         popup.show();
+    }
+
+    /**
+     * 点击非编辑区域收起键盘
+     * 获取点击事件
+     */
+    @Override
+    public boolean dispatchTouchEvent(MotionEvent ev) {
+        if (ev.getAction() == MotionEvent.ACTION_DOWN) {
+            View view = getCurrentFocus();
+            if (KeyboardsUtils.isShouldHideKeyBord(view, ev)) {
+                KeyboardsUtils.hintKeyBoards(view);
+            }
+        }
+        return super.dispatchTouchEvent(ev);
     }
 
     public void setRecordName(final long recordId, final String name, final String extension) {

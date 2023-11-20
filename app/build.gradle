@@ -4,11 +4,11 @@ apply plugin: 'kotlin-kapt'
 
 android {
 	namespace 'com.perry.audiorecorder'
-	compileSdkVersion 33
+	compileSdkVersion 34
 	defaultConfig {
 		applicationId "com.perry.audiorecorder"
 		minSdkVersion 21
-		targetSdkVersion 33
+		targetSdkVersion 34
 		versionCode 933
 		versionName "0.9.33"
 	}
@@ -103,9 +103,6 @@ dependencies {
 
 	implementation "androidx.viewpager2:viewpager2:1.0.0"
 	implementation 'androidx.appcompat:appcompat:1.6.1'
-
-	implementation 'com.github.CymChad:BaseRecyclerViewAdapterHelper:2.9.30'
-//	implementation "io.github.cymchad:BaseRecyclerViewAdapterHelper:4.0.3"
-
+	implementation 'com.google.android.material:material:1.10.0'
 
 }

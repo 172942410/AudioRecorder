@@ -41,66 +41,14 @@ public class SQLiteHelper extends SQLiteOpenHelper {
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         Log.d(SQLiteHelper.class.getName(),
-                "Upgrading database from version " + oldVersion + " to "
-                        + newVersion + ", which will destroy all old data");
-        if (newVersion == 1) {
-            db.execSQL("DROP TABLE IF EXISTS " + TABLE_RECORDS);
-            db.execSQL("DROP TABLE IF EXISTS " + TABLE_TRASH);
-            onCreate(db);
-        } else if (newVersion == 2) {
-            db.execSQL(CREATE_TRASH_TABLE_SCRIPT);
-        } else if (oldVersion == 1 && newVersion == 3) {
-            db.beginTransaction();
+                "更新数据库旧版本 " + oldVersion + " 到 "
+                        + newVersion + ", 它将销毁所有旧数据");
 
-            db.execSQL(CREATE_TRASH_TABLE_SCRIPT);
-
-            //Add new fields to the table Records.
-            db.execSQL("ALTER TABLE " + TABLE_RECORDS + " ADD COLUMN " + COLUMN_FORMAT + " TEXT NOT NULL DEFAULT '';");
-            db.execSQL("ALTER TABLE " + TABLE_RECORDS + " ADD COLUMN " + COLUMN_SIZE + " LONG NOT NULL DEFAULT 0;");
-            db.execSQL("ALTER TABLE " + TABLE_RECORDS + " ADD COLUMN " + COLUMN_SAMPLE_RATE + " INTEGER NOT NULL DEFAULT 0;");
-            db.execSQL("ALTER TABLE " + TABLE_RECORDS + " ADD COLUMN " + COLUMN_CHANNEL_COUNT + " INTEGER NOT NULL DEFAULT 0;");
-            db.execSQL("ALTER TABLE " + TABLE_RECORDS + " ADD COLUMN " + COLUMN_BITRATE + " INTEGER NOT NULL DEFAULT 0;");
-
-            db.setTransactionSuccessful();
-            db.endTransaction();
-        } else if (oldVersion == 2 && newVersion == 3) {
-            db.beginTransaction();
-
-            //Add new fields to the table Records.
-            db.execSQL("ALTER TABLE " + TABLE_RECORDS + " ADD COLUMN " + COLUMN_FORMAT + " TEXT NOT NULL DEFAULT '';");
-            db.execSQL("ALTER TABLE " + TABLE_RECORDS + " ADD COLUMN " + COLUMN_SIZE + " LONG NOT NULL DEFAULT 0;");
-            db.execSQL("ALTER TABLE " + TABLE_RECORDS + " ADD COLUMN " + COLUMN_SAMPLE_RATE + " INTEGER NOT NULL DEFAULT 0;");
-            db.execSQL("ALTER TABLE " + TABLE_RECORDS + " ADD COLUMN " + COLUMN_CHANNEL_COUNT + " INTEGER NOT NULL DEFAULT 0;");
-            db.execSQL("ALTER TABLE " + TABLE_RECORDS + " ADD COLUMN " + COLUMN_BITRATE + " INTEGER NOT NULL DEFAULT 0;");
-
-            //Add new fields to the table Trash.
-            db.execSQL("ALTER TABLE " + TABLE_TRASH + " ADD COLUMN " + COLUMN_FORMAT + " TEXT NOT NULL DEFAULT '';");
-            db.execSQL("ALTER TABLE " + TABLE_TRASH + " ADD COLUMN " + COLUMN_SIZE + " LONG NOT NULL DEFAULT 0;");
-            db.execSQL("ALTER TABLE " + TABLE_TRASH + " ADD COLUMN " + COLUMN_SAMPLE_RATE + " INTEGER NOT NULL DEFAULT 0;");
-            db.execSQL("ALTER TABLE " + TABLE_TRASH + " ADD COLUMN " + COLUMN_CHANNEL_COUNT + " INTEGER NOT NULL DEFAULT 0;");
-            db.execSQL("ALTER TABLE " + TABLE_TRASH + " ADD COLUMN " + COLUMN_BITRATE + " INTEGER NOT NULL DEFAULT 0;");
-
-            db.setTransactionSuccessful();
-            db.endTransaction();
-        } else if (oldVersion == 3 && newVersion == 4) {
-            db.beginTransaction();
-
-            //Add new fields to the table Records.
-            db.execSQL("ALTER TABLE " + TABLE_RECORDS + " ADD COLUMN " + COLUMN_TYPE + " INTEGER NOT NULL DEFAULT 0;");
-            db.execSQL("ALTER TABLE " + TABLE_RECORDS + " ADD COLUMN " + COLUMN_MSG_DATA + "  BLOB;");
-
-            //Add new fields to the table Trash.
-            db.execSQL("ALTER TABLE " + TABLE_TRASH + " ADD COLUMN " + COLUMN_TYPE + " INTEGER NOT NULL DEFAULT 0;");
-            db.execSQL("ALTER TABLE " + TABLE_TRASH + " ADD COLUMN " + COLUMN_MSG_DATA + " BLOB;");
-
-            db.setTransactionSuccessful();
-            db.endTransaction();
-        }
     }
 
 
     private static final String DATABASE_NAME = "records.db";
-    private static final int DATABASE_VERSION = 4;
+    private static final int DATABASE_VERSION = 1;
 
     //Tables names
     static final String TABLE_RECORDS = "records";
