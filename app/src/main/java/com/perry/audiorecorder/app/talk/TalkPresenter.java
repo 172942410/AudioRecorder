@@ -306,8 +306,6 @@ public class TalkPresenter implements TalkContract.UserActionsListener {
                 prefs.getSettingSampleRate(),
                 0
         );
-
-        this.localRepository.setOnRecordsLostListener(list -> view.showRecordsLostMessage(list));
     }
 
     @Override

@@ -172,7 +172,7 @@ public class TalkAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             });
         } else if (type == ItemType.SEND_TEXT.typeId) {
             View v = LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.item_talk_send_text, viewGroup, false);
-            return new VHSendText(v, null, null);
+            return new VHSendText(v, this,colorMap,null, null);
         } else {
             return null;
         }
@@ -280,7 +280,7 @@ public class TalkAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         }
     }
 
-    private void showMenu(View v, final int pos) {
+    public void showMenu(View v, final int pos) {
         PopupMenu popup = new PopupMenu(v.getContext(), v);
         popup.setOnMenuItemClickListener(item -> {
             if (onItemOptionListener != null && data.size() > pos) {

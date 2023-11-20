@@ -14,8 +14,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
-import android.text.Editable;
-import android.text.TextWatcher;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.MenuInflater;
 import android.view.MotionEvent;
@@ -253,6 +252,10 @@ public class TalkActivity extends Activity implements TalkContract.View, View.On
         });
         talkAdapter.setOnItemOptionListener((menuId, item) -> {
             if (menuId == R.id.menu_share) {
+                if (TextUtils.isEmpty(item.getPath()) || TextUtils.isEmpty(item.getName())) {
+                    Toast.makeText(this, "暂时无法分享此格式信息", Toast.LENGTH_SHORT).show();
+                    return;
+                }
                 AndroidUtils.shareAudioFile(getApplicationContext(), item.getPath(), item.getName(), item.getFormat());
             } else if (menuId == R.id.menu_info) {
                 presenter.onRecordInfo(Mapper.toRecordInfo(item));
@@ -897,11 +900,6 @@ public class TalkActivity extends Activity implements TalkContract.View, View.On
     @Override
     public void showRecordInfo(RecordInfo info) {
         startActivity(ActivityInformation.getStartIntent(getApplicationContext(), info));
-    }
-
-    @Override
-    public void showRecordsLostMessage(List<Record> list) {
-        AndroidUtils.showLostRecordsDialog(this, list);
     }
 
     @Override

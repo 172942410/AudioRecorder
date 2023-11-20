@@ -7,6 +7,7 @@ import android.widget.TextView;
 import androidx.appcompat.widget.AppCompatTextView;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.perry.audiorecorder.ColorMap;
 import com.perry.audiorecorder.R;
 import com.perry.audiorecorder.app.talk.ItemData;
 import com.perry.audiorecorder.app.talk.TalkAdapter;
@@ -24,13 +25,18 @@ public class VHSendText extends RecyclerView.ViewHolder {
     View view;
 
     FrameLayout voiceLayout;
-
+    TalkAdapter talkAdapter;
+    ColorMap colorMap;
     public VHSendText(
             View itemView,
+            TalkAdapter talkAdapter,
+            ColorMap colorMap,
             TalkAdapter.OnItemClickListener onItemClickListener,
             TalkAdapter.OnItemLongClickListener longClickListener
     ) {
         super(itemView);
+        this.talkAdapter = talkAdapter;
+        this.colorMap = colorMap;
         view = itemView;
 //        view.setOnClickListener(v -> {
 //            int pos = getAbsoluteAdapterPosition();
@@ -55,9 +61,9 @@ public class VHSendText extends RecyclerView.ViewHolder {
         btnMore = itemView.findViewById(R.id.item_iv_avatar);
 //            10秒之内不用显示进度条了；太小了
         voiceLayout = itemView.findViewById(R.id.voice_layout);
-//        if (colorMap != null) {
-//            voiceLayout.setBackgroundResource(colorMap.getPlaybackPanelBackground());
-//        }
+        if (colorMap != null) {
+            voiceLayout.setBackgroundResource(colorMap.getPlaybackPanelBackground());
+        }
 
     }
 
@@ -70,7 +76,10 @@ public class VHSendText extends RecyclerView.ViewHolder {
                 String msgStr = new String(item.getItemData());
                 name.setText(msgStr);
             }
-
+        }
+        final int p = getAbsoluteAdapterPosition();
+        if(btnMore != null) {
+            btnMore.setOnClickListener(v -> talkAdapter.showMenu(v, p));
         }
     }
 }

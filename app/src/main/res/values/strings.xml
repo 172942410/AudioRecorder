@@ -101,7 +101,7 @@
     <string name="downloading_cancel">取消复制</string>
     <string name="share">分享</string>
     <string name="ask_to_rename">录制完成后显示重命名对话框</string>
-    <string name="record_moved_into_trash">录音已被移动回收站</string>
+    <string name="record_moved_into_trash">消息已被移动回收站</string>
     <string name="selected_records_moved_into_trash">所选录音已移动到垃圾箱</string>
     <string name="all_records_deleted_successfully">所有录音已成功删除</string>
     <string name="record_deleted_successfully">录音已成功删除</string>

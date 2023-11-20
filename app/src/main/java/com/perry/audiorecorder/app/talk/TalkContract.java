@@ -153,8 +153,6 @@ public interface TalkContract {
 
         void showRecordInfo(RecordInfo info);
 
-        void showRecordsLostMessage(List<Record> list);
-
         void shareRecord(Record record);
 
         void openFile(Record record);

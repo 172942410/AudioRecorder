@@ -101,9 +101,9 @@ public class Record {
     public static Record createTextRecord(long createdTime ,String msgStr){
         byte[] arr = new byte[1];
         if(!TextUtils.isEmpty(msgStr)){
-            return new Record(Record.NO_ID,"",0,createdTime,0,0,"","",0,0,0,0,false,false,arr,2,msgStr.getBytes());
+            return new Record(Record.NO_ID,"",0,createdTime,createdTime,0,"","",0,0,0,0,false,false,arr,2,msgStr.getBytes());
         }
-        return new Record(Record.NO_ID,"",0,createdTime,0,0,"","",0,0,0,0,false,false,arr,2,null);
+        return new Record(Record.NO_ID,"",0,createdTime,createdTime,0,"","",0,0,0,0,false,false,arr,2,null);
     }
     public byte[] int2byte(int[] amps) {
         byte[] bytes = new byte[amps.length];

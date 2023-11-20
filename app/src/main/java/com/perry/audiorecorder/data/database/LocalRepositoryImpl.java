@@ -513,8 +513,9 @@ public class LocalRepositoryImpl implements LocalRepository {
     private void checkForLostRecords(List<Record> list) {
         List<Record> lost = new ArrayList<>();
         for (int i = 0; i < list.size(); i++) {
-            if (!isFileExists(list.get(i).getPath())) {
-                lost.add(list.get(i));
+            Record temp = list.get(i);
+            if (!isFileExists(temp.getPath())) {
+                lost.add(temp);
             }
         }
         if (onLostRecordsListener != null && !lost.isEmpty()) {
