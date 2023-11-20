@@ -41,17 +41,16 @@ public class Record {
     private final int bitrate;
     private boolean bookmark;
     private final boolean waveformProcessed;
-    private final int[] amps;
+    private int[] amps;
     private final byte[] data;
     //TODO: Remove not needed data clusters.
 
     private final int msgType;
-    private int[] msgData;
-    private byte[] msgDataBytes;
+    private byte[] msgData;
 
     public Record(int id, String name, long duration, long created, long added, long removed, String path,
                   String format, long size, int sampleRate, int channelCount, int bitrate,
-                  boolean bookmark, boolean waveformProcessed, int[] amps, int msgType, int[] msgData) {
+                  boolean bookmark, boolean waveformProcessed, int[] amps, int msgType, byte[] msgData) {
         this.id = id;
         this.name = name;
         this.duration = duration;
@@ -71,9 +70,6 @@ public class Record {
 //		this.data = AndroidUtils.int2byte(amps);
         this.msgType = msgType;
         this.msgData = msgData;
-        if (msgData != null) {
-            this.msgDataBytes = int2byte(msgData);
-        }
     }
 
     public Record(int id, String name, long duration, long created, long added, long removed, String path,
@@ -97,10 +93,7 @@ public class Record {
 //		this.amps = AndroidUtils.byte2int(amps);
         this.data = amps;
         this.msgType = msgType;
-        this.msgDataBytes = msgData;
-        if (msgData != null) {
-            this.msgData = byte2int(msgData);
-        }
+        this.msgData = msgData;
     }
 
     public byte[] int2byte(int[] amps) {
@@ -180,6 +173,9 @@ public class Record {
     public int[] getAmps() {
         return amps;
     }
+    public void setAmps(int[] amps){
+        this.amps = amps;
+    }
 
     public long getDuration() {
         return duration;
@@ -191,10 +187,6 @@ public class Record {
 
     public byte[] getData() {
         return data;
-    }
-
-    public byte[] getMsgDataBytes() {
-        return msgDataBytes;
     }
 
     public boolean isBookmarked() {
@@ -260,7 +252,6 @@ public class Record {
                 ", amps=" + Arrays.toString(amps) +
                 ", data=" + Arrays.toString(data) +
                 ", msgData=" + Arrays.toString(msgData) +
-                ", msgDataBytes=" + Arrays.toString(msgDataBytes) +
                 '}';
     }
 
@@ -268,7 +259,7 @@ public class Record {
         return msgType;
     }
 
-    public int[] getMsgData() {
+    public byte[] getMsgData(){
         return msgData;
     }
 }

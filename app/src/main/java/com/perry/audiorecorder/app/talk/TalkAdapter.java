@@ -349,6 +349,9 @@ public class TalkAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                 }
             }
             notifyItemRangeInserted(data.size() - d.size(), d.size());
+        }else{
+            //首次走这里
+            data.addAll(d);
         }
     }
 

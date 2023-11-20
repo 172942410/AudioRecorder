@@ -314,6 +314,7 @@ public class TalkPresenter implements TalkContract.UserActionsListener {
         if (view != null) {
             final int order = prefs.getRecordsOrder();
             ArrayList list = new ArrayList<ItemData>();
+            record.setAmps(record.byte2int(record.int2byte(record.getAmps())));
             list.add(Mapper.recordToItemType(record));
             view.addRecords(list, order);
         }

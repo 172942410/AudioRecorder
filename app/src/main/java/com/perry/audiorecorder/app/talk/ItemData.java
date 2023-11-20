@@ -41,11 +41,11 @@ public class ItemData implements Parcelable {
 	private int[] amps;
 
 	private final int itemType;
-	private int[] itemData;
+	private byte[] itemData;
 
 	public ItemData(long id, int type, String name, String format, String description, long duration,
 					long size, long created, long added, String path, int sampleRate, int channelCount, int bitrate,
-					boolean bookmarked, int[] amps, int itemType,int[] itemData) {
+					boolean bookmarked, int[] amps, int itemType,byte[] itemData) {
 		this.id = id;
 		this.type = type;
 		this.name = name;
@@ -205,7 +205,7 @@ public class ItemData implements Parcelable {
 		bookmarked = bools[0];
 //		后来新加的读取
 		this.itemType = in.readInt();
-		in.readIntArray(itemData);
+		in.readByteArray(itemData);
 	}
 
 	public int describeContents() {
@@ -220,7 +220,7 @@ public class ItemData implements Parcelable {
 		out.writeBooleanArray(new boolean[] {bookmarked});
 //		后来新加的
 		out.writeInt(itemType);
-		out.writeIntArray(itemData);
+		out.writeByteArray(itemData);
 
 	}
 

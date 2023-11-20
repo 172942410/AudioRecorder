@@ -69,7 +69,7 @@ public class RecordsDataSource extends DataSource<Record> {
             //TODO: Remove this field from database.
             values.put(SQLiteHelper.COLUMN_DATA_STR, "");
             values.put(SQLiteHelper.COLUMN_TYPE, item.getMsgType());
-            values.put(SQLiteHelper.COLUMN_MSG_DATA, item.getMsgDataBytes());
+            values.put(SQLiteHelper.COLUMN_MSG_DATA, item.getMsgData());
             return values;
         } else {
             Timber.e("Can't convert Record with empty Name!");
