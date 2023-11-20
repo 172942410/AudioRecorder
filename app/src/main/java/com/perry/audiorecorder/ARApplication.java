@@ -30,6 +30,8 @@ import com.perry.audiorecorder.data.Prefs;
 import com.perry.audiorecorder.util.AndroidUtils;
 //import com.google.firebase.FirebaseApp;
 
+import org.xutils.x;
+
 import timber.log.Timber;
 
 public class ARApplication extends Application {
@@ -82,7 +84,7 @@ public class ARApplication extends Application {
 			});
 		}
 		super.onCreate();
-
+		x.Ext.init(this);
 		PACKAGE_NAME = getApplicationContext().getPackageName();
 		applicationHandler = new Handler(getApplicationContext().getMainLooper());
 		screenWidthDp = AndroidUtils.pxToDp(AndroidUtils.getScreenWidth(getApplicationContext()));

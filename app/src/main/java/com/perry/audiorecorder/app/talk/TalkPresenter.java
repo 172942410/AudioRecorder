@@ -43,9 +43,12 @@ import com.perry.audiorecorder.data.database.LocalRepository;
 import com.perry.audiorecorder.data.database.Record;
 import com.perry.audiorecorder.exception.AppException;
 import com.perry.audiorecorder.exception.ErrorParser;
+import com.perry.audiorecorder.network.HttpUploadFile;
 import com.perry.audiorecorder.util.AndroidUtils;
 import com.perry.audiorecorder.util.FileUtil;
 import com.perry.audiorecorder.util.TimeUtils;
+
+import org.xutils.common.Callback;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -78,6 +81,8 @@ public class TalkPresenter implements TalkContract.UserActionsListener {
 
     int position;//item当前选择的那个播放
 
+    HttpUploadFile httpUploadFile;
+
     /**
      * Flag true defines that presenter called to show import progress when view was not bind.
      * And after view bind we need to show import progress.
@@ -101,6 +106,7 @@ public class TalkPresenter implements TalkContract.UserActionsListener {
         this.audioPlayer = audioPlayer;
         this.appRecorder = appRecorder;
         this.settingsMapper = settingsMapper;
+        httpUploadFile = new HttpUploadFile();
     }
 
     @Override
@@ -178,6 +184,28 @@ public class TalkPresenter implements TalkContract.UserActionsListener {
                         //每次录音完成这里其实可以只添加最后一条的
                         Log.d(TAG, "每次录音完成这里其实可以只添加最后一条的");
 //                        loadRecords();
+//                        这里先请求网络接口
+                        httpUploadFile.uploadAudio(rec.getName(), rec.getPath(), new Callback.CommonCallback<String>() {
+                            @Override
+                            public void onSuccess(String result) {
+                                Log.d(TAG, "uploadAudio onSuccess :" + result);
+                            }
+
+                            @Override
+                            public void onError(Throwable ex, boolean isOnCallback) {
+                                Log.d(TAG, "uploadAudio onError :" + ex + ",isOnCallback:" + isOnCallback);
+                            }
+
+                            @Override
+                            public void onCancelled(CancelledException cex) {
+                                Log.d(TAG, "uploadAudio onCancelled :" + cex);
+                            }
+
+                            @Override
+                            public void onFinished() {
+                                Log.d(TAG, "uploadAudio onFinished");
+                            }
+                        });
                         addLastNewRecord(record);
                     }
                     if (view != null) {
@@ -309,9 +337,9 @@ public class TalkPresenter implements TalkContract.UserActionsListener {
     }
 
     @Override
-    public void sendText(String msgStr){
+    public void sendText(String msgStr) {
 //        1,显示到界面上
-        Record recordTemp = Record.createTextRecord(System.currentTimeMillis(),msgStr);
+        Record recordTemp = Record.createTextRecord(System.currentTimeMillis(), msgStr);
         Record recordReturn = localRepository.insertRecord(recordTemp);
         ItemData itemData = Mapper.recordToItemType(recordReturn);
         view.sendTextShow(itemData);
@@ -319,6 +347,7 @@ public class TalkPresenter implements TalkContract.UserActionsListener {
 //        2，发送成功后还需要回调的
 
     }
+
     private void addLastNewRecord(Record record) {
         if (view != null) {
             final int order = prefs.getRecordsOrder();
