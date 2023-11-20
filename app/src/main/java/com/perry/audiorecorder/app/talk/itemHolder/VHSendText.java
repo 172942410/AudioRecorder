@@ -1,0 +1,76 @@
+package com.perry.audiorecorder.app.talk.itemHolder;
+
+import android.view.View;
+import android.widget.FrameLayout;
+import android.widget.TextView;
+
+import androidx.appcompat.widget.AppCompatTextView;
+import androidx.recyclerview.widget.RecyclerView;
+
+import com.perry.audiorecorder.R;
+import com.perry.audiorecorder.app.talk.ItemData;
+import com.perry.audiorecorder.app.talk.TalkAdapter;
+import com.perry.audiorecorder.app.widget.CircleImageView;
+
+public class VHSendText extends RecyclerView.ViewHolder {
+    private final static String TAG = VHSendText.class.getName();
+    TextView name;
+    TextView duration;
+    TextView durationCur;
+    TextView created;
+    TextView info;
+    AppCompatTextView btnBookmark;
+    CircleImageView btnMore;
+    View view;
+
+    FrameLayout voiceLayout;
+
+    public VHSendText(
+            View itemView,
+            TalkAdapter.OnItemClickListener onItemClickListener,
+            TalkAdapter.OnItemLongClickListener longClickListener
+    ) {
+        super(itemView);
+        view = itemView;
+//        view.setOnClickListener(v -> {
+//            int pos = getAbsoluteAdapterPosition();
+//            if (pos != RecyclerView.NO_POSITION && onItemClickListener != null) {
+//                onItemClickListener.onItemClick(pos, this);
+//            }
+//        });
+//        view.setOnLongClickListener(v -> {
+//            int pos = getAbsoluteAdapterPosition();
+//            if (pos != RecyclerView.NO_POSITION && longClickListener != null) {
+//                longClickListener.onItemLongClick(pos);
+//            }
+//            return false;
+//        });
+        name = itemView.findViewById(R.id.list_item_name);
+        duration = itemView.findViewById(R.id.item_duration);
+        durationCur = itemView.findViewById(R.id.item_duration_cur);
+        created = itemView.findViewById(R.id.list_item_date);
+        info = itemView.findViewById(R.id.list_item_info);
+        btnBookmark = itemView.findViewById(R.id.list_item_bookmark);
+//            waveformView = itemView.findViewById(R.id.list_item_waveform);
+        btnMore = itemView.findViewById(R.id.item_iv_avatar);
+//            10秒之内不用显示进度条了；太小了
+        voiceLayout = itemView.findViewById(R.id.voice_layout);
+//        if (colorMap != null) {
+//            voiceLayout.setBackgroundResource(colorMap.getPlaybackPanelBackground());
+//        }
+
+    }
+
+    public void setItemData(ItemData item) {
+        if(item == null){
+            return;
+        }
+        if(name != null) {
+            if(item.getItemData() != null){
+                String msgStr = new String(item.getItemData());
+                name.setText(msgStr);
+            }
+
+        }
+    }
+}

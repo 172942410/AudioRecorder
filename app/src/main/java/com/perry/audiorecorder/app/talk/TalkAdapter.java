@@ -33,8 +33,10 @@ import com.perry.audiorecorder.AppConstants;
 import com.perry.audiorecorder.ColorMap;
 import com.perry.audiorecorder.R;
 import com.perry.audiorecorder.app.settings.SettingsMapper;
+import com.perry.audiorecorder.app.talk.itemHolder.VHSendText;
 import com.perry.audiorecorder.app.widget.CircleImageView;
 import com.perry.audiorecorder.app.widget.SimpleWaveformView;
+import com.perry.audiorecorder.data.database.Record;
 import com.perry.audiorecorder.util.AndroidUtils;
 import com.perry.audiorecorder.util.TimeUtils;
 
@@ -107,7 +109,7 @@ public class TalkAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             textView.setGravity(Gravity.CENTER);
 
             return new UniversalViewHolder(textView);
-        } else {
+        } else if (type == ItemType.SEND_VOICE.typeId) {
             View v = LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.item_talk_send_voice, viewGroup, false);
             return new ItemViewHolder(v, (position, itemViewHolder) -> {
                 if (isMultiSelectMode) {
@@ -168,12 +170,23 @@ public class TalkAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 //                    onMultiSelectModeListener.onSelectDeselect(selected.size());
 //                }
             });
+        } else if (type == ItemType.SEND_TEXT.typeId) {
+            View v = LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.item_talk_send_text, viewGroup, false);
+            return new VHSendText(v, null, null);
+        } else {
+            return null;
         }
     }
 
     @Override
     public void onBindViewHolder(@NonNull final RecyclerView.ViewHolder viewHolder, final int pos) {
-        if (viewHolder.getItemViewType() == ItemType.SEND_VOICE.typeId) {
+        if (viewHolder.getItemViewType() == ItemType.SEND_TEXT.typeId) {
+            final VHSendText holder = (VHSendText) viewHolder;
+            final int p = holder.getAbsoluteAdapterPosition();
+            final ItemData item = data.get(p);
+            Log.d(TAG, "item:" + item);
+            holder.setItemData(item);
+        } else if (viewHolder.getItemViewType() == ItemType.SEND_VOICE.typeId) {
             final ItemViewHolder holder = (ItemViewHolder) viewHolder;
             final int p = holder.getAbsoluteAdapterPosition();
             final ItemData item = data.get(p);
@@ -313,7 +326,9 @@ public class TalkAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
     @Override
     public int getItemViewType(int position) {
-        return data.get(position).getType();
+        ItemData itemData = data.get(position);
+        Log.d(TAG, "itemData size:" + data.size() + ",itemData;" + itemData);
+        return itemData.getType();
     }
 
     void setData(List<ItemData> d, int order) {
@@ -349,7 +364,7 @@ public class TalkAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                 }
             }
             notifyItemRangeInserted(data.size() - d.size(), d.size());
-        }else{
+        } else {
             //首次走这里
             data.addAll(d);
         }
@@ -408,7 +423,7 @@ public class TalkAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         int count = 0;
         for (int i = 0; i < data.size(); i++) {
             int type = data.get(i).getType();
-            if (type != ItemType.HEADER.typeId && type != ItemType.FOOTER.typeId && type != ItemType.DATE.typeId ) {
+            if (type != ItemType.HEADER.typeId && type != ItemType.FOOTER.typeId && type != ItemType.DATE.typeId) {
                 count++;
             }
         }
@@ -689,9 +704,11 @@ public class TalkAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         setActiveItem(-1);
     }
 
-    public void addTextData(String msgStr) {
-        ItemData itemData =  ItemData.createTextItem(msgStr);
+    public void addTextData(ItemData itemData) {
+        Log.d(TAG, "addTextData 发送消息事件：" );
         data.add(itemData);
+        Log.d(TAG,"addTextData data.size():"+data.size());
+        notifyDataSetChanged();
     }
 
     public interface ItemClickListener {
@@ -872,11 +889,11 @@ public class TalkAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         }
     }
 
-    private interface OnItemClickListener {
+    public interface OnItemClickListener {
         void onItemClick(int position, ItemViewHolder itemViewHolder);
     }
 
-    private interface OnItemLongClickListener {
+    public interface OnItemLongClickListener {
         void onItemLongClick(int position);
     }
 

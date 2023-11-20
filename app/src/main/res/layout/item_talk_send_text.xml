@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/container"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:clickable="true"
+    android:focusable="true"
+    android:foreground="?android:attr/selectableItemBackground"
+    tools:viewBindingIgnore="true">
+
+    <FrameLayout
+        android:id="@+id/voice_layout"
+        android:layout_width="200dp"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_vertical|end"
+        android:layout_marginStart="2dp"
+        android:layout_marginEnd="115dp"
+        android:layout_marginBottom="2dp"
+        android:background="@drawable/panel_amber"
+        android:clipToPadding="false"
+        android:elevation="@dimen/toolbar_elevation"
+        android:orientation="horizontal"
+        android:visibility="visible"
+        tools:visibility="visible"
+        >
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            >
+            <TextView
+                android:id="@+id/list_item_name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:ellipsize="end"
+                android:fontFamily="sans-serif-medium"
+                android:paddingStart="@dimen/spacing_tiny"
+                android:paddingTop="@dimen/spacing_tiny"
+                android:paddingEnd="@dimen/spacing_tiny"
+                android:textColor="@color/text_primary_light"
+                android:textSize="@dimen/text_normal"
+                tools:text="发送的聊天内容发送的聊天内容发送的聊天内容发送的聊天内容发送的聊天内容发送的聊天内容"
+                android:layout_gravity="end"
+                android:visibility="visible"
+                />
+        </FrameLayout>
+        <TextView
+            android:id="@+id/list_item_date"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="end|top"
+            android:maxLines="1"
+            android:maxLength="21"
+            android:paddingTop="@dimen/item_margin_zero"
+            android:paddingStart="@dimen/item_margin_lr"
+            android:paddingEnd="@dimen/item_margin_lr"
+            android:textColor="@color/text_primary_light2"
+            android:textSize="@dimen/text_ss"
+            android:visibility="visible"
+            tools:text="@string/app_name"
+            android:ellipsize="start"
+            />
+
+        <TextView
+            android:id="@+id/list_item_info"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:ellipsize="end"
+            android:fontFamily="sans-serif-light"
+            android:maxLines="1"
+            android:paddingStart="@dimen/item_margin_lr"
+            android:paddingTop="2dp"
+            android:paddingEnd="@dimen/item_margin_lr"
+            android:paddingBottom="@dimen/item_margin_zero"
+            android:textColor="@color/text_primary_light2"
+            android:textSize="@dimen/text_ss"
+            tools:text="M4a, 44.1kHz, 128kbps, Stereo"
+            android:layout_gravity="end|bottom"
+            />
+    </FrameLayout>
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/divider"
+        android:layout_gravity="bottom"
+        android:background="@color/divider_light" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top"
+        android:layout_marginStart="@dimen/spacing_normal"
+        android:layout_marginEnd="56dp"
+        android:elevation="@dimen/toolbar_elevation"
+        android:orientation="vertical"
+        >
+            <androidx.appcompat.widget.AppCompatTextView
+                android:id="@+id/list_item_bookmark"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_gravity="top|end"
+                android:adjustViewBounds="true"
+                android:background="?android:selectableItemBackgroundBorderless"
+                android:contentDescription="@null"
+                android:drawableStart="@drawable/ic_bookmark_bordered_small"
+                android:lines="1"
+                android:paddingEnd="5dp"
+                android:scaleType="center"
+                android:singleLine="true"
+                android:text="链云AI"
+                android:textSize="12dp"
+                />
+
+    </LinearLayout>
+
+    <com.perry.audiorecorder.app.widget.CircleImageView xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:id="@+id/item_iv_avatar"
+        android:layout_width="@dimen/item_avatar"
+        android:layout_height="@dimen/item_avatar"
+        android:layout_gravity="center_vertical|end"
+        android:layout_marginEnd="10dp"
+        android:background="?android:selectableItemBackgroundBorderless"
+        android:src="@mipmap/logo_lianyun"
+        app:civ_border_color="#DD44FFFF"
+        app:civ_border_width="2dp"
+        app:civ_fill_color="#EEFFFFFF" />
+</FrameLayout>

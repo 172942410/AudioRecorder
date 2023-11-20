@@ -16,6 +16,8 @@
 
 package com.perry.audiorecorder.data.database;
 
+import android.text.TextUtils;
+
 import androidx.annotation.NonNull;
 
 import com.perry.audiorecorder.AppConstants;
@@ -96,6 +98,13 @@ public class Record {
         this.msgData = msgData;
     }
 
+    public static Record createTextRecord(long createdTime ,String msgStr){
+        byte[] arr = new byte[1];
+        if(!TextUtils.isEmpty(msgStr)){
+            return new Record(Record.NO_ID,"",0,createdTime,0,0,"","",0,0,0,0,false,false,arr,2,msgStr.getBytes());
+        }
+        return new Record(Record.NO_ID,"",0,createdTime,0,0,"","",0,0,0,0,false,false,arr,2,null);
+    }
     public byte[] int2byte(int[] amps) {
         byte[] bytes = new byte[amps.length];
         for (int i = 0; i < amps.length; i++) {

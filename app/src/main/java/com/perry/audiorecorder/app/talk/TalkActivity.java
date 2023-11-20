@@ -362,11 +362,6 @@ public class TalkActivity extends Activity implements TalkContract.View, View.On
     }
 
     @Override
-    public void sendTextShow(String msgStr){
-        talkAdapter.addTextData(msgStr);
-        editText.setText("");
-    }
-    @Override
     public void hidePlayPanel() {
         hidePanel();
     }
@@ -484,6 +479,12 @@ public class TalkActivity extends Activity implements TalkContract.View, View.On
     @Override
     public void showPanelProgress() {
 //        panelProgress.setVisibility(View.VISIBLE);
+    }
+
+    @Override
+    public void sendTextShow(ItemData itemData) {
+        talkAdapter.addTextData(itemData);
+        editText.setText("");
     }
 
     @Override

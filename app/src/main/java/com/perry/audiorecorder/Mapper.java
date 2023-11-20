@@ -17,7 +17,7 @@ public class Mapper {
 		if (record == null) return null;
 		return new ItemData(
 				record.getId(),
-				ListItem.ITEM_TYPE_NORMAL,
+				record.getMsgType(),
 				record.getName(),
 				record.getFormat(),
 				TimeUtils.formatTimeIntervalHourMinSec2(record.getDuration()/1000),

@@ -313,7 +313,10 @@ public class TalkPresenter implements TalkContract.UserActionsListener {
     @Override
     public void sendText(String msgStr){
 //        1,显示到界面上
-        view.sendTextShow(msgStr);
+        Record recordTemp = Record.createTextRecord(System.currentTimeMillis(),msgStr);
+        Record recordReturn = localRepository.insertRecord(recordTemp);
+        ItemData itemData = Mapper.recordToItemType(recordReturn);
+        view.sendTextShow(itemData);
 
 //        2，发送成功后还需要回调的
 

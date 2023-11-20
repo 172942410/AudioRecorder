@@ -71,7 +71,7 @@ public class ItemData implements Parcelable {
 	}
 
 	public static ItemData createTextItem(String msgStr) {
-		if(TextUtils.isEmpty(msgStr)) {
+		if(!TextUtils.isEmpty(msgStr)) {
 			return new ItemData(-1, ItemType.SEND_TEXT.typeId, "TEXT", "", "", 0, 0, System.currentTimeMillis(), 0, "", 0, 0, 0, false, null,  msgStr.getBytes());
 		}else{
 			return null;
@@ -162,6 +162,9 @@ public class ItemData implements Parcelable {
 		return amps;
 	}
 
+	public byte[] getItemData(){
+		return itemData;
+	}
 	private String convertTimeToStr(long time) {
 		return TimeUtils.formatDateTimeLocale(time);
 //		return TimeUtils.formatTime(time);
