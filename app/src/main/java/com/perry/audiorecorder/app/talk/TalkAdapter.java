@@ -81,9 +81,9 @@ public class TalkAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     @NonNull
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int type) {
-        if (type == ItemData.ITEM_TYPE_HEADER) {
+        if (type == ItemType.HEADER.typeId) {
             return new UniversalViewHolder(createHeaderView(viewGroup.getContext()));
-        } else if (type == ItemData.ITEM_TYPE_FOOTER) {
+        } else if (type == ItemType.FOOTER.typeId) {
             View view = new View(viewGroup.getContext());
             int height = (int) viewGroup.getContext().getResources().getDimension(R.dimen.panel_height);
 
@@ -91,7 +91,7 @@ public class TalkAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                     LinearLayout.LayoutParams.MATCH_PARENT, height);
             view.setLayoutParams(lp);
             return new UniversalViewHolder(view);
-        } else if (type == ItemData.ITEM_TYPE_DATE) {
+        } else if (type == ItemType.DATE.typeId) {
             //Create date list item layout programmatically.
             TextView textView = new TextView(viewGroup.getContext());
             ViewGroup.LayoutParams lp = new ViewGroup.LayoutParams(
@@ -173,7 +173,7 @@ public class TalkAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
     @Override
     public void onBindViewHolder(@NonNull final RecyclerView.ViewHolder viewHolder, final int pos) {
-        if (viewHolder.getItemViewType() == ItemData.ITEM_TYPE_NORMAL) {
+        if (viewHolder.getItemViewType() == ItemType.SEND_VOICE.typeId) {
             final ItemViewHolder holder = (ItemViewHolder) viewHolder;
             final int p = holder.getAbsoluteAdapterPosition();
             final ItemData item = data.get(p);
@@ -219,7 +219,7 @@ public class TalkAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                 holder.btnMore.setVisibility(View.VISIBLE);
             }
             updateInformation(holder.info, item.getFormat(), item.getSampleRate(), item.getSize());
-        } else if (viewHolder.getItemViewType() == ItemData.ITEM_TYPE_DATE) {
+        } else if (viewHolder.getItemViewType() == ItemType.DATE.typeId) {
             UniversalViewHolder holder = (UniversalViewHolder) viewHolder;
             ((TextView) holder.view).setText(
                     TimeUtils.formatDateSmartLocale(
@@ -233,7 +233,7 @@ public class TalkAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     @Override
     public void onViewAttachedToWindow(@NonNull RecyclerView.ViewHolder holder) {
         super.onViewAttachedToWindow(holder);
-        if (holder.getItemViewType() == ItemData.ITEM_TYPE_HEADER) {
+        if (holder.getItemViewType() == ItemType.HEADER.typeId) {
             btnTrash = holder.itemView.findViewById(R.id.btn_trash);
             if (btnTrash != null) {
                 if (btnTrashClickListener != null) {
@@ -251,7 +251,7 @@ public class TalkAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     @Override
     public void onViewDetachedFromWindow(@NonNull RecyclerView.ViewHolder holder) {
         super.onViewDetachedFromWindow(holder);
-        if (holder.getItemViewType() == ItemData.ITEM_TYPE_HEADER) {
+        if (holder.getItemViewType() == ItemType.HEADER.typeId) {
             btnTrash = null;
         }
     }
@@ -407,7 +407,8 @@ public class TalkAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     int getAudioRecordsCount() {
         int count = 0;
         for (int i = 0; i < data.size(); i++) {
-            if (data.get(i).getType() == ItemData.ITEM_TYPE_NORMAL) {
+            int type = data.get(i).getType();
+            if (type != ItemType.HEADER.typeId && type != ItemType.FOOTER.typeId && type != ItemType.DATE.typeId ) {
                 count++;
             }
         }
@@ -461,7 +462,7 @@ public class TalkAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
     private int findFooter() {
         for (int i = data.size() - 1; i >= 0; i--) {
-            if (data.get(i).getType() == ItemData.ITEM_TYPE_FOOTER) {
+            if (data.get(i).getType() == ItemType.FOOTER.typeId) {
                 return i;
             }
         }
@@ -512,7 +513,7 @@ public class TalkAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
     private boolean hasDateHeader(List<ItemData> data, long time) {
         for (int i = data.size() - 1; i >= 0; i--) {
-            if (data.get(i).getType() == ItemData.ITEM_TYPE_DATE) {
+            if (data.get(i).getType() == ItemType.DATE.typeId) {
                 Calendar d1 = Calendar.getInstance();
                 d1.setTimeInMillis(data.get(i).getAdded());
                 Calendar d2 = Calendar.getInstance();
@@ -686,6 +687,11 @@ public class TalkAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             }
         }
         setActiveItem(-1);
+    }
+
+    public void addTextData(String msgStr) {
+        ItemData itemData =  ItemData.createTextItem(msgStr);
+        data.add(itemData);
     }
 
     public interface ItemClickListener {

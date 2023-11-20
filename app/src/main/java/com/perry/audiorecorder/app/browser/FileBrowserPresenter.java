@@ -238,7 +238,7 @@ public class FileBrowserPresenter implements FileBrowserContract.UserActionsList
                             false,
                             false,
                             new int[ARApplication.getLongWaveformSampleCount()],
-                            0,
+                            1,
                             null);
                     final Record rec = localRepository.insertRecord(r);
                     if (rec != null) {

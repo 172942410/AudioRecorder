@@ -170,7 +170,7 @@ class DecodeService : Service() {
                                         rec1.isBookmarked,
                                         true,
                                         data,
-                                        0,
+                                        1,
                                         null
                                     )
                                     localRepository.updateRecord(decodedRecord)

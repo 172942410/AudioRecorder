@@ -181,6 +181,8 @@ public interface TalkContract {
         void stopPlayAnim();
 
         void showPanelProgress();
+
+        void sendTextShow(String msgStr);
     }
 
     interface UserActionsListener extends Contract.UserActionsListener<TalkContract.View> {
@@ -257,5 +259,7 @@ public interface TalkContract {
         void loadRecordsPage(int page);
 
         void deleteRecords(List<Long> ids);
+
+        void sendText(String msgStr);
     }
 }

@@ -37,7 +37,7 @@ public class KeyboardsUtils {
      * 判定当前是否需要隐藏
      */
     public static boolean isShouldHideKeyBord(View v, MotionEvent ev) {
-        if (v != null && (v instanceof EditText)) {
+        if (v != null) {
             int[] l = {0, 0};
             v.getLocationInWindow(l);
             int left = l[0];

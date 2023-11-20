@@ -310,6 +310,14 @@ public class TalkPresenter implements TalkContract.UserActionsListener {
         this.localRepository.setOnRecordsLostListener(list -> view.showRecordsLostMessage(list));
     }
 
+    @Override
+    public void sendText(String msgStr){
+//        1,显示到界面上
+        view.sendTextShow(msgStr);
+
+//        2，发送成功后还需要回调的
+
+    }
     private void addLastNewRecord(Record record) {
         if (view != null) {
             final int order = prefs.getRecordsOrder();
@@ -486,7 +494,7 @@ public class TalkPresenter implements TalkContract.UserActionsListener {
                                 record.isBookmarked(),
                                 record.isWaveformProcessed(),
                                 record.getAmps(),
-                                0,
+                                1,
                                 null);
                         if (localRepository.updateRecord(TalkPresenter.this.record)) {
                             AndroidUtils.runOnUIThread(() -> {
@@ -1029,7 +1037,7 @@ public class TalkPresenter implements TalkContract.UserActionsListener {
                                 rec.isBookmarked(),
                                 rec.isWaveformProcessed(),
                                 rec.getAmps(),
-                                0,
+                                1,
                                 null));
                     }
                 }
@@ -1058,7 +1066,7 @@ public class TalkPresenter implements TalkContract.UserActionsListener {
                                 trashRecord.isBookmarked(),
                                 trashRecord.isWaveformProcessed(),
                                 trashRecord.getAmps(),
-                                0,
+                                1,
                                 null));
                     }
                 }

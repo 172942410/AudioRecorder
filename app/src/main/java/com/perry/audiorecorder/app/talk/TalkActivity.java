@@ -194,27 +194,13 @@ public class TalkActivity extends Activity implements TalkContract.View, View.On
                 linearVoice.setVisibility(View.GONE);
             }
         });
+        editText = findViewById(R.id.edit_text);
         buttonSend.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Log.d(TAG, "发送消息事件");
-            }
-        });
-        editText = findViewById(R.id.edit_text);
-        editText.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                Log.d(TAG, "beforeTextChanged:" + charSequence);
-            }
-
-            @Override
-            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                Log.d(TAG, "onTextChanged:" + charSequence);
-            }
-
-            @Override
-            public void afterTextChanged(Editable editable) {
-                Log.d(TAG, "afterTextChanged:" + editable);
+                String msgStr = editText.getEditableText().toString();
+                Log.d(TAG, "发送消息事件：" + msgStr);
+                presenter.sendText(msgStr);
             }
         });
         btnCloseMulti = findViewById(R.id.btn_close_multi_select);
@@ -375,6 +361,11 @@ public class TalkActivity extends Activity implements TalkContract.View, View.On
 //        }
     }
 
+    @Override
+    public void sendTextShow(String msgStr){
+        talkAdapter.addTextData(msgStr);
+        editText.setText("");
+    }
     @Override
     public void hidePlayPanel() {
         hidePanel();
@@ -996,7 +987,7 @@ public class TalkActivity extends Activity implements TalkContract.View, View.On
     public boolean dispatchTouchEvent(MotionEvent ev) {
         if (ev.getAction() == MotionEvent.ACTION_DOWN) {
             View view = getCurrentFocus();
-            if (KeyboardsUtils.isShouldHideKeyBord(view, ev)) {
+            if (KeyboardsUtils.isShouldHideKeyBord(view, ev) && KeyboardsUtils.isShouldHideKeyBord(buttonSend, ev)) {
                 KeyboardsUtils.hintKeyBoards(view);
             }
         }

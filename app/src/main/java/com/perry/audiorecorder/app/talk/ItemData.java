@@ -3,6 +3,7 @@ package com.perry.audiorecorder.app.talk;
 
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.text.TextUtils;
 
 import com.perry.audiorecorder.AppConstants;
 import com.perry.audiorecorder.util.TimeUtils;
@@ -10,15 +11,6 @@ import com.perry.audiorecorder.util.TimeUtils;
 import java.util.Arrays;
 
 public class ItemData implements Parcelable {
-
-	// 普通item数据类型
-	public final static int ITEM_TYPE_NORMAL = 1;
-	// item头部布局
-	public final static int ITEM_TYPE_HEADER = 2;
-	// item日期布局
-	public final static int ITEM_TYPE_DATE   = 3;
-	// item尾部布局
-	public final static int ITEM_TYPE_FOOTER = 4;
 
 	private final long id;
 	private final int type;
@@ -39,13 +31,11 @@ public class ItemData implements Parcelable {
 	private boolean bookmarked;
 	private final String avatar_url;
 	private int[] amps;
-
-	private final int itemType;
 	private byte[] itemData;
 
 	public ItemData(long id, int type, String name, String format, String description, long duration,
 					long size, long created, long added, String path, int sampleRate, int channelCount, int bitrate,
-					boolean bookmarked, int[] amps, int itemType,byte[] itemData) {
+					boolean bookmarked, int[] amps ,byte[] itemData) {
 		this.id = id;
 		this.type = type;
 		this.name = name;
@@ -63,22 +53,29 @@ public class ItemData implements Parcelable {
 		this.channelCount = channelCount;
 		this.bitrate = bitrate;
 		this.bookmarked = bookmarked;
-		this.itemType = itemType;
 		this.avatar_url = "";
 		this.amps = amps;
 		this.itemData = itemData;
 	}
 
 	public static ItemData createHeaderItem() {
-		return new ItemData(-1, ItemData.ITEM_TYPE_HEADER, "HEADER", "", "", 0, 0, 0, 0, "", 0, 0, 0, false, null, -1,null);
+		return new ItemData(-1, ItemType.HEADER.typeId, "HEADER", "", "", 0, 0, 0, 0, "", 0, 0, 0, false, null, null);
 	}
 
 	public static ItemData createFooterItem() {
-		return new ItemData(-1, ItemData.ITEM_TYPE_FOOTER, "FOOTER", "", "", 0, 0, 0, 0, "", 0, 0, 0, false, null, -1,null);
+		return new ItemData(-1, ItemType.FOOTER.typeId, "FOOTER", "", "", 0, 0, 0, 0, "", 0, 0, 0, false, null,null);
 	}
 
 	public static ItemData createDateItem(long date) {
-		return new ItemData(-1, ItemData.ITEM_TYPE_DATE, "DATE", "", "", 0, 0, 0, date, "", 0, 0, 0, false, null, -1,null);
+		return new ItemData(-1, ItemType.DATE.typeId, "DATE", "", "", 0, 0, 0, date, "", 0, 0, 0, false, null, null);
+	}
+
+	public static ItemData createTextItem(String msgStr) {
+		if(TextUtils.isEmpty(msgStr)) {
+			return new ItemData(-1, ItemType.SEND_TEXT.typeId, "TEXT", "", "", 0, 0, System.currentTimeMillis(), 0, "", 0, 0, 0, false, null,  msgStr.getBytes());
+		}else{
+			return null;
+		}
 	}
 
 	public long getId() {
@@ -204,7 +201,6 @@ public class ItemData implements Parcelable {
 		in.readBooleanArray(bools);
 		bookmarked = bools[0];
 //		后来新加的读取
-		this.itemType = in.readInt();
 		in.readByteArray(itemData);
 	}
 
@@ -219,9 +215,7 @@ public class ItemData implements Parcelable {
 		out.writeIntArray(amps);
 		out.writeBooleanArray(new boolean[] {bookmarked});
 //		后来新加的
-		out.writeInt(itemType);
 		out.writeByteArray(itemData);
-
 	}
 
 	public static final Creator<ItemData> CREATOR

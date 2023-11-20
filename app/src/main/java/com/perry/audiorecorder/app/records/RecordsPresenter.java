@@ -351,7 +351,7 @@ public class RecordsPresenter implements RecordsContract.UserActionsListener {
                                 rec2.isBookmarked(),
                                 rec2.isWaveformProcessed(),
                                 rec2.getAmps(),
-                                0,
+                                1,
                                 null);
                         if (localRepository.updateRecord(renamedRecord)) {
                             AndroidUtils.runOnUIThread(() -> {

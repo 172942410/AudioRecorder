@@ -140,7 +140,7 @@ public class AppRecorderImpl implements AppRecorder {
                                 record.isBookmarked(),
                                 record.isWaveformProcessed(),
                                 waveForm,
-                                0,
+                                1,
                                 null);
                         if (localRepository.updateRecord(update)) {
                             recordingData.clear();

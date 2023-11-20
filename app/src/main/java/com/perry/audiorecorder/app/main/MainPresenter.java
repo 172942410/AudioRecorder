@@ -468,7 +468,7 @@ public class MainPresenter implements MainContract.UserActionsListener {
                                 record.isBookmarked(),
                                 record.isWaveformProcessed(),
                                 record.getAmps(),
-                                0,
+                                1,
                                 null);
                         if (localRepository.updateRecord(MainPresenter.this.record)) {
                             AndroidUtils.runOnUIThread(() -> {
@@ -778,7 +778,7 @@ public class MainPresenter implements MainContract.UserActionsListener {
                                 false,
                                 false,
                                 new int[ARApplication.getLongWaveformSampleCount()],
-                                0,
+                                1,
                                 null);
                         record = localRepository.insertRecord(r);
                         final Record rec = record;
@@ -852,7 +852,7 @@ public class MainPresenter implements MainContract.UserActionsListener {
                                 rec.isBookmarked(),
                                 rec.isWaveformProcessed(),
                                 rec.getAmps(),
-                                0,
+                                1,
                                 null));
                     }
                 }
@@ -881,7 +881,7 @@ public class MainPresenter implements MainContract.UserActionsListener {
                                 trashRecord.isBookmarked(),
                                 trashRecord.isWaveformProcessed(),
                                 trashRecord.getAmps(),
-                                0,
+                                1,
                                 null));
                     }
                 }
