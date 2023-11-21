@@ -20,10 +20,12 @@ import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.PopupMenu;
+import android.widget.ProgressBar;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.widget.AppCompatButton;
 import androidx.appcompat.widget.AppCompatTextView;
 import androidx.core.content.ContextCompat;
 import androidx.core.content.PermissionChecker;
@@ -36,7 +38,6 @@ import com.perry.audiorecorder.app.settings.SettingsMapper;
 import com.perry.audiorecorder.app.talk.itemHolder.VHSendText;
 import com.perry.audiorecorder.app.widget.CircleImageView;
 import com.perry.audiorecorder.app.widget.SimpleWaveformView;
-import com.perry.audiorecorder.data.database.Record;
 import com.perry.audiorecorder.util.AndroidUtils;
 import com.perry.audiorecorder.util.TimeUtils;
 
@@ -173,13 +174,25 @@ public class TalkAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         } else if (type == ItemType.SEND_TEXT.typeId) {
             View v = LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.item_talk_send_text, viewGroup, false);
             return new VHSendText(v, this,colorMap,null, null);
-        } else {
-            return null;
+        } else if (type == ItemType.RECEIVE_TEXT.typeId) {
+            View v = LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.item_talk_receive_text, viewGroup, false);
+            return new VHSendText(v, this,colorMap,null, null);
+        }
+        else {
+            View v = LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.item_talk_send_text, viewGroup, false);
+            return new VHSendText(v, this,colorMap,null, null);
         }
     }
 
     @Override
     public void onBindViewHolder(@NonNull final RecyclerView.ViewHolder viewHolder, final int pos) {
+        if (viewHolder.getItemViewType() == ItemType.RECEIVE_TEXT.typeId) {
+            final VHSendText holder = (VHSendText) viewHolder;
+            final int p = holder.getAbsoluteAdapterPosition();
+            final ItemData item = data.get(p);
+//            Log.d(TAG, "item:" + item);
+            holder.setItemData(item);
+        }else
         if (viewHolder.getItemViewType() == ItemType.SEND_TEXT.typeId) {
             final VHSendText holder = (VHSendText) viewHolder;
             final int p = holder.getAbsoluteAdapterPosition();
@@ -204,6 +217,20 @@ public class TalkAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             } else {
                 drawable = ContextCompat.getDrawable(viewHolder.itemView.getContext(), R.drawable.ic_bookmark_bordered_small);
             }
+            if(item.getLoadStatus() == 0){ //成功
+                holder.buttonFailed.setVisibility(View.GONE);
+                holder.progressBar.setVisibility(View.GONE);
+            }else if(item.getLoadStatus() == 1){ //失败
+                holder.buttonFailed.setVisibility(View.VISIBLE);
+                holder.progressBar.setVisibility(View.GONE);
+            }else if(item.getLoadStatus() == 2){ //加载中...
+                holder.buttonFailed.setVisibility(View.GONE);
+                holder.progressBar.setVisibility(View.VISIBLE);
+            }else{ //默认成功状态
+                holder.buttonFailed.setVisibility(View.GONE);
+                holder.progressBar.setVisibility(View.GONE);
+            }
+
             holder.btnBookmark.setCompoundDrawablesWithIntrinsicBounds(drawable, null, null, null);
             if (viewHolder.getLayoutPosition() == activeItem) {
                 holder.view.setBackgroundResource(R.color.selected_item_color);
@@ -755,11 +782,13 @@ public class TalkAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         SimpleWaveformView waveformViewItem;
         View view;
 
-        FrameLayout voiceLayout;
+        LinearLayout voiceLayout;
+        FrameLayout messageLayout;
 
         ImageButton btnPlay;
         SeekBar playProgress;
-
+        ProgressBar progressBar;
+        AppCompatButton buttonFailed;
         ItemViewHolder(
                 View itemView,
                 OnItemClickListener onItemClickListener,
@@ -793,8 +822,11 @@ public class TalkAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             playProgress = itemView.findViewById(R.id.item_play_progress);
 //            10秒之内不用显示进度条了；太小了
             voiceLayout = itemView.findViewById(R.id.voice_layout);
+            messageLayout = itemView.findViewById(R.id.message_layout);
+            buttonFailed = itemView.findViewById(R.id.button_failed);
+            progressBar = itemView.findViewById(R.id.progress);
             if (colorMap != null) {
-                voiceLayout.setBackgroundResource(colorMap.getPlaybackPanelBackground());
+                messageLayout.setBackgroundResource(colorMap.getPlaybackPanelBackground());
             }
             btnPlay = itemView.findViewById(R.id.btn_play);
             btnPlay.setOnClickListener(new View.OnClickListener() {
@@ -862,8 +894,9 @@ public class TalkAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                 if (width > 200) {
                     width = 200;
                 }
+                int progressSize = activity.getResources().getDimensionPixelSize(R.dimen.item_progress_size);
 //                params.width = (int) AndroidUtils.dpToPx(40);
-                params.width = (int) AndroidUtils.dpToPx(width);
+                params.width = (int) (AndroidUtils.dpToPx(width) + progressSize);
 //            params.width = (int) AndroidUtils.dpToPx(60);
 //            Log.d(TAG,"params.width:" + params.width);
             }

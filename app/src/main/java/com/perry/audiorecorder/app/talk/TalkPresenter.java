@@ -187,33 +187,11 @@ public class TalkPresenter implements TalkContract.UserActionsListener {
                         long startTimeLong = System.currentTimeMillis();
                         Log.d(TAG, "每次录音完成这里其实可以只添加最后一条的:"+startTimeLong);
 //                        loadRecords();
+                        rec.setAmps(rec.byte2int(rec.int2byte(rec.getAmps())));
+                        ItemData itemData = Mapper.recordToItemType(rec);
 //                        这里先请求网络接口
-                        httpUploadFile.uploadAudio(rec.getName(), rec.getPath(), new Callback.CommonCallback<String>() {
-                            @Override
-                            public void onSuccess(String result) {
-                                long endTimeLong = System.currentTimeMillis();
-                                result = result.replace("\\","");
-                                Log.d(TAG, "uploadAudio onSuccess 请求耗时:" + (endTimeLong - startTimeLong) + "，result：" + result);
-                                ReceiveMsgBean receiveMsgBean = JSON.parseObject(result, ReceiveMsgBean.class);
-                                Log.d(TAG, "uploadAudio json解析完成 :" + receiveMsgBean + "耗时："+ (System.currentTimeMillis() - endTimeLong) );
-                            }
-
-                            @Override
-                            public void onError(Throwable ex, boolean isOnCallback) {
-                                Log.d(TAG, "uploadAudio onError :" + ex + ",isOnCallback:" + isOnCallback);
-                            }
-
-                            @Override
-                            public void onCancelled(CancelledException cex) {
-                                Log.d(TAG, "uploadAudio onCancelled :" + cex);
-                            }
-
-                            @Override
-                            public void onFinished() {
-                                Log.d(TAG, "uploadAudio onFinished");
-                            }
-                        });
-                        addLastNewRecord(record);
+                        httpUploadFile.uploadAudio(itemData.getName(), itemData.getPath(), new HttpCallback(itemData));
+                        addLastNewRecord(itemData);
                     }
                     if (view != null) {
                         view.keepScreenOn(false);
@@ -343,6 +321,56 @@ public class TalkPresenter implements TalkContract.UserActionsListener {
         );
     }
 
+    class HttpCallback implements Callback.CommonCallback<String>{
+        ItemData itemData;
+        HttpCallback(ItemData itemData){
+            this.itemData = itemData;
+        }
+            @Override
+            public void onSuccess(String result) {
+            view.sendSuccess(itemData);
+                TalkPresenter.this.record.setLoading(0);
+            localRepository.updateRecord(TalkPresenter.this.record);
+            long endTimeLong = System.currentTimeMillis();
+            Log.d(TAG, "uploadAudio onSuccess 原始数据: result：" + result);
+//                                字符串开始转义
+            result = result.replace("\\","");
+            if(result.startsWith("\"")){
+                result = result.substring(1);
+            }
+            if(result.endsWith("\"")){
+                result = result.substring(0,result.length()-1);
+            }
+//                                字符串在解析json之前需要先转义成功；因为服务端有可能把字符串外面又多节了双引号导致的问题
+//            Log.d(TAG, "uploadAudio onSuccess 请求耗时:" + (endTimeLong - startTimeLong) + "，result：" + result);
+            ReceiveMsgBean receiveMsgBean = JSON.parseObject(result, ReceiveMsgBean.class);
+            Log.d(TAG, "耗时："+ (System.currentTimeMillis() - endTimeLong) + ",uploadAudio json解析完成 :" + receiveMsgBean);
+            Record receiveRecord = Record.createReceiveTextRecord(System.currentTimeMillis(),receiveMsgBean.text);
+            Record receiveRecordDb = localRepository.insertRecord(receiveRecord);
+            ItemData itemData = Mapper.recordToItemType(receiveRecordDb);
+            view.sendTextShow(itemData);
+        }
+
+            @Override
+            public void onError(Throwable ex, boolean isOnCallback) {
+            view.sendFailed(itemData,ex);
+            TalkPresenter.this.record.setLoading(1);
+            localRepository.updateRecord(TalkPresenter.this.record);
+            Log.d(TAG, "uploadAudio onError :" + ex + ",isOnCallback:" + isOnCallback);
+        }
+
+            @Override
+            public void onCancelled(CancelledException cex) {
+            view.sendFailed(itemData,cex);
+            Log.d(TAG, "uploadAudio onCancelled :" + cex);
+        }
+
+            @Override
+            public void onFinished() {
+            Log.d(TAG, "uploadAudio onFinished");
+        }
+
+    }
     @Override
     public void sendText(String msgStr) {
 //        1,显示到界面上
@@ -355,12 +383,12 @@ public class TalkPresenter implements TalkContract.UserActionsListener {
 
     }
 
-    private void addLastNewRecord(Record record) {
+    private void addLastNewRecord(ItemData itemData) {
         if (view != null) {
             final int order = prefs.getRecordsOrder();
             ArrayList list = new ArrayList<ItemData>();
-            record.setAmps(record.byte2int(record.int2byte(record.getAmps())));
-            list.add(Mapper.recordToItemType(record));
+            view.showItemProgress(itemData);
+            list.add(itemData);
             view.addRecords(list, order);
         }
     }
@@ -532,7 +560,8 @@ public class TalkPresenter implements TalkContract.UserActionsListener {
                                 record.isWaveformProcessed(),
                                 record.getAmps(),
                                 1,
-                                null);
+                                null,
+                                0);
                         if (localRepository.updateRecord(TalkPresenter.this.record)) {
                             AndroidUtils.runOnUIThread(() -> {
                                 if (view != null) {
@@ -1075,7 +1104,8 @@ public class TalkPresenter implements TalkContract.UserActionsListener {
                                 rec.isWaveformProcessed(),
                                 rec.getAmps(),
                                 1,
-                                null));
+                                null,
+                                0));
                     }
                 }
             }
@@ -1104,7 +1134,8 @@ public class TalkPresenter implements TalkContract.UserActionsListener {
                                 trashRecord.isWaveformProcessed(),
                                 trashRecord.getAmps(),
                                 1,
-                                null));
+                                null,
+                                0));
                     }
                 }
             }

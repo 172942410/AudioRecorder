@@ -171,7 +171,8 @@ class DecodeService : Service() {
                                         true,
                                         data,
                                         1,
-                                        null
+                                        null,
+                                        2
                                     )
                                     localRepository.updateRecord(decodedRecord)
                                 }

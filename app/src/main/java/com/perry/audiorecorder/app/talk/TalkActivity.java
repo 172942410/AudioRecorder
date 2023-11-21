@@ -488,6 +488,28 @@ public class TalkActivity extends Activity implements TalkContract.View, View.On
     public void sendTextShow(ItemData itemData) {
         talkAdapter.addTextData(itemData);
         editText.setText("");
+        txtEmpty.setVisibility(View.GONE);
+        recyclerView.scrollToPosition(talkAdapter.getItemCount() - 1);
+    }
+
+    @Override
+    public void sendSuccess(ItemData itemData) {
+        //这里隐藏加载
+        itemData.setLoading(1);
+        talkAdapter.notifyDataSetChanged();
+    }
+
+    @Override
+    public void sendFailed(ItemData itemData,Throwable ex) {
+//这里隐藏加载变失败控件
+        itemData.setLoading(2);
+        talkAdapter.notifyDataSetChanged();
+    }
+
+    @Override
+    public void showItemProgress(ItemData itemData) {
+        itemData.setLoading(0);
+        talkAdapter.notifyDataSetChanged();
     }
 
     @Override

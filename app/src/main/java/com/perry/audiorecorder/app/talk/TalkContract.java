@@ -181,6 +181,12 @@ public interface TalkContract {
         void showPanelProgress();
 
         void sendTextShow(ItemData itemData);
+
+        void sendSuccess(ItemData itemData);
+
+        void sendFailed(ItemData itemData,Throwable ex);
+
+        void showItemProgress(ItemData itemData);
     }
 
     interface UserActionsListener extends Contract.UserActionsListener<TalkContract.View> {

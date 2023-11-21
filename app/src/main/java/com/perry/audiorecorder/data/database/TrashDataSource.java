@@ -101,7 +101,8 @@ public class TrashDataSource extends DataSource<Record> {
 //				Record.stringToArray(
 //						cursor.getString(cursor.getColumnIndex(SQLiteHelper.COLUMN_DATA_STR)))
                 cursor.getInt(cursor.getColumnIndex(SQLiteHelper.COLUMN_TYPE)),
-                cursor.getBlob(cursor.getColumnIndex(SQLiteHelper.COLUMN_MSG_DATA))
+                cursor.getBlob(cursor.getColumnIndex(SQLiteHelper.COLUMN_MSG_DATA)),
+                cursor.getInt(cursor.getColumnIndex(SQLiteHelper.COLUMN_LOAD_STATUS))
         );
     }
 }

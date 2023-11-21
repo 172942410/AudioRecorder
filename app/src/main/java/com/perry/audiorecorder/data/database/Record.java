@@ -50,9 +50,14 @@ public class Record {
     private final int msgType;
     private byte[] msgData;
 
+    /**
+     * 0 成功；1失败；2加载中
+     */
+    private int loadStatus;
+
     public Record(int id, String name, long duration, long created, long added, long removed, String path,
                   String format, long size, int sampleRate, int channelCount, int bitrate,
-                  boolean bookmark, boolean waveformProcessed, int[] amps, int msgType, byte[] msgData) {
+                  boolean bookmark, boolean waveformProcessed, int[] amps, int msgType, byte[] msgData,int loadStatus) {
         this.id = id;
         this.name = name;
         this.duration = duration;
@@ -72,11 +77,12 @@ public class Record {
 //		this.data = AndroidUtils.int2byte(amps);
         this.msgType = msgType;
         this.msgData = msgData;
+        this.loadStatus = loadStatus;
     }
 
     public Record(int id, String name, long duration, long created, long added, long removed, String path,
                   String format, long size, int sampleRate, int channelCount, int bitrate,
-                  boolean bookmark, boolean waveformProcessed, byte[] amps, int msgType, byte[] msgData) {
+                  boolean bookmark, boolean waveformProcessed, byte[] amps, int msgType, byte[] msgData,int loadStatus) {
         this.id = id;
         this.name = name;
         this.duration = duration;
@@ -96,15 +102,31 @@ public class Record {
         this.data = amps;
         this.msgType = msgType;
         this.msgData = msgData;
+        this.loadStatus = loadStatus;
     }
 
     public static Record createTextRecord(long createdTime ,String msgStr){
         byte[] arr = new byte[1];
         if(!TextUtils.isEmpty(msgStr)){
-            return new Record(Record.NO_ID,"",0,createdTime,createdTime,0,"","",0,0,0,0,false,false,arr,2,msgStr.getBytes());
+            return new Record(Record.NO_ID,"",0,createdTime,createdTime,0,"","",0,0,0,0,false,false,arr,2,msgStr.getBytes(),2);
         }
-        return new Record(Record.NO_ID,"",0,createdTime,createdTime,0,"","",0,0,0,0,false,false,arr,2,null);
+        return new Record(Record.NO_ID,"",0,createdTime,createdTime,0,"","",0,0,0,0,false,false,arr,2,null,2);
     }
+
+    /**
+     * 接收到的文本消息
+     * @param createdTime
+     * @param msgStr
+     * @return
+     */
+    public static Record createReceiveTextRecord(long createdTime ,String msgStr){
+        byte[] arr = new byte[1];
+        if(!TextUtils.isEmpty(msgStr)){
+            return new Record(Record.NO_ID,"",0,createdTime,createdTime,0,"","",0,0,0,0,false,false,arr, 13,msgStr.getBytes(),0);
+        }
+        return new Record(Record.NO_ID,"",0,createdTime,createdTime,0,"","",0,0,0,0,false,false,arr,13,null,0);
+    }
+
     public byte[] int2byte(int[] amps) {
         byte[] bytes = new byte[amps.length];
         for (int i = 0; i < amps.length; i++) {
@@ -270,5 +292,18 @@ public class Record {
 
     public byte[] getMsgData(){
         return msgData;
+    }
+
+    /**
+     * @return 0 成功；1 失败；2 加载中
+     */
+    public int getLoadStatus() {
+        return loadStatus;
+    }
+    /**
+     * @param loadStatus 0 成功；1 失败；2 加载中
+     */
+    public void setLoading(int loadStatus){
+        this.loadStatus = loadStatus;
     }
 }

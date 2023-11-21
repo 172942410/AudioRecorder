@@ -204,7 +204,8 @@ public class LocalRepositoryImpl implements LocalRepository {
                     false,
                     new int[ARApplication.getLongWaveformSampleCount()],
                     0,
-                    null);
+                    null,
+                    2);
             Record r = insertRecord(record);
             if (r != null) {
                 return r;

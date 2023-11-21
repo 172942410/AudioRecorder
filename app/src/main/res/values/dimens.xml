@@ -46,8 +46,13 @@
 
     <dimen name="item_talk">60dp</dimen>
     <dimen name="item_avatar">40dp</dimen>
-    <dimen name="item_voice_height">35dp</dimen>
+    <dimen name="item_voice_height">36dp</dimen>
     <dimen name="item_margin_zero">0dp</dimen>
     <dimen name="item_margin_lr">4dp</dimen>
     <dimen name="text_ss">8sp</dimen>
+    <dimen name="item_progress_size">20dp</dimen>
+
+    <dimen name="item_msg_rl">50dp</dimen>
+    <dimen name="item_msg_avatar">5dp</dimen>
+
 </resources>

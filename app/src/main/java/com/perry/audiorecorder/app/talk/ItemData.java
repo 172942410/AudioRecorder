@@ -33,6 +33,8 @@ public class ItemData implements Parcelable {
 	private int[] amps;
 	private byte[] itemData;
 
+	private int loadStatus = 0; // 0 成功；1失败；2加载中
+
 	public ItemData(long id, int type, String name, String format, String description, long duration,
 					long size, long created, long added, String path, int sampleRate, int channelCount, int bitrate,
 					boolean bookmarked, int[] amps ,byte[] itemData) {
@@ -256,5 +258,18 @@ public class ItemData implements Parcelable {
 				", avatar_url='" + avatar_url + '\'' +
 				", amps=" + Arrays.toString(amps) +
 				'}';
+	}
+
+	/**
+	 * @return 0 成功；1 失败；2 加载中
+	 */
+	public int getLoadStatus() {
+		return loadStatus;
+	}
+	/**
+	 * @param loadStatus 0 成功；1 失败；2 加载中
+	 */
+	public void setLoading(int loadStatus){
+		this.loadStatus = loadStatus;
 	}
 }

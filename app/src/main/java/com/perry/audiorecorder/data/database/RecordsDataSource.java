@@ -70,6 +70,7 @@ public class RecordsDataSource extends DataSource<Record> {
             values.put(SQLiteHelper.COLUMN_DATA_STR, "");
             values.put(SQLiteHelper.COLUMN_TYPE, item.getMsgType());
             values.put(SQLiteHelper.COLUMN_MSG_DATA, item.getMsgData());
+            values.put(SQLiteHelper.COLUMN_LOAD_STATUS, item.getLoadStatus());
             return values;
         } else {
             Timber.e("Can't convert Record with empty Name!");
@@ -98,7 +99,8 @@ public class RecordsDataSource extends DataSource<Record> {
 //				Record.stringToArray(
 //						cursor.getString(cursor.getColumnIndex(SQLiteHelper.COLUMN_DATA_STR)))
                 cursor.getInt(cursor.getColumnIndex(SQLiteHelper.COLUMN_TYPE)),
-                cursor.getBlob(cursor.getColumnIndex(SQLiteHelper.COLUMN_MSG_DATA))
+                cursor.getBlob(cursor.getColumnIndex(SQLiteHelper.COLUMN_MSG_DATA)),
+                cursor.getInt(cursor.getColumnIndex(SQLiteHelper.COLUMN_LOAD_STATUS))
         );
     }
 }

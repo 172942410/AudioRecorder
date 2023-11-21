@@ -12,6 +12,7 @@ import org.xutils.http.body.MultipartBody;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+
 import org.xutils.x;
 
 public class HttpUploadFile {
@@ -22,28 +23,28 @@ public class HttpUploadFile {
     public static final String PATH = ROOT_PATH + "error_log/";
     public static final String FILE_PATH = SD_PATH + PATH;
 
-//    public static String URL_HOST = "http://demo.lianyundata.com";
+    //    public static String URL_HOST = "http://demo.lianyundata.com";
     public static String URL_HOST = "http://digitalghost.asuscomm.cn:6688";
 
     Activity activity;
     String saveDate, lastDate;
 
-    public <T>void uploadAudio(String fileName, String filePath,Callback.CommonCallback<T> callback) {
-        android.util.Log.d(TAG,"fileName:"+fileName+",filePath:"+filePath);
+    public <T> void uploadAudio(String fileName, String filePath, Callback.CommonCallback<T> callback) {
+        android.util.Log.d(TAG, "fileName:" + fileName + ",filePath:" + filePath);
 //        if (fileName.endsWith(".wav")) {
 //            fileName = fileName.substring(0, fileName.length() - 4);
 //        }
         File file = new File(filePath);
-        if(!file.exists()){
-            Log.e(TAG,"音频文件不存在啊");
+        if (!file.exists()) {
+            Log.e(TAG, "音频文件不存在啊");
             return;
         }
-        Log.e(TAG,"开始接口上传音频文件了");
+        Log.e(TAG, "开始接口上传音频文件了");
         String url = URL_HOST + "/uploadaudio";
         RequestParams params = new RequestParams(url);
 //        params.setAsJsonContent(true);
 //        params.addHeader("Content-Type", "application/json");
-        params.addHeader("Filename", fileName+".wav");
+        params.addHeader("Filename", fileName + ".wav");
         List<KeyValue> list = new ArrayList<>();
         list.add(new KeyValue("file", file));
 //        list.add(new KeyValue("Filename", fileName+".wav"));

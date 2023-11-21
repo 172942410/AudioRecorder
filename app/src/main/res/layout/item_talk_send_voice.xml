@@ -8,21 +8,43 @@
     android:focusable="true"
     android:foreground="?android:attr/selectableItemBackground"
     tools:viewBindingIgnore="true">
-
-    <FrameLayout
+    <LinearLayout
         android:id="@+id/voice_layout"
         android:layout_width="200dp"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
         android:layout_gravity="center_vertical|end"
         android:layout_marginStart="2dp"
-        android:layout_marginEnd="60dp"
+        android:layout_marginEnd="@dimen/item_msg_rl"
         android:layout_marginBottom="2dp"
-        android:background="@drawable/panel_amber"
         android:clipToPadding="false"
-        android:elevation="@dimen/toolbar_elevation"
         android:orientation="horizontal"
         android:visibility="visible"
         tools:visibility="visible"
+        >
+        <androidx.appcompat.widget.AppCompatButton
+            android:layout_width="@dimen/item_voice_height"
+            android:layout_height="@dimen/item_voice_height"
+            android:background="@drawable/button_translucent"
+            android:text="再次发送"
+            android:layout_gravity="center"
+            android:textSize="13dp"
+            android:id="@+id/button_failed"
+            />
+        <ProgressBar
+            android:layout_width="@dimen/item_progress_size"
+            android:layout_height="@dimen/item_progress_size"
+            android:id="@+id/progress"
+            android:layout_gravity="center"
+            android:visibility="gone"
+            />
+    <FrameLayout
+        android:id="@+id/message_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_vertical|end"
+        android:background="@drawable/panel_amber"
+        android:clipToPadding="false"
+        android:elevation="@dimen/toolbar_elevation"
         >
             <ImageButton
                 android:id="@+id/btn_play"
@@ -46,7 +68,7 @@
         <com.perry.audiorecorder.app.widget.SimpleWaveformView
             android:id="@+id/item_waveform"
             android:layout_width="match_parent"
-            android:layout_height="@dimen/item_voice_height"
+            android:layout_height="match_parent"
             android:layout_gravity="start|center_vertical"
             android:layout_marginStart="@dimen/spacing_zero"
             android:layout_marginTop="@dimen/spacing_zero"
@@ -111,6 +133,7 @@
             android:layout_gravity="end|bottom"
             />
     </FrameLayout>
+</LinearLayout>
     <View
         android:layout_width="match_parent"
         android:layout_height="@dimen/divider"
@@ -119,8 +142,9 @@
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
         android:layout_gravity="center_vertical|bottom"
+        android:gravity="bottom"
         android:layout_marginStart="@dimen/spacing_normal"
         android:layout_marginEnd="56dp"
         android:elevation="@dimen/toolbar_elevation"
@@ -177,7 +201,7 @@
         android:layout_width="@dimen/item_avatar"
         android:layout_height="@dimen/item_avatar"
         android:layout_gravity="center_vertical|end"
-        android:layout_marginEnd="10dp"
+        android:layout_marginEnd="@dimen/item_msg_avatar"
         android:background="?android:selectableItemBackgroundBorderless"
         android:src="@mipmap/logo_lianyun"
         app:civ_border_color="#DD44FFFF"
