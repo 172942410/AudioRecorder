@@ -42,9 +42,11 @@ public class HttpUploadFile {
         String url = URL_HOST + "/uploadaudio";
         RequestParams params = new RequestParams(url);
 //        params.setAsJsonContent(true);
+//        params.addHeader("Content-Type", "application/json");
+        params.addHeader("Filename", fileName+".wav");
         List<KeyValue> list = new ArrayList<>();
         list.add(new KeyValue("file", file));
-        list.add(new KeyValue("Filename", fileName));
+//        list.add(new KeyValue("Filename", fileName+".wav"));
         MultipartBody body = new MultipartBody(list, "UTF-8");
         params.setRequestBody(body);
         params.setConnectTimeout(120000);

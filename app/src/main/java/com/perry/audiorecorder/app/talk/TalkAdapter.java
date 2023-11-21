@@ -184,17 +184,17 @@ public class TalkAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             final VHSendText holder = (VHSendText) viewHolder;
             final int p = holder.getAbsoluteAdapterPosition();
             final ItemData item = data.get(p);
-            Log.d(TAG, "item:" + item);
+//            Log.d(TAG, "item:" + item);
             holder.setItemData(item);
         } else if (viewHolder.getItemViewType() == ItemType.SEND_VOICE.typeId) {
             final ItemViewHolder holder = (ItemViewHolder) viewHolder;
             final int p = holder.getAbsoluteAdapterPosition();
             final ItemData item = data.get(p);
-            Log.d(TAG, "item:" + item);
+//            Log.d(TAG, "item:" + item);
             holder.name.setText(item.getName());
 //            duration=4639875 4秒
             holder.setDurationInt((int) (item.getDuration() / 1000000));
-            Log.d(TAG, "获取到的 durationInt：" + holder.durationInt);
+//            Log.d(TAG, "获取到的 durationInt：" + holder.durationInt);
             String durationStr = holder.durationInt + "\"";
             holder.duration.setText(durationStr);
             holder.created.setText(item.getAddedTimeStr());
@@ -327,7 +327,7 @@ public class TalkAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     @Override
     public int getItemViewType(int position) {
         ItemData itemData = data.get(position);
-        Log.d(TAG, "itemData size:" + data.size() + ",itemData;" + itemData);
+//        Log.d(TAG, "itemData size:" + data.size() + ",itemData;" + itemData);
         return itemData.getType();
     }
 
@@ -643,9 +643,9 @@ public class TalkAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     }
 
     public void setProgress(long mills, int percent) {
-        Log.d(TAG, "setProgress mills:" + mills + ",percent:" + percent);
+//        Log.d(TAG, "setProgress mills:" + mills + ",percent:" + percent);
         if (itemViewHolderCur != null) {
-            Log.d(TAG, "setProgress:" + percent);
+//            Log.d(TAG, "setProgress:" + percent);
             itemViewHolderCur.playProgress.setProgress(percent);
             String curTime = mills / 1000 + "";
             itemViewHolderCur.durationCur.setText(curTime + "/");
@@ -846,7 +846,7 @@ public class TalkAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
         public void setDurationInt(int durationInt) {
             this.durationInt = durationInt;
-            Log.d(TAG, "durationInt:" + durationInt);
+//            Log.d(TAG, "durationInt:" + durationInt);
             if (playProgress != null) {
                 if (durationInt < 10) {
                     playProgress.setVisibility(View.INVISIBLE);

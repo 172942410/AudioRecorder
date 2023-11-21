@@ -25,6 +25,7 @@ import android.util.Log;
 
 import androidx.annotation.NonNull;
 
+import com.alibaba.fastjson2.JSON;
 import com.perry.audiorecorder.AppConstants;
 import com.perry.audiorecorder.BackgroundQueue;
 import com.perry.audiorecorder.Mapper;
@@ -37,6 +38,7 @@ import com.perry.audiorecorder.app.settings.SettingsMapper;
 import com.perry.audiorecorder.audio.AudioDecoder;
 import com.perry.audiorecorder.audio.player.PlayerContractNew;
 import com.perry.audiorecorder.audio.recorder.RecorderContract;
+import com.perry.audiorecorder.bean.ReceiveMsgBean;
 import com.perry.audiorecorder.data.FileRepository;
 import com.perry.audiorecorder.data.Prefs;
 import com.perry.audiorecorder.data.database.LocalRepository;
@@ -182,13 +184,18 @@ public class TalkPresenter implements TalkContract.UserActionsListener {
                         }
                         updateInformation(rec.getFormat(), rec.getSampleRate(), rec.getSize());
                         //每次录音完成这里其实可以只添加最后一条的
-                        Log.d(TAG, "每次录音完成这里其实可以只添加最后一条的");
+                        long startTimeLong = System.currentTimeMillis();
+                        Log.d(TAG, "每次录音完成这里其实可以只添加最后一条的:"+startTimeLong);
 //                        loadRecords();
 //                        这里先请求网络接口
                         httpUploadFile.uploadAudio(rec.getName(), rec.getPath(), new Callback.CommonCallback<String>() {
                             @Override
                             public void onSuccess(String result) {
-                                Log.d(TAG, "uploadAudio onSuccess :" + result);
+                                long endTimeLong = System.currentTimeMillis();
+                                result = result.replace("\\","");
+                                Log.d(TAG, "uploadAudio onSuccess 请求耗时:" + (endTimeLong - startTimeLong) + "，result：" + result);
+                                ReceiveMsgBean receiveMsgBean = JSON.parseObject(result, ReceiveMsgBean.class);
+                                Log.d(TAG, "uploadAudio json解析完成 :" + receiveMsgBean + "耗时："+ (System.currentTimeMillis() - endTimeLong) );
                             }
 
                             @Override

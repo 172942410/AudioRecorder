@@ -3,6 +3,16 @@ apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-kapt'
 
 android {
+//	compileOptions {
+//		sourceCompatibility JavaVersion.VERSION_1_8
+//		targetCompatibility JavaVersion.VERSION_1_8
+//	}
+//	kotlinOptions {
+//		jvmTarget = '1.8'
+//	}
+//	kotlin {
+//		jvmToolchain(8)
+//	}
 	namespace 'com.perry.audiorecorder'
 	compileSdkVersion 34
 	defaultConfig {
@@ -75,6 +85,12 @@ android {
 	}
 }
 
+//tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile.class){
+//	kotlinOptions {
+//		jvmTarget = "1.8"
+//	}
+//}
+
 // Remove not needed buildVariants.
 android.variantFilter { variant ->
 	if (variant.buildType.name == 'release'
@@ -105,5 +121,5 @@ dependencies {
 	implementation 'androidx.appcompat:appcompat:1.6.1'
 	implementation 'com.google.android.material:material:1.10.0'
 	implementation 'org.xutils:xutils:3.8.12'
-
+	implementation 'com.alibaba.fastjson2:fastjson2:2.0.42.android4'
 }
