@@ -495,20 +495,20 @@ public class TalkActivity extends Activity implements TalkContract.View, View.On
     @Override
     public void sendSuccess(ItemData itemData) {
         //这里隐藏加载
-        itemData.setLoading(1);
+        itemData.setLoading(0);
         talkAdapter.notifyDataSetChanged();
     }
 
     @Override
     public void sendFailed(ItemData itemData,Throwable ex) {
 //这里隐藏加载变失败控件
-        itemData.setLoading(2);
+        itemData.setLoading(1);
         talkAdapter.notifyDataSetChanged();
     }
 
     @Override
     public void showItemProgress(ItemData itemData) {
-        itemData.setLoading(0);
+        itemData.setLoading(2);
         talkAdapter.notifyDataSetChanged();
     }
 

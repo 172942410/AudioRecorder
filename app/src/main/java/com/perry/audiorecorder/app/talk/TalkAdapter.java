@@ -889,14 +889,14 @@ public class TalkAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             }
             if (durationInt >= 0 && voiceLayout != null) {
                 //voiceLayout跟进时长计算长度；目测最小 ：40dp 或 60dp ：最长 200dp 语音最少1秒最多60秒
-                FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) voiceLayout.getLayoutParams();
+                ViewGroup.LayoutParams params =  messageLayout.getLayoutParams();
                 int width = 50 + durationInt * 4;
                 if (width > 200) {
                     width = 200;
                 }
                 int progressSize = activity.getResources().getDimensionPixelSize(R.dimen.item_progress_size);
 //                params.width = (int) AndroidUtils.dpToPx(40);
-                params.width = (int) (AndroidUtils.dpToPx(width) + progressSize);
+                params.width = (int) (AndroidUtils.dpToPx(width));
 //            params.width = (int) AndroidUtils.dpToPx(60);
 //            Log.d(TAG,"params.width:" + params.width);
             }

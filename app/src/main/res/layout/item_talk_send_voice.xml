@@ -10,11 +10,11 @@
     tools:viewBindingIgnore="true">
     <LinearLayout
         android:id="@+id/voice_layout"
-        android:layout_width="200dp"
+        android:layout_width="wrap_content"
         android:layout_height="match_parent"
         android:layout_gravity="center_vertical|end"
         android:layout_marginStart="2dp"
-        android:layout_marginEnd="@dimen/item_msg_rl"
+        android:layout_marginEnd="45dp"
         android:layout_marginBottom="2dp"
         android:clipToPadding="false"
         android:orientation="horizontal"
@@ -39,12 +39,14 @@
             />
     <FrameLayout
         android:id="@+id/message_layout"
-        android:layout_width="match_parent"
+        android:layout_width="200dp"
         android:layout_height="wrap_content"
         android:layout_gravity="center_vertical|end"
         android:background="@drawable/panel_amber"
         android:clipToPadding="false"
         android:elevation="@dimen/toolbar_elevation"
+        android:layout_marginStart="@dimen/item_msg_avatar"
+        android:layout_marginEnd="@dimen/item_msg_avatar"
         >
             <ImageButton
                 android:id="@+id/btn_play"

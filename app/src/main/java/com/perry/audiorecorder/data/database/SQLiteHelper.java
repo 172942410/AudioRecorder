@@ -43,6 +43,17 @@ public class SQLiteHelper extends SQLiteOpenHelper {
         Log.d(SQLiteHelper.class.getName(),
                 "更新数据库旧版本 " + oldVersion + " 到 "
                         + newVersion + ", 它将销毁所有旧数据");
+//        if(newVersion == 2){
+//            db.beginTransaction();
+//            //Add new fields to the table Records.
+//            db.execSQL("ALTER TABLE " + TABLE_RECORDS + " ADD COLUMN " + COLUMN_LOAD_STATUS + " INTEGER NOT NULL DEFAULT 0;");
+//
+//            //Add new fields to the table Trash.
+//            db.execSQL("ALTER TABLE " + TABLE_TRASH + " ADD COLUMN " + COLUMN_LOAD_STATUS + " INTEGER NOT NULL DEFAULT 0;");
+//
+//            db.setTransactionSuccessful();
+//            db.endTransaction();
+//        }
 
     }
 
@@ -77,6 +88,8 @@ public class SQLiteHelper extends SQLiteOpenHelper {
 
     static final String COLUMN_TYPE = "type";
     static final String COLUMN_MSG_DATA = "msgData";
+
+    static final String COLUMN_LOAD_STATUS = "load_status";
     //Create records table sql statement
     private static final String CREATE_RECORDS_TABLE_SCRIPT =
             "CREATE TABLE " + TABLE_RECORDS + " ("
