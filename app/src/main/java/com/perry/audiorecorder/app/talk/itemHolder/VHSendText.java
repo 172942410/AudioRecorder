@@ -27,6 +27,8 @@ public class VHSendText extends RecyclerView.ViewHolder {
     FrameLayout voiceLayout;
     TalkAdapter talkAdapter;
     ColorMap colorMap;
+    AppCompatTextView itemTime;
+
     public VHSendText(
             View itemView,
             TalkAdapter talkAdapter,
@@ -51,6 +53,7 @@ public class VHSendText extends RecyclerView.ViewHolder {
 //            }
 //            return false;
 //        });
+        itemTime = itemView.findViewById(R.id.item_time);
         name = itemView.findViewById(R.id.list_item_name);
         duration = itemView.findViewById(R.id.item_duration);
         durationCur = itemView.findViewById(R.id.item_duration_cur);
@@ -70,6 +73,9 @@ public class VHSendText extends RecyclerView.ViewHolder {
     public void setItemData(ItemData item) {
         if(item == null){
             return;
+        }
+        if(itemTime != null){
+            itemTime.setText(item.getAddedTimeStr());
         }
         if(name != null) {
             if(item.getItemData() != null){

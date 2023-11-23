@@ -10,7 +10,19 @@
     tools:viewBindingIgnore="true"
     android:minHeight="@dimen/item_talk"
     >
-
+    <androidx.appcompat.widget.AppCompatTextView
+        android:id="@+id/item_time"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top"
+        android:background="?android:selectableItemBackgroundBorderless"
+        android:lines="1"
+        android:singleLine="true"
+        android:text="显示时间"
+        android:textSize="@dimen/text_ss"
+        android:layout_marginTop="@dimen/spacing_zero"
+        android:layout_marginStart="@dimen/item_msg_rl"
+        />
     <FrameLayout
         android:id="@+id/voice_layout"
         android:layout_width="wrap_content"

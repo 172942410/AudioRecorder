@@ -25,7 +25,7 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
-import androidx.appcompat.widget.AppCompatButton;
+import androidx.appcompat.widget.AppCompatImageButton;
 import androidx.appcompat.widget.AppCompatTextView;
 import androidx.core.content.ContextCompat;
 import androidx.core.content.PermissionChecker;
@@ -788,7 +788,7 @@ public class TalkAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         ImageButton btnPlay;
         SeekBar playProgress;
         ProgressBar progressBar;
-        AppCompatButton buttonFailed;
+        AppCompatImageButton buttonFailed;
         ItemViewHolder(
                 View itemView,
                 OnItemClickListener onItemClickListener,
