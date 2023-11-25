@@ -6,3 +6,4 @@
 /build
 /captures
 .externalNativeBuild
+/paddlespeech_tts_cpp/.cxx/
