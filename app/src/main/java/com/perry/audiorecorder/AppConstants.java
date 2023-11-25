@@ -23,7 +23,7 @@ public class AppConstants {
 
 	private AppConstants() {}
 
-	public static final String REQUESTS_RECEIVER = "dmitriy.ponomarenko.ua@gmail.com";
+	public static final String REQUESTS_RECEIVER = "pengjun1206@gmail.com";
 
 	public static final String APPLICATION_NAME = "AudioRecorder";
 	public static final String RECORDS_DIR = "records";

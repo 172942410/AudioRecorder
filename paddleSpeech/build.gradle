@@ -1,0 +1,113 @@
+import java.security.MessageDigest
+
+plugins {
+    id 'com.android.library'
+}
+
+android {
+    namespace 'com.perry.paddlespeech'
+    compileSdk 33
+
+    defaultConfig {
+        minSdk 24
+        consumerProguardFiles "consumer-rules.pro"
+        externalNativeBuild {
+            cmake {
+                cppFlags ""
+            }
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+}
+
+dependencies {
+    implementation fileTree(include: ['*.jar'], dir: 'libs')
+    implementation 'androidx.appcompat:appcompat:1.6.1'
+    implementation 'com.google.android.material:material:1.8.0'
+}
+
+def paddleLiteLibs = 'https://paddlespeech.bj.bcebos.com/demos/TTSAndroid/paddle_lite_libs_68b66fd3.tar.gz'
+task downloadAndExtractPaddleLiteLibs(type: DefaultTask) {
+    doFirst {
+        println "gradle 下载和提取Paddle Lite库"
+    }
+    doLast {
+        // 为libs准备缓存文件夹
+        if (!file("cache").exists()) {
+            mkdir "cache"
+        }
+        // 为libs生成缓存名称
+        MessageDigest messageDigest = MessageDigest.getInstance('MD5')
+        messageDigest.update(paddleLiteLibs.bytes)
+        String cacheName = new BigInteger(1, messageDigest.digest()).toString(32)
+        // 下载 libs
+        if (!file("cache/${cacheName}.tar.gz").exists()) {
+            ant.get(src: paddleLiteLibs, dest: file("cache/${cacheName}.tar.gz"))
+        }
+        // 打开 libs
+        if (!file("cache/${cacheName}").exists()) {
+            copy {
+                from tarTree("cache/${cacheName}.tar.gz")
+                into "cache/${cacheName}"
+            }
+        }
+        // 复制 PaddlePredictor.jar
+        if (!file("libs/PaddlePredictor.jar").exists()) {
+            copy {
+                from "cache/${cacheName}/java/PaddlePredictor.jar"
+                into "libs"
+            }
+        }
+        if (!file("src/main/jniLibs/arm64-v8a/libpaddle_lite_jni.so").exists()) {
+            copy {
+                from "cache/${cacheName}/java/libs/arm64-v8a/"
+                into "src/main/jniLibs/arm64-v8a"
+            }
+        }
+    }
+}
+preBuild.dependsOn downloadAndExtractPaddleLiteLibs
+
+def paddleLiteModels = [['src' : 'https://paddlespeech.bj.bcebos.com/demos/TTSAndroid/fs2cnn_mbmelgan_cpu_v1.3.0.tar.gz',
+                         'dest': 'src/main/assets/models'],]
+task downloadAndExtractPaddleLiteModels(type: DefaultTask) {
+    doFirst {
+        println "gradle 下载和提取Paddle Lite型号"
+    }
+    doLast {
+        // Prepare cache folder for models
+        String cachePath = "cache"
+        if (!file("${cachePath}").exists()) {
+            mkdir "${cachePath}"
+        }
+        paddleLiteModels.eachWithIndex { model, index ->
+            MessageDigest messageDigest = MessageDigest.getInstance('MD5')
+            messageDigest.update(model.src.bytes)
+            String cacheName = new BigInteger(1, messageDigest.digest()).toString(32)
+            // Download the target model if not exists
+            boolean copyFiles = !file("${model.dest}").exists()
+            if (!file("${cachePath}/${cacheName}.tar.gz").exists()) {
+                ant.get(src: model.src, dest: file("${cachePath}/${cacheName}.tar.gz"))
+                copyFiles = true // force to copy files from the latest archive files
+            }
+            // Copy model file
+            if (copyFiles) {
+                copy {
+                    from tarTree("${cachePath}/${cacheName}.tar.gz")
+                    into "${model.dest}"
+                }
+            }
+        }
+    }
+}
+preBuild.dependsOn downloadAndExtractPaddleLiteModels

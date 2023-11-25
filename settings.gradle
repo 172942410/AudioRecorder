@@ -1,2 +1,4 @@
 include ':app'
 include ':chatlxd'
+include ':paddleSpeech'
+include ':paddlespeech_tts_cpp'

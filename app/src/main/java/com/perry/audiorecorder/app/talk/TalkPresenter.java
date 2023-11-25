@@ -1,18 +1,3 @@
-/*
- * Copyright 2018 Dmytro Ponomarenko
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 
 package com.perry.audiorecorder.app.talk;
 
@@ -20,6 +5,7 @@ package com.perry.audiorecorder.app.talk;
 import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.Environment;
 import android.provider.OpenableColumns;
 import android.util.Log;
 
@@ -49,10 +35,13 @@ import com.perry.audiorecorder.network.HttpUploadFile;
 import com.perry.audiorecorder.util.AndroidUtils;
 import com.perry.audiorecorder.util.FileUtil;
 import com.perry.audiorecorder.util.TimeUtils;
+import com.perry.paddlespeech.Predictor;
+import com.perry.paddlespeech.Utils;
 
 import org.xutils.common.Callback;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -85,10 +74,16 @@ public class TalkPresenter implements TalkContract.UserActionsListener {
 
     HttpUploadFile httpUploadFile;
 
-    /**
-     * Flag true defines that presenter called to show import progress when view was not bind.
-     * And after view bind we need to show import progress.
-     */
+    protected Predictor predictor = new Predictor();
+    int sampleRate = 24000;
+    protected String modelPath = "models/cpu";
+    private final String AMmodelName = "fastspeech2_csmsc_arm.nb";
+    private final String VOCmodelName = "mb_melgan_csmsc_arm.nb";
+    protected int cpuThreadNum = 1;
+    protected String cpuPowerMode = "LITE_POWER_HIGH";
+    private final String wavName = "tts_output.wav";
+    private String wavFile = Environment.getExternalStorageDirectory() + File.separator + wavName;
+
     public TalkPresenter(final Prefs prefs, final FileRepository fileRepository,
                          final LocalRepository localRepository,
                          PlayerContractNew.Player audioPlayer,
@@ -351,6 +346,29 @@ public class TalkPresenter implements TalkContract.UserActionsListener {
             Record receiveRecordDb = localRepository.insertRecord(receiveRecord);
             ItemData itemData = Mapper.recordToItemType(receiveRecordDb);
             view.sendTextShow(itemData);
+//            这里调用播放器播放文本
+            if(predictor.isLoaded()){
+//                boolean isRun = predictor.runModel(itemData.getItemData());
+                boolean isRun = predictor.runModel(new float[]{261, 231, 175, 116, 179, 262, 44, 154, 126, 177, 19, 262, 42, 241, 72, 177, 56, 174, 245, 37, 186, 37, 49, 151, 127, 69, 19, 179, 72, 69, 4, 260, 126, 177, 116, 151, 239, 153, 141});
+                Log.d(TAG,"执行文字转语音结果："+isRun);
+                wavFile = fileRepository.getRecordingDir().getAbsolutePath() + wavName;
+                try {
+                    Utils.rawToWave(wavFile, predictor.wav, sampleRate);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                if (audioPlayer.isPlaying()) {
+                    audioPlayer.pause();
+                } else if (audioPlayer.isPaused()) {
+                    audioPlayer.unpause();
+                } else {
+//                    这里播放的是tts转好的文件
+                    audioPlayer.play(wavFile);
+                }
+            }else{
+                Log.e(TAG,"paddleSpeech tts 加载失败了...无法文字转语音了");
+            }
+
         }
 
         @Override
@@ -698,6 +716,12 @@ public class TalkPresenter implements TalkContract.UserActionsListener {
     @Override
     public void updateRecordingDir(Context context) {
         fileRepository.updateRecordingDir(context, prefs);
+        boolean ttsSuccess = predictor.init(context, modelPath, AMmodelName, VOCmodelName, cpuThreadNum, cpuPowerMode);
+        if(ttsSuccess){
+            Log.d(TAG,"paddleSpeech tts 初始化成功");
+        }else{
+            Log.e(TAG,"paddleSpeech tts 初始化失败");
+        }
     }
 
     @Override

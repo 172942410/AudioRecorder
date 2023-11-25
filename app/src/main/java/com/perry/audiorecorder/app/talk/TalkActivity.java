@@ -65,6 +65,7 @@ import com.perry.audiorecorder.util.AndroidUtils;
 import com.perry.audiorecorder.util.AnimationUtil;
 import com.perry.audiorecorder.util.FileUtil;
 import com.perry.audiorecorder.util.KeyboardsUtils;
+import com.pery.clib.NativeLib;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -174,6 +175,9 @@ public class TalkActivity extends Activity implements TalkContract.View, View.On
         ImageButton btnSettings = findViewById(R.id.btn_settings);
         btnShare = findViewById(R.id.btn_share);
 
+        NativeLib nativeLib = new NativeLib();
+        String nativeStr = nativeLib.stringFromJNI();
+        Log.e(TAG,"nativeStr:" +  nativeStr);
         linearVoice = findViewById(R.id.linear_voice);
         relativeText = findViewById(R.id.relative_text);
         buttonSwitchVoice = findViewById(R.id.button_switch_voice);
@@ -490,6 +494,8 @@ public class TalkActivity extends Activity implements TalkContract.View, View.On
         editText.setText("");
         txtEmpty.setVisibility(View.GONE);
         recyclerView.scrollToPosition(talkAdapter.getItemCount() - 1);
+//        String msgStr = new String(itemData.getItemData());
+//        textToSpeech.speak(msgStr, TextToSpeech.QUEUE_FLUSH, null);
     }
 
     @Override
