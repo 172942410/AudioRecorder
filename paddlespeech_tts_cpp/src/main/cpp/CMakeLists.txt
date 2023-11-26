@@ -15,14 +15,14 @@ set(ENV{PKG_CONFIG_PATH} "${CMAKE_SOURCE_DIR}/third-party/build/lib/pkgconfig")
 find_package(PkgConfig REQUIRED)
 
 # It is hard to load xxx-config.cmake in a custom location, so use pkgconfig instead.
-#pkg_check_modules(ABSL   REQUIRED absl_strings IMPORTED_TARGET)
-#pkg_check_modules(GFLAGS REQUIRED gflags       IMPORTED_TARGET)
-#pkg_check_modules(GLOG   REQUIRED libglog      IMPORTED_TARGET)
+pkg_check_modules(ABSL   REQUIRED absl_strings IMPORTED_TARGET)
+pkg_check_modules(GFLAGS REQUIRED gflags       IMPORTED_TARGET)
+pkg_check_modules(GLOG   REQUIRED libglog      IMPORTED_TARGET)
 
 # load header-only libraries
 include_directories(
-    ${CMAKE_SOURCE_DIR}/third-party/build/src/cppjieba/include
-    ${CMAKE_SOURCE_DIR}/third-party/build/src/limonp/include
+        ${CMAKE_SOURCE_DIR}/third-party/build/src/cppjieba/include
+        ${CMAKE_SOURCE_DIR}/third-party/build/src/limonp/include
 )
 
 find_package(Threads REQUIRED)
@@ -32,23 +32,18 @@ find_package(Threads REQUIRED)
 include_directories(src)
 
 file(GLOB FRONT_SOURCES
-    ./src/base/*.cpp
-    ./src/front/*.cpp
-)
-#add_library(${CMAKE_PROJECT_NAME} SHARED clib.cpp)
-add_library(${CMAKE_PROJECT_NAME} STATIC ${FRONT_SOURCES})
-#add_library(paddlespeech_tts_front STATIC ${FRONT_SOURCES})
+        ./src/base/*.cpp
+        ./src/front/*.cpp
+        )
+add_library(paddlespeech_tts_front STATIC ${FRONT_SOURCES})
 
-#target_link_libraries(${CMAKE_PROJECT_NAME}
-#        android
-#        log)
 target_link_libraries(
-        ${CMAKE_PROJECT_NAME}
-    PUBLIC
-    PkgConfig::GFLAGS
-    PkgConfig::GLOG
-    PkgConfig::ABSL
-    Threads::Threads
+        paddlespeech_tts_front
+        PUBLIC
+        PkgConfig::GFLAGS
+        PkgConfig::GLOG
+        PkgConfig::ABSL
+        Threads::Threads
 )
 
 
