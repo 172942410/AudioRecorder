@@ -14,6 +14,10 @@ set(ABSL_PROPAGATE_CXX_STD ON)
 set(ENV{PKG_CONFIG_PATH} "${CMAKE_SOURCE_DIR}/third-party/build/lib/pkgconfig")
 find_package(PkgConfig REQUIRED)
 
+set(GFLAGS_USE_TARGET_NAMESPACE ON)
+find_package(gflags CONFIG REQUIRED)
+find_package(glog CONFIG REQUIRED)
+
 # It is hard to load xxx-config.cmake in a custom location, so use pkgconfig instead.
 pkg_check_modules(ABSL   REQUIRED absl_strings IMPORTED_TARGET)
 pkg_check_modules(GFLAGS REQUIRED gflags       IMPORTED_TARGET)
