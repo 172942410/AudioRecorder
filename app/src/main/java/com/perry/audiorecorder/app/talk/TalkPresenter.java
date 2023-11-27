@@ -7,11 +7,18 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Environment;
 import android.provider.OpenableColumns;
+import android.text.TextUtils;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
 
 import com.alibaba.fastjson2.JSON;
+import com.iflytek.aikit.core.AiEvent;
+import com.iflytek.aikit.core.AiHandle;
+import com.iflytek.aikit.core.AiHelper;
+import com.iflytek.aikit.core.AiListener;
+import com.iflytek.aikit.core.AiRequest;
+import com.iflytek.aikit.core.AiResponse;
 import com.perry.audiorecorder.AppConstants;
 import com.perry.audiorecorder.BackgroundQueue;
 import com.perry.audiorecorder.Mapper;
@@ -22,6 +29,7 @@ import com.perry.audiorecorder.app.info.RecordInfo;
 import com.perry.audiorecorder.app.records.RecordsContract;
 import com.perry.audiorecorder.app.settings.SettingsMapper;
 import com.perry.audiorecorder.audio.AudioDecoder;
+import com.perry.audiorecorder.audio.player.PcmAudioPlayer;
 import com.perry.audiorecorder.audio.player.PlayerContractNew;
 import com.perry.audiorecorder.audio.recorder.RecorderContract;
 import com.perry.audiorecorder.bean.ReceiveMsgBean;
@@ -35,16 +43,16 @@ import com.perry.audiorecorder.network.HttpUploadFile;
 import com.perry.audiorecorder.util.AndroidUtils;
 import com.perry.audiorecorder.util.FileUtil;
 import com.perry.audiorecorder.util.TimeUtils;
-import com.perry.paddlespeech.Predictor;
-import com.perry.paddlespeech.Utils;
+import com.perry.iflytek.AbilityConstant;
 
 import org.xutils.common.Callback;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
-
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 import timber.log.Timber;
 
 public class TalkPresenter implements TalkContract.UserActionsListener {
@@ -74,7 +82,6 @@ public class TalkPresenter implements TalkContract.UserActionsListener {
 
     HttpUploadFile httpUploadFile;
 
-    protected Predictor predictor = new Predictor();
     int sampleRate = 24000;
     protected String modelPath = "models/cpu";
     private final String AMmodelName = "fastspeech2_csmsc_arm.nb";
@@ -83,7 +90,9 @@ public class TalkPresenter implements TalkContract.UserActionsListener {
     protected String cpuPowerMode = "LITE_POWER_HIGH";
     private final String wavName = "tts_output.wav";
     private String wavFile = Environment.getExternalStorageDirectory() + File.separator + wavName;
-
+    File pcmFile;
+    private PcmAudioPlayer pcmAudioPlayer;
+    PcmAudioPlayer.PcmPlayerListener pcmPlayerCallback;
     public TalkPresenter(final Prefs prefs, final FileRepository fileRepository,
                          final LocalRepository localRepository,
                          PlayerContractNew.Player audioPlayer,
@@ -347,27 +356,28 @@ public class TalkPresenter implements TalkContract.UserActionsListener {
             ItemData itemData = Mapper.recordToItemType(receiveRecordDb);
             view.sendTextShow(itemData);
 //            这里调用播放器播放文本
-            if(predictor.isLoaded()){
-//                boolean isRun = predictor.runModel(itemData.getItemData());
-                boolean isRun = predictor.runModel(new float[]{261, 231, 175, 116, 179, 262, 44, 154, 126, 177, 19, 262, 42, 241, 72, 177, 56, 174, 245, 37, 186, 37, 49, 151, 127, 69, 19, 179, 72, 69, 4, 260, 126, 177, 116, 151, 239, 153, 141});
-                Log.d(TAG,"执行文字转语音结果："+isRun);
-                wavFile = fileRepository.getRecordingDir().getAbsolutePath() + wavName;
-                try {
-                    Utils.rawToWave(wavFile, predictor.wav, sampleRate);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-                if (audioPlayer.isPlaying()) {
-                    audioPlayer.pause();
-                } else if (audioPlayer.isPaused()) {
-                    audioPlayer.unpause();
-                } else {
-//                    这里播放的是tts转好的文件
-                    audioPlayer.play(wavFile);
-                }
-            }else{
-                Log.e(TAG,"paddleSpeech tts 加载失败了...无法文字转语音了");
-            }
+            startTTSpeaking(new String(itemData.getItemData()));
+//            if(predictor.isLoaded()){
+////                boolean isRun = predictor.runModel(itemData.getItemData());
+//                boolean isRun = predictor.runModel(new float[]{155,73,71,29,179,71,199,126,177,115,138,241,120,71,42,39,57,69,184,186});
+//                Log.d(TAG,"执行文字转语音结果："+isRun);
+//                wavFile = fileRepository.getRecordingDir().getAbsolutePath() + wavName;
+//                try {
+//                    Utils.rawToWave(wavFile, predictor.wav, sampleRate);
+//                } catch (IOException e) {
+//                    e.printStackTrace();
+//                }
+//                if (audioPlayer.isPlaying()) {
+//                    audioPlayer.pause();
+//                } else if (audioPlayer.isPaused()) {
+//                    audioPlayer.unpause();
+//                } else {
+////                    这里播放的是tts转好的文件
+//                    audioPlayer.play(wavFile);
+//                }
+//            }else{
+//                Log.e(TAG,"paddleSpeech tts 加载失败了...无法文字转语音了");
+//            }
 
         }
 
@@ -392,6 +402,102 @@ public class TalkPresenter implements TalkContract.UserActionsListener {
             Log.d(TAG, "uploadAudio onFinished");
         }
 
+    }
+
+    byte[] cacheArray;
+
+    /**
+     * 设置合成PCM数据缓存
+     */
+    private void setCacheArray(byte[] cacheArray) {
+        this.cacheArray = cacheArray;
+    }
+
+    private AtomicInteger totalPercent = new AtomicInteger(100);
+    //会话对象
+    private AiHandle aiHandle;
+    private LinkedHashMap<String, Object> ttsParamsMap = new LinkedHashMap<>();
+
+    /**
+     * 设置发音人
+     */
+    void setVCN(String vcn) {
+        Log.i(TAG, "设置发音人==>" + vcn);
+        ttsParamsMap.put("vcn", "xiaoyan");//
+        ttsParamsMap.put("language", 1);
+    }
+
+    /**
+     * 设置发音人语速
+     */
+    void setSpeed(int speed) {
+        Log.i(TAG, "设置发音人语速==>" + speed);
+        ttsParamsMap.put("speed", speed);
+    }
+
+    /**
+     * 设置发音人音调
+     */
+    void setPitch(int pitch) {
+        Log.i(TAG, "设置发音人音调==>" + pitch);
+        ttsParamsMap.put("pitch", pitch);
+    }
+
+    /**
+     * 设置发音人音量
+     */
+    void setVolume(int volume) {
+        Log.i(TAG, "设置发音人音量==>" + volume);
+        ttsParamsMap.put("volume", volume);
+    }
+
+    /**
+     * TTS文字转语音开始说话
+     */
+    public void startTTSpeaking(String text) {
+        int ret = AiHelper.getInst().engineInit(AbilityConstant.XTTS_ID);
+        if (ret != AbilityConstant.ABILITY_SUCCESS_CODE) {
+            Log.w(TAG, "open ivw error code ===> $ret");
+            view.onAbilityError(ret, new Throwable("引擎初始化失败"));
+            return;
+        }
+        setCacheArray(null);
+        totalPercent.set(text.length());
+        if (aiHandle != null) {
+            AiHelper.getInst().end(aiHandle);
+        }
+        AiRequest.Builder paramBuilder = AiRequest.builder().param("rdn", 0)
+                .param("reg", 0)
+                .param("textEncoding", "UTF-8");  //可选参数，文本编码格式，默认为65001，UTF8格式
+        Log.d(TAG,ttsParamsMap.toString());
+        Set<String> keySet = ttsParamsMap.keySet();
+        while (keySet.iterator().hasNext()) {
+            String key = keySet.iterator().next();
+            Object value = ttsParamsMap.get(key);
+            if (value instanceof Integer) {
+                paramBuilder.param(key, (int) value);
+            } else {
+                paramBuilder.param(key, (String) value);
+            }
+        }
+
+        //启动会话
+        aiHandle = AiHelper.getInst().start(AbilityConstant.XTTS_ID, paramBuilder.build(), null);
+        if (aiHandle.getCode() != AbilityConstant.ABILITY_SUCCESS_CODE) {
+            Log.w(TAG, "启动会话失败");
+            view.onAbilityError(aiHandle.getCode(), new Throwable("启动会话失败"));
+            return;
+        }
+        // 构建写入数据
+        AiRequest.Builder dataBuilder = AiRequest.builder().text("text", text);
+        // 写入数据
+        ret = AiHelper.getInst().write(dataBuilder.build(), aiHandle);
+        if (ret != AbilityConstant.ABILITY_SUCCESS_CODE) {
+            Log.w(TAG, "合成写入数据失败");
+            view.onAbilityError(ret, new Throwable("合成写入数据失败"));
+            return;
+        }
+        Log.w(TAG, "合成写入成功");
     }
 
     @Override
@@ -716,12 +822,93 @@ public class TalkPresenter implements TalkContract.UserActionsListener {
     @Override
     public void updateRecordingDir(Context context) {
         fileRepository.updateRecordingDir(context, prefs);
-        boolean ttsSuccess = predictor.init(context, modelPath, AMmodelName, VOCmodelName, cpuThreadNum, cpuPowerMode);
-        if(ttsSuccess){
-            Log.d(TAG,"paddleSpeech tts 初始化成功");
-        }else{
-            Log.e(TAG,"paddleSpeech tts 初始化失败");
+//        boolean ttsSuccess = predictor.init(context, modelPath, AMmodelName, VOCmodelName, cpuThreadNum, cpuPowerMode);
+//        if(ttsSuccess){
+//            Log.d(TAG,"paddleSpeech tts 初始化成功");
+//        }else{
+//            Log.e(TAG,"paddleSpeech tts 初始化失败");
+//        }
+        if(pcmAudioPlayer == null) {
+            pcmAudioPlayer = new PcmAudioPlayer(context);
         }
+        //创建合成的PCM文件
+        pcmFile = new File(context.getExternalCacheDir(), System.currentTimeMillis() + ".pcm");
+        pcmFile.delete();
+        //能力回调
+        AiHelper.getInst().registerListener(AbilityConstant.XTTS_ID, new AiListener() {
+            /**
+             * 能力输出回调
+             * @param handleID  会话ID
+             * @param usrContext  用户自定义标识
+             * @param responseData List<AiResponse> 是 能力执行结果
+             */
+            @Override
+            public void onResult(int handleID, List<AiResponse> responseData, Object usrContext) {
+                if (responseData == null || responseData.isEmpty()) {
+                    return;
+                }
+                for (AiResponse aiResponse : responseData) {
+                    byte[] bytes = aiResponse.getValue();
+                    if (bytes == null || bytes.length == 0) {
+                        continue;
+                    }
+                    if (cacheArray == null) {
+                        cacheArray = bytes;
+                    } else {
+                        byte[] resBytes = new byte[cacheArray.length + bytes.length];
+                        System.arraycopy(cacheArray, 0, resBytes, 0, cacheArray.length);
+                        System.arraycopy(bytes, 0, resBytes, cacheArray.length, bytes.length);
+                        cacheArray = resBytes;
+                    }
+                }
+            }
+
+            /**
+             * 能力输出回调
+             * @param handleID 会话ID
+             * @param eventID  0=未知;1=开始;2=结束;3=超时;4=进度
+             * @param usrContext Object 用户自定义标识
+             * @param eventData List<AiResponse>  事件消息数据
+             */
+            @Override
+            public void onEvent(int handleID, int eventID, List<AiResponse> eventData, Object usrContext) {
+                if (eventID == AiEvent.EVENT_START.getValue()) {
+                    //引擎计算开始
+                    view.onAbilityBegin();
+//                    播放器播放
+                    pcmAudioPlayer.prepareAudio(() -> {
+                        Log.i(TAG, "开始播放");
+                        return null;
+                    });
+                } else if (eventID == AiEvent.EVENT_PROGRESS.getValue()) {
+                    //引擎计算中
+                } else if (eventID == AiEvent.EVENT_END.getValue()) {
+                    //引擎计算结束
+                    view.onAbilityEnd();
+                    pcmAudioPlayer.writeMemFile(cacheArray);
+                    pcmAudioPlayer.play(totalPercent.get(), pcmPlayerCallback);
+                } else if (eventID == AiEvent.EVENT_TIMEOUT.getValue()) {
+                    //引擎超时
+                    view.onAbilityError(AbilityConstant.ABILITY_CUSTOM_UNKNOWN_CODE, new Throwable("引擎超时"));
+                }
+            }
+
+
+            /**
+             * 能力输出失败回调
+             * @param handleID 会话ID
+             * @param errID  错误码
+             * @param usrContext Object 用户自定义标识
+             * @param errorMsg 错误描述
+             */
+            @Override
+            public void onError(int handleID, int errID, String errorMsg, Object usrContext) {
+                if (TextUtils.isEmpty(errorMsg)) {
+                    errorMsg = "能力输出失败";
+                }
+                view.onAbilityError(errID, new Throwable(errorMsg));
+            }
+        });
     }
 
     @Override

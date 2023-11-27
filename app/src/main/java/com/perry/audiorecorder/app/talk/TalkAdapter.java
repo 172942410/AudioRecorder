@@ -183,6 +183,10 @@ public class TalkAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             return new VHSendText(v, this,colorMap,null, null);
         }
     }
+    VHSendText.OnItemClickListener onReceiveClickListener;
+    public void setReceiveClickListener(VHSendText.OnItemClickListener onReceiveClickListener){
+        this.onReceiveClickListener = onReceiveClickListener;
+    }
 
     @Override
     public void onBindViewHolder(@NonNull final RecyclerView.ViewHolder viewHolder, final int pos) {
@@ -192,6 +196,9 @@ public class TalkAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             final ItemData item = data.get(p);
 //            Log.d(TAG, "item:" + item);
             holder.setItemData(item);
+            if(onReceiveClickListener != null) {
+                holder.setOnItemClickListener(onReceiveClickListener);
+            }
         }else
         if (viewHolder.getItemViewType() == ItemType.SEND_TEXT.typeId) {
             final VHSendText holder = (VHSendText) viewHolder;

@@ -65,7 +65,7 @@ import com.perry.audiorecorder.util.AndroidUtils;
 import com.perry.audiorecorder.util.AnimationUtil;
 import com.perry.audiorecorder.util.FileUtil;
 import com.perry.audiorecorder.util.KeyboardsUtils;
-import com.pery.clib.NativeLib;
+import com.perry.iflytek.IFlytekAbilityManager;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -175,9 +175,9 @@ public class TalkActivity extends Activity implements TalkContract.View, View.On
         ImageButton btnSettings = findViewById(R.id.btn_settings);
         btnShare = findViewById(R.id.btn_share);
 
-        NativeLib nativeLib = new NativeLib();
-        String nativeStr = nativeLib.stringFromJNI();
-        Log.e(TAG,"nativeStr:" +  nativeStr);
+//        NativeLib nativeLib = new NativeLib();
+//        String nativeStr = nativeLib.stringFromJNI();
+//        Log.e(TAG,"nativeStr:" +  nativeStr);
         linearVoice = findViewById(R.id.linear_voice);
         relativeText = findViewById(R.id.relative_text);
         buttonSwitchVoice = findViewById(R.id.button_switch_voice);
@@ -242,6 +242,9 @@ public class TalkActivity extends Activity implements TalkContract.View, View.On
                 Timber.e(e);
             }
         }));
+        talkAdapter.setReceiveClickListener((position, itemViewHolder, item) -> {
+            Log.d(TAG, "position:" + position + ",itemViewHolder:" + itemViewHolder + ",item:" + item);
+        });
 //        此功能已注释掉了
         talkAdapter.setOnAddToBookmarkListener(new TalkAdapter.OnAddToBookmarkListener() {
             @Override
@@ -363,6 +366,7 @@ public class TalkActivity extends Activity implements TalkContract.View, View.On
             if (checkStoragePermission2()) {
                 //Start or stop recording
 //                    startRecordingService();
+                IFlytekAbilityManager.Companion.getInstance().initializeSdk(this);
             }
         }
 //        }
@@ -506,7 +510,7 @@ public class TalkActivity extends Activity implements TalkContract.View, View.On
     }
 
     @Override
-    public void sendFailed(ItemData itemData,Throwable ex) {
+    public void sendFailed(ItemData itemData, Throwable ex) {
 //这里隐藏加载变失败控件
         itemData.setLoading(1);
         talkAdapter.notifyDataSetChanged();
@@ -516,6 +520,17 @@ public class TalkActivity extends Activity implements TalkContract.View, View.On
     public void showItemProgress(ItemData itemData) {
         itemData.setLoading(2);
         talkAdapter.notifyDataSetChanged();
+    }
+
+    /**
+     * 从科大讯飞那里引用过来的
+     *
+     * @param ret
+     * @param throwable
+     */
+    @Override
+    public void onAbilityError(int ret, Throwable throwable) {
+
     }
 
     @Override
@@ -1115,6 +1130,7 @@ public class TalkActivity extends Activity implements TalkContract.View, View.On
         } else if (requestCode == REQ_CODE_WRITE_EXTERNAL_STORAGE && grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED && grantResults[1] == PackageManager.PERMISSION_GRANTED) {
             if (checkRecordPermission2()) {
 //                startRecordingService();
+                IFlytekAbilityManager.Companion.getInstance().initializeSdk(this);
             }
         } else if (requestCode == REQ_CODE_READ_EXTERNAL_STORAGE_IMPORT && grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED && grantResults[1] == PackageManager.PERMISSION_GRANTED) {
             startFileSelector();
@@ -1126,5 +1142,20 @@ public class TalkActivity extends Activity implements TalkContract.View, View.On
 //            presenter.setStoragePrivate(getApplicationContext());
 //            startRecordingService();
         }
+    }
+
+    @Override
+    public void onAbilityBegin() {
+
+    }
+
+    @Override
+    public void onAbilityResult(@NonNull String result) {
+
+    }
+
+    @Override
+    public void onAbilityEnd() {
+
     }
 }

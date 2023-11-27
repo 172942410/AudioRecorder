@@ -23,13 +23,14 @@ import com.perry.audiorecorder.app.info.RecordInfo;
 import com.perry.audiorecorder.app.records.RecordsContract;
 import com.perry.audiorecorder.audio.recorder.RecorderContract;
 import com.perry.audiorecorder.data.database.Record;
+import com.perry.iflytek.AbilityCallback;
 
 import java.io.File;
 import java.util.List;
 
 public interface TalkContract {
 
-    interface View extends Contract.View {
+    interface View extends Contract.View , AbilityCallback {
         void addRecords(List<ItemData> records, int order);
 
         void showEmptyBookmarksList();
@@ -187,6 +188,13 @@ public interface TalkContract {
         void sendFailed(ItemData itemData,Throwable ex);
 
         void showItemProgress(ItemData itemData);
+
+        /**
+         * 从科大讯飞那里引用过来的
+         * @param ret
+         * @param throwable
+         */
+//        void onAbilityError(int ret, Throwable throwable);
     }
 
     interface UserActionsListener extends Contract.UserActionsListener<TalkContract.View> {

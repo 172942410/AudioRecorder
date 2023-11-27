@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <string name="appId" translatable="false">44ce3cbe</string>
+    <string name="apiKey" tools:ignore="MissingTranslation">b8f3bf076d407ed692ecf8423b58b295</string>
+    <string name="apiSecret" translatable="false">NjA0OGI2N2Y1NzIyOTkxOTIxMmY1OThh</string>
+</resources>

@@ -1,9 +1,11 @@
 package com.perry.audiorecorder.app.talk.itemHolder;
 
+import android.util.Log;
 import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.TextView;
 
+import androidx.appcompat.widget.AppCompatImageButton;
 import androidx.appcompat.widget.AppCompatTextView;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -28,7 +30,7 @@ public class VHSendText extends RecyclerView.ViewHolder {
     TalkAdapter talkAdapter;
     ColorMap colorMap;
     AppCompatTextView itemTime;
-
+    AppCompatImageButton ibTtsPlay;
     public VHSendText(
             View itemView,
             TalkAdapter talkAdapter,
@@ -67,7 +69,7 @@ public class VHSendText extends RecyclerView.ViewHolder {
         if (colorMap != null) {
             voiceLayout.setBackgroundResource(colorMap.getPlaybackPanelBackground());
         }
-
+        ibTtsPlay = itemView.findViewById(R.id.btn_tts_play);
     }
 
     public void setItemData(ItemData item) {
@@ -87,5 +89,24 @@ public class VHSendText extends RecyclerView.ViewHolder {
         if(btnMore != null) {
             btnMore.setOnClickListener(v -> talkAdapter.showMenu(v, p));
         }
+        if(ibTtsPlay != null){
+            ibTtsPlay.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    Log.d(TAG,"点击了播放按钮：" + item.toString());
+                    int pos = getAbsoluteAdapterPosition();
+                    if (pos != RecyclerView.NO_POSITION && onItemClickListener != null) {
+                        onItemClickListener.onItemClick(pos, VHSendText.this, item);
+                    }
+                }
+            });
+        }
+    }
+    OnItemClickListener onItemClickListener;
+    public void setOnItemClickListener(OnItemClickListener onItemClickListener){
+        this.onItemClickListener = onItemClickListener;
+    }
+    public interface OnItemClickListener {
+        void onItemClick(int position, VHSendText itemViewHolder,ItemData item);
     }
 }

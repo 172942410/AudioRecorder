@@ -23,13 +23,19 @@
         android:layout_marginTop="@dimen/spacing_zero"
         android:layout_marginStart="@dimen/item_msg_rl"
         />
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_gravity="center_vertical"
+        >
     <FrameLayout
         android:id="@+id/voice_layout"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center_vertical"
         android:layout_marginStart="@dimen/item_msg_rl"
-        android:layout_marginEnd="10dp"
+        android:layout_marginEnd="@dimen/toolbar_height"
         android:paddingTop="@dimen/spacing_zero"
         android:paddingBottom="@dimen/spacing_zero"
         android:background="@drawable/panel_amber"
@@ -98,6 +104,23 @@
             android:layout_gravity="end|bottom"
             />
     </FrameLayout>
+
+        <androidx.appcompat.widget.AppCompatImageButton
+            android:id="@+id/btn_tts_play"
+            android:tint="@color/white"
+            android:layout_width="@dimen/item_voice_height"
+            android:layout_height="@dimen/item_voice_height"
+            android:layout_centerInParent="true"
+            android:layout_gravity="center_vertical|end"
+            android:layout_marginStart="-60dp"
+            android:layout_marginEnd="@dimen/spacing_xsmall"
+            android:layout_toRightOf="@id/voice_layout"
+            android:adjustViewBounds="true"
+            android:background="?android:selectableItemBackgroundBorderless"
+            android:contentDescription="@null"
+            android:scaleType="fitCenter"
+            android:src="@drawable/ic_play" />
+    </RelativeLayout>
     <View
         android:layout_width="match_parent"
         android:layout_height="@dimen/divider"
@@ -134,7 +157,8 @@
 
     </LinearLayout>
 
-    <com.perry.audiorecorder.app.widget.CircleImageView xmlns:app="http://schemas.android.com/apk/res-auto"
+    <com.perry.audiorecorder.app.widget.CircleImageView
+        xmlns:app="http://schemas.android.com/apk/res-auto"
         android:id="@+id/item_iv_avatar"
         android:layout_width="@dimen/item_avatar"
         android:layout_height="@dimen/item_avatar"
