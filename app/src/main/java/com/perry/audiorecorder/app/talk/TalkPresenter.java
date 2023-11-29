@@ -458,6 +458,9 @@ public class TalkPresenter implements TalkContract.UserActionsListener {
      * TTS文字转语音开始说话
      */
     public void startTTSpeaking(int position,ItemData itemData) {
+            if (audioPlayer.isPlaying()) {
+                audioPlayer.stop();
+            }
         if(curTtsPlayPosition == position) {
             if (pcmAudioPlayer.isPlaying()) {
                 itemData.playStatus = 2;
@@ -681,6 +684,9 @@ public class TalkPresenter implements TalkContract.UserActionsListener {
 
     @Override
     public void startPlayback(int position) {
+        if(!pcmAudioPlayer.isOver()){
+            pcmAudioPlayer.stop();
+        }
         this.position = position;
         if (record != null) {
             if (audioPlayer.isPlaying()) {

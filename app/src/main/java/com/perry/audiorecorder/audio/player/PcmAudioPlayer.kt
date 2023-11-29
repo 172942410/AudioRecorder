@@ -400,6 +400,9 @@ class PcmAudioPlayer @JvmOverloads constructor(val context: Context) {
             setAudioFocus(false)
             pcmThread = null
             Log.i(TAG, "player stopped")
+            mainThread {
+                pcmAudioPlayerListener?.onStoped()
+            }
         }
     }
 
