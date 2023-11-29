@@ -6,6 +6,8 @@ import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Environment;
+import android.os.Handler;
+import android.os.Message;
 import android.provider.OpenableColumns;
 import android.text.TextUtils;
 import android.util.Log;
@@ -451,11 +453,6 @@ public class TalkPresenter implements TalkContract.UserActionsListener {
         Log.i(TAG, "设置发音人音量==>" + volume);
         ttsParamsMap.put("volume", volume);
     }
-    private File createNewFile(Context context) {
-        pcmFile = new File(context.getExternalCacheDir(), System.currentTimeMillis() + ".pcm");
-        pcmFile.delete();
-        return pcmFile;
-    }
 
     /**
      * TTS文字转语音开始说话
@@ -463,25 +460,51 @@ public class TalkPresenter implements TalkContract.UserActionsListener {
     public void startTTSpeaking(int position,ItemData itemData) {
         if(curTtsPlayPosition == position) {
             if (pcmAudioPlayer.isPlaying()) {
+                itemData.playStatus = 2;
                 pcmAudioPlayer.pause();
-            }else{
+                view.showItemTtsPlay(position,itemData);
+                return;
+            }else if(!pcmAudioPlayer.isOver()){
+                itemData.playStatus = 1;
                 pcmAudioPlayer.resume();
+                view.showItemPaused(position,itemData);
+                return;
             }
+
         }else{
-            //播放其他的
-            AiHelper.getInst().end(aiHandle);
-            aiHandle = null;
-            pcmFile = createNewFile(pcmAudioPlayer.getContext());
-            pcmAudioPlayer.stop();
+            if (!pcmAudioPlayer.isOver()) {
+                curTtsPlayItem.playStatus = 0;
+                view.showItemTtsPlay(curTtsPlayPosition,curTtsPlayItem);
+                //播放其他的
+                pcmAudioPlayer.stop();
+                Message message = new Message();
+                message.obj = itemData;
+                message.what = position;
+                handler.sendMessageDelayed(message,500);
+                return;
+            }
         }
-        curTtsPlayPosition = position;
-        curTtsPlayItem = itemData;
+        startTTS(position,itemData);
+    }
+
+    Handler handler = new Handler(message -> {
+        startTTS(message.what, (ItemData) message.obj);
+        return false;
+    });
+
+    /**
+     * TTS文字转语音开始说话
+     */
+    public void startTTS(int position,ItemData itemData) {
         if(itemData == null){
             return;
         }
-        String text = new String(itemData.getItemData());
+        curTtsPlayPosition = position;
+        curTtsPlayItem = itemData;
         itemData.playStatus = 1;
         view.showItemPaused(position,itemData);
+
+        String text = new String(itemData.getItemData());
         Log.d(TAG,"startTTSpeaking:"+text);
         int ret = AiHelper.getInst().engineInit(AbilityConstant.XTTS_ID);
         if (ret != AbilityConstant.ABILITY_SUCCESS_CODE) {
@@ -871,9 +894,6 @@ public class TalkPresenter implements TalkContract.UserActionsListener {
         if(pcmAudioPlayer == null) {
             pcmAudioPlayer = new PcmAudioPlayer(context);
         }
-        //创建合成的PCM文件
-        pcmFile = new File(context.getExternalCacheDir(), System.currentTimeMillis() + ".pcm");
-        pcmFile.delete();
         //能力回调
         AiHelper.getInst().registerListener(AbilityConstant.XTTS_ID, new AiListener() {
             /**
