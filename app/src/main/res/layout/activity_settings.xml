@@ -350,6 +350,7 @@
 				android:paddingTop="@dimen/spacing_medium"
 				android:paddingBottom="@dimen/spacing_medium"
 				android:drawablePadding="@dimen/spacing_normal"
+			android:visibility="gone"
 				/>
 
 		<TextView
@@ -365,6 +366,7 @@
 				android:paddingTop="@dimen/spacing_medium"
 				android:paddingBottom="@dimen/spacing_medium"
 				android:drawablePadding="@dimen/spacing_normal"
+			android:visibility="gone"
 				/>
 
 		<TextView

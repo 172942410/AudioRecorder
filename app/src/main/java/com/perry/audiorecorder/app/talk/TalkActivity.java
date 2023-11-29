@@ -9,11 +9,14 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
+import android.provider.Settings;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.MenuInflater;
@@ -28,9 +31,12 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.IntDef;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.widget.AppCompatButton;
 import androidx.appcompat.widget.AppCompatImageButton;
+import androidx.appcompat.widget.AppCompatTextView;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.SimpleItemAnimator;
@@ -57,6 +63,7 @@ import com.perry.audiorecorder.app.widget.RecordAudioButton;
 import com.perry.audiorecorder.app.widget.RecordVoicePopWindow;
 import com.perry.audiorecorder.app.widget.SimpleWaveformView;
 import com.perry.audiorecorder.audio.AudioDecoder;
+import com.perry.audiorecorder.audio.player.PcmAudioPlayer;
 import com.perry.audiorecorder.data.FileRepository;
 import com.perry.audiorecorder.data.database.Record;
 import com.perry.audiorecorder.exception.CantCreateFileException;
@@ -163,6 +170,7 @@ public class TalkActivity extends Activity implements TalkContract.View, View.On
         return new Intent(context, TalkActivity.class);
     }
 
+    AppCompatTextView tvMessage;
     @SuppressLint({"WrongViewCast", "MissingInflatedId"})
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -175,6 +183,8 @@ public class TalkActivity extends Activity implements TalkContract.View, View.On
         ImageButton btnSettings = findViewById(R.id.btn_settings);
         btnShare = findViewById(R.id.btn_share);
 
+        tvMessage = findViewById(R.id.tv_message);
+        tvMessage.setVisibility(View.GONE);
 //        NativeLib nativeLib = new NativeLib();
 //        String nativeStr = nativeLib.stringFromJNI();
 //        Log.e(TAG,"nativeStr:" +  nativeStr);
@@ -243,7 +253,8 @@ public class TalkActivity extends Activity implements TalkContract.View, View.On
             }
         }));
         talkAdapter.setReceiveClickListener((position, itemViewHolder, item) -> {
-            Log.d(TAG, "position:" + position + ",itemViewHolder:" + itemViewHolder + ",item:" + item);
+            Log.d(TAG, "这里播放接收到的文字转为语音 position:" + position + ",itemViewHolder:" + itemViewHolder + ",item:" + item);
+            presenter.startTtsPlay(position, itemViewHolder, item);
         });
 //        此功能已注释掉了
         talkAdapter.setOnAddToBookmarkListener(new TalkAdapter.OnAddToBookmarkListener() {
@@ -359,9 +370,41 @@ public class TalkActivity extends Activity implements TalkContract.View, View.On
             recreate();
         };
         colorMap.addOnThemeColorChangeListener(onThemeColorChangeListener);
+        presenter.setPcmPlayerListener(new PcmAudioPlayer.PcmPlayerListener() {
+            @Override
+            public void onError(@Nullable Throwable error) {
+//                tvTtsResult.append("播放出错了===>\n");
+                sendShowMessage("播放出错了===>\n");
+                Log.d(TAG,"播放出错了===>");
+            }
 
+            @Override
+            public void onPaused() {
+//                tvTtsResult.append("暂停播放===>\n");
+                sendShowMessage("暂停播放===>\n");
+                Log.d(TAG,"暂停播放===>");
+            }
+
+            @Override
+            public void onResume() {
+//                tvTtsResult.append("继续播放===>\n");
+                sendShowMessage("继续播放===>\n");
+                Log.d(TAG,"继续播放===>");
+            }
+
+            @Override
+            public void onPercent(int percent) {
+
+            }
+
+            @Override
+            public void onStoped() {
+
+            }
+        });
         //Check start recording shortcut
 //        if ("android.intent.action.ACTION_RUN".equals(getIntent().getAction())) {
+        requestmanageexternalstorage_Permission();
         if (checkRecordPermission2()) {
             if (checkStoragePermission2()) {
                 //Start or stop recording
@@ -554,6 +597,24 @@ public class TalkActivity extends Activity implements TalkContract.View, View.On
             mRecordVoicePopWindow.updateCurrentVolume(db);
         }
     }
+
+    void sendShowMessage(String messageStr) {
+        if (tvMessage != null){
+            tvMessage.setVisibility(View.VISIBLE);
+        tvMessage.setText(messageStr);
+        handlerCloseMessage.sendEmptyMessageDelayed(0, 1000);
+    }
+    }
+//    延迟关闭消息
+    Handler handlerCloseMessage = new Handler(new Handler.Callback() {
+        @Override
+        public boolean handleMessage(@NonNull Message message) {
+            if (tvMessage != null) {
+                tvMessage.setVisibility(View.GONE);
+            }
+            return false;
+        }
+    });
 
     //延迟关闭窗口
     Handler handlerClosePop = new Handler(new Handler.Callback() {
@@ -1053,6 +1114,20 @@ public class TalkActivity extends Activity implements TalkContract.View, View.On
             }
         }, v -> {
         }, (buttonView, isChecked) -> presenter.setAskToRename(!isChecked));
+    }
+
+    private void requestmanageexternalstorage_Permission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            // 先判断有没有权限
+            if (Environment.isExternalStorageManager()) {
+//                Toast.makeText(this, "Android版本R或更高版本，已授予MANAGE_EXTERNAL_STORAGE！", Toast.LENGTH_LONG).show();
+            } else {
+                Toast.makeText(this, "Android版本R或更高版本，未授予管理_EXTERNAL_STORAGE！", Toast.LENGTH_LONG).show();
+                Intent intent = new Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION);
+                intent.setData(Uri.parse("package:" + this.getPackageName()));
+                startActivityForResult(intent, 100);
+            }
+        }
     }
 
     private boolean checkStoragePermissionDownload() {

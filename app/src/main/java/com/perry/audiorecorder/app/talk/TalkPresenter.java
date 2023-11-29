@@ -28,6 +28,7 @@ import com.perry.audiorecorder.app.AppRecorderCallback;
 import com.perry.audiorecorder.app.info.RecordInfo;
 import com.perry.audiorecorder.app.records.RecordsContract;
 import com.perry.audiorecorder.app.settings.SettingsMapper;
+import com.perry.audiorecorder.app.talk.itemHolder.VHSendText;
 import com.perry.audiorecorder.audio.AudioDecoder;
 import com.perry.audiorecorder.audio.player.PcmAudioPlayer;
 import com.perry.audiorecorder.audio.player.PlayerContractNew;
@@ -455,6 +456,7 @@ public class TalkPresenter implements TalkContract.UserActionsListener {
      * TTS文字转语音开始说话
      */
     public void startTTSpeaking(String text) {
+        Log.d(TAG,"startTTSpeaking:"+text);
         int ret = AiHelper.getInst().engineInit(AbilityConstant.XTTS_ID);
         if (ret != AbilityConstant.ABILITY_SUCCESS_CODE) {
             Log.w(TAG, "open ivw error code ===> $ret");
@@ -470,14 +472,19 @@ public class TalkPresenter implements TalkContract.UserActionsListener {
                 .param("reg", 0)
                 .param("textEncoding", "UTF-8");  //可选参数，文本编码格式，默认为65001，UTF8格式
         Log.d(TAG,ttsParamsMap.toString());
-        Set<String> keySet = ttsParamsMap.keySet();
-        while (keySet.iterator().hasNext()) {
-            String key = keySet.iterator().next();
-            Object value = ttsParamsMap.get(key);
-            if (value instanceof Integer) {
-                paramBuilder.param(key, (int) value);
-            } else {
-                paramBuilder.param(key, (String) value);
+        if(ttsParamsMap.size() == 0){
+            paramBuilder.param("vcn", "xiaoyan");//
+            paramBuilder.param("language", 1);
+        }else {
+            Set<String> keySet = ttsParamsMap.keySet();
+            while (keySet.iterator().hasNext()) {
+                String key = keySet.iterator().next();
+                Object value = ttsParamsMap.get(key);
+                if (value instanceof Integer) {
+                    paramBuilder.param(key, (int) value);
+                } else {
+                    paramBuilder.param(key, (String) value);
+                }
             }
         }
 
@@ -510,6 +517,12 @@ public class TalkPresenter implements TalkContract.UserActionsListener {
 
 //        2，发送成功后还需要回调的
 
+    }
+
+    @Override
+    public void startTtsPlay(int position, VHSendText itemViewHolder, ItemData item) {
+
+        startTTSpeaking(new String(item.getItemData()));
     }
 
     private void addLastNewRecord(ItemData itemData) {
@@ -874,6 +887,7 @@ public class TalkPresenter implements TalkContract.UserActionsListener {
             public void onEvent(int handleID, int eventID, List<AiResponse> eventData, Object usrContext) {
                 if (eventID == AiEvent.EVENT_START.getValue()) {
                     //引擎计算开始
+                    Log.d(TAG,"tts 引擎计算开始");
                     view.onAbilityBegin();
 //                    播放器播放
                     pcmAudioPlayer.prepareAudio(() -> {
@@ -885,6 +899,7 @@ public class TalkPresenter implements TalkContract.UserActionsListener {
                 } else if (eventID == AiEvent.EVENT_END.getValue()) {
                     //引擎计算结束
                     view.onAbilityEnd();
+                    Log.d(TAG,"tts 引擎计算结束");
                     pcmAudioPlayer.writeMemFile(cacheArray);
                     pcmAudioPlayer.play(totalPercent.get(), pcmPlayerCallback);
                 } else if (eventID == AiEvent.EVENT_TIMEOUT.getValue()) {
@@ -910,7 +925,10 @@ public class TalkPresenter implements TalkContract.UserActionsListener {
             }
         });
     }
-
+    @Override
+    public void setPcmPlayerListener(PcmAudioPlayer.PcmPlayerListener pcmPlayerCallback){
+         this.pcmPlayerCallback = pcmPlayerCallback;
+    }
     @Override
     public void setStoragePrivate(Context context) {
         prefs.setStoreDirPublic(false);

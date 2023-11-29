@@ -21,6 +21,8 @@ import android.content.Context;
 import com.perry.audiorecorder.Contract;
 import com.perry.audiorecorder.app.info.RecordInfo;
 import com.perry.audiorecorder.app.records.RecordsContract;
+import com.perry.audiorecorder.app.talk.itemHolder.VHSendText;
+import com.perry.audiorecorder.audio.player.PcmAudioPlayer;
 import com.perry.audiorecorder.audio.recorder.RecorderContract;
 import com.perry.audiorecorder.data.database.Record;
 import com.perry.iflytek.AbilityCallback;
@@ -273,5 +275,9 @@ public interface TalkContract {
         void deleteRecords(List<Long> ids);
 
         void sendText(String msgStr);
+
+        void startTtsPlay(int position, VHSendText itemViewHolder, ItemData item);
+
+        void setPcmPlayerListener(PcmAudioPlayer.PcmPlayerListener pcmPlayerCallback);
     }
 }

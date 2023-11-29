@@ -267,7 +267,18 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center" />
-
+        <androidx.appcompat.widget.AppCompatTextView
+            android:layout_width="match_parent"
+            android:layout_height="30dp"
+            android:layout_gravity="bottom"
+            android:id="@+id/tv_message"
+            android:background="@color/md_blue_gray_500"
+            android:visibility="visible"
+            android:text="测试播放"
+            android:gravity="start|center_vertical"
+            android:elevation="10dp"
+            android:paddingStart="10dp"
+            />
     </FrameLayout>
 
     </RelativeLayout>
