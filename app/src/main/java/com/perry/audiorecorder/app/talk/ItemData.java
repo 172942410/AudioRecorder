@@ -28,7 +28,11 @@ public class ItemData implements Parcelable {
 	private final long added;
 	private final String addedTime;
 	private final String createTime;
-	private boolean bookmarked;
+	/**
+	 * 0：停止 1：播放； 2：暂停 ； -1：异常
+	 */
+	public int playStatus;//0：停止 1：播放； 2：暂停 ； -1：异常
+    private boolean bookmarked;
 	private final String avatar_url;
 	private int[] amps;
 	private byte[] itemData;

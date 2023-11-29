@@ -76,6 +76,17 @@ public class VHSendText extends RecyclerView.ViewHolder {
         if(item == null){
             return;
         }
+        if(ibTtsPlay != null) {
+            if (item.playStatus == 0) {
+                ibTtsPlay.setImageResource(R.drawable.ic_play);
+            } else if (item.playStatus == 1) {
+                ibTtsPlay.setImageResource(R.drawable.ic_pause);
+            } else if (item.playStatus == 2) {
+                ibTtsPlay.setImageResource(R.drawable.ic_play);
+            } else if (item.playStatus == -1) {
+                ibTtsPlay.setImageResource(R.drawable.ic_play);
+            }
+        }
         if(itemTime != null){
             itemTime.setText(item.getAddedTimeStr());
         }

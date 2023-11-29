@@ -394,11 +394,13 @@ public class TalkActivity extends Activity implements TalkContract.View, View.On
 
             @Override
             public void onPercent(int percent) {
-
+//                sendShowMessage("播放onPercent===>" + percent );
             }
 
             @Override
             public void onStoped() {
+                sendShowMessage("播放停止了===>\n");
+                presenter.stopTtsPlay();
 
             }
         });
@@ -563,6 +565,24 @@ public class TalkActivity extends Activity implements TalkContract.View, View.On
     public void showItemProgress(ItemData itemData) {
         itemData.setLoading(2);
         talkAdapter.notifyDataSetChanged();
+    }
+
+    @Override
+    public void showItemPaused(int position, ItemData itemData) {
+        if(position == -1){
+            talkAdapter.notifyItemChanged(talkAdapter.getItemCount()-1);
+        }else {
+            talkAdapter.notifyItemChanged(position);
+        }
+    }
+
+    @Override
+    public void showItemTtsPlay(int position, ItemData itemData) {
+        if(position == -1){
+            talkAdapter.notifyItemChanged(talkAdapter.getItemCount()-1);
+        }else {
+            talkAdapter.notifyItemChanged(position);
+        }
     }
 
     /**

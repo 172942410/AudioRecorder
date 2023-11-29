@@ -191,6 +191,10 @@ public interface TalkContract {
 
         void showItemProgress(ItemData itemData);
 
+        void showItemPaused(int position, ItemData itemData);
+
+        void showItemTtsPlay(int position, ItemData itemData);
+
         /**
          * 从科大讯飞那里引用过来的
          * @param ret
@@ -279,5 +283,7 @@ public interface TalkContract {
         void startTtsPlay(int position, VHSendText itemViewHolder, ItemData item);
 
         void setPcmPlayerListener(PcmAudioPlayer.PcmPlayerListener pcmPlayerCallback);
+
+        void stopTtsPlay();
     }
 }

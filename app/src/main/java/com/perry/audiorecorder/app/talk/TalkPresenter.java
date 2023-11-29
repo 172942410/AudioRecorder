@@ -357,7 +357,7 @@ public class TalkPresenter implements TalkContract.UserActionsListener {
             ItemData itemData = Mapper.recordToItemType(receiveRecordDb);
             view.sendTextShow(itemData);
 //            这里调用播放器播放文本
-            startTTSpeaking(new String(itemData.getItemData()));
+            startTTSpeaking(-1,itemData);
 //            if(predictor.isLoaded()){
 ////                boolean isRun = predictor.runModel(itemData.getItemData());
 //                boolean isRun = predictor.runModel(new float[]{155,73,71,29,179,71,199,126,177,115,138,241,120,71,42,39,57,69,184,186});
@@ -451,11 +451,37 @@ public class TalkPresenter implements TalkContract.UserActionsListener {
         Log.i(TAG, "设置发音人音量==>" + volume);
         ttsParamsMap.put("volume", volume);
     }
+    private File createNewFile(Context context) {
+        pcmFile = new File(context.getExternalCacheDir(), System.currentTimeMillis() + ".pcm");
+        pcmFile.delete();
+        return pcmFile;
+    }
 
     /**
      * TTS文字转语音开始说话
      */
-    public void startTTSpeaking(String text) {
+    public void startTTSpeaking(int position,ItemData itemData) {
+        if(curTtsPlayPosition == position) {
+            if (pcmAudioPlayer.isPlaying()) {
+                pcmAudioPlayer.pause();
+            }else{
+                pcmAudioPlayer.resume();
+            }
+        }else{
+            //播放其他的
+            AiHelper.getInst().end(aiHandle);
+            aiHandle = null;
+            pcmFile = createNewFile(pcmAudioPlayer.getContext());
+            pcmAudioPlayer.stop();
+        }
+        curTtsPlayPosition = position;
+        curTtsPlayItem = itemData;
+        if(itemData == null){
+            return;
+        }
+        String text = new String(itemData.getItemData());
+        itemData.playStatus = 1;
+        view.showItemPaused(position,itemData);
         Log.d(TAG,"startTTSpeaking:"+text);
         int ret = AiHelper.getInst().engineInit(AbilityConstant.XTTS_ID);
         if (ret != AbilityConstant.ABILITY_SUCCESS_CODE) {
@@ -519,10 +545,11 @@ public class TalkPresenter implements TalkContract.UserActionsListener {
 
     }
 
+    int curTtsPlayPosition;
+    ItemData curTtsPlayItem;
     @Override
     public void startTtsPlay(int position, VHSendText itemViewHolder, ItemData item) {
-
-        startTTSpeaking(new String(item.getItemData()));
+        startTTSpeaking(position,item);
     }
 
     private void addLastNewRecord(ItemData itemData) {
@@ -929,6 +956,15 @@ public class TalkPresenter implements TalkContract.UserActionsListener {
     public void setPcmPlayerListener(PcmAudioPlayer.PcmPlayerListener pcmPlayerCallback){
          this.pcmPlayerCallback = pcmPlayerCallback;
     }
+
+    @Override
+    public void stopTtsPlay() {
+        if(curTtsPlayItem != null && curTtsPlayPosition >= -1){
+            curTtsPlayItem.playStatus = 0;
+            view.showItemTtsPlay(curTtsPlayPosition,curTtsPlayItem);
+        }
+    }
+
     @Override
     public void setStoragePrivate(Context context) {
         prefs.setStoreDirPublic(false);
