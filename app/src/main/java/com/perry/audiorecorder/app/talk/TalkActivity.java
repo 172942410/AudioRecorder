@@ -803,7 +803,7 @@ public class TalkActivity extends Activity implements TalkContract.View, View.On
             startActivity(SettingsActivity.getStartIntent(getApplicationContext()));
         } else if (id == R.id.btn_share) {
             Toast.makeText(this, "敬请期待...", Toast.LENGTH_SHORT).show();
-            startActivity(RecordsActivity.getStartIntent(TalkActivity.this));
+//            startActivity(RecordsActivity.getStartIntent(TalkActivity.this));
 //            showMenu(view);
         } else if (id == R.id.btn_bookmarks) {
             presenter.applyBookmarksFilter();

@@ -1,8 +1,8 @@
-![chat LXD Logo](https://github.com/Dimowner/AudioRecorder/blob/master/app/src/releaseConfig/res/mipmap-xxxhdpi/audio_recorder_logo.png)
+![无崖 Logo](https://github.com/Dimowner/AudioRecorder/blob/master/app/src/releaseConfig/res/mipmap-xxxhdpi/audio_recorder_logo.png)
 
-# chat LXD
+# 无崖
 
-<p><b>chat LXD (Voice recorder, Sound recorder)</b> - an application that gives easy audio recording experience. 
+<p><b>无崖 (Voice recorder, Sound recorder)</b> - an application that gives easy audio recording experience. 
 This app is optimized to start up as fast as possible, aiding the user in not missing important sounds.</p>
 
 [<img src="https://fdroid.gitlab.io/artwork/badge/get-it-on.png"

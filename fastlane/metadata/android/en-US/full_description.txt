@@ -1,4 +1,4 @@
-<i>chat LXD</i> (Voice recorder, Sound recorder) is an application makes an easy audio recording experience. The app is optimized for the fastest start as possible and helps not to miss important sound for the user.
+<i>无崖</i> (Voice recorder, Sound recorder) is an application makes an easy audio recording experience. The app is optimized for the fastest start as possible and helps not to miss important sound for the user.
 
 Two recording formats are available:
 
