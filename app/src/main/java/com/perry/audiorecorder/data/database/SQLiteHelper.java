@@ -109,6 +109,7 @@ public class SQLiteHelper extends SQLiteOpenHelper {
                     + COLUMN_WAVEFORM_PROCESSED + " INTEGER NOT NULL DEFAULT 0, "
                     + COLUMN_DATA_STR + " BLOB NOT NULL, "
                     + COLUMN_TYPE + " INTEGER NOT NULL DEFAULT 0, "
+                    + COLUMN_LOAD_STATUS + " INTEGER NOT NULL DEFAULT 0, "
                     + COLUMN_MSG_DATA + " BLOB"
                     + ");";
 
@@ -132,6 +133,7 @@ public class SQLiteHelper extends SQLiteOpenHelper {
                     + COLUMN_WAVEFORM_PROCESSED + " INTEGER NOT NULL DEFAULT 0, "
                     + COLUMN_DATA_STR + " BLOB NOT NULL, "
                     + COLUMN_TYPE + " INTEGER NOT NULL DEFAULT 0, "
+                    + COLUMN_LOAD_STATUS + " INTEGER NOT NULL DEFAULT 0, "
                     + COLUMN_MSG_DATA + " BLOB"
                     + ");";
 }

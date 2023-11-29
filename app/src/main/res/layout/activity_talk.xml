@@ -276,8 +276,8 @@
             android:visibility="visible"
             android:text="测试播放"
             android:gravity="start|center_vertical"
-            android:elevation="10dp"
             android:paddingStart="10dp"
+            android:paddingTop="5dp"
             />
     </FrameLayout>
 
