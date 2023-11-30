@@ -454,6 +454,8 @@ public class TalkPresenter implements TalkContract.UserActionsListener {
         ttsParamsMap.put("volume", volume);
     }
 
+    int hasNextPosition;
+    ItemData hasItemData;
     /**
      * TTS文字转语音开始说话
      */
@@ -479,11 +481,15 @@ public class TalkPresenter implements TalkContract.UserActionsListener {
                 curTtsPlayItem.playStatus = 0;
                 view.showItemTtsPlay(curTtsPlayPosition,curTtsPlayItem);
                 //播放其他的
+                Log.d(TAG,"tts 调用停止");
                 pcmAudioPlayer.stop();
-                Message message = new Message();
-                message.obj = itemData;
-                message.what = position;
-                handler.sendMessageDelayed(message,500);
+                hasNextPosition = position;
+                hasItemData = itemData;
+
+//                Message message = new Message();
+//                message.obj = itemData;
+//                message.what = position;
+//                handler.sendMessageDelayed(message,600);
                 return;
             }
         }
@@ -508,6 +514,9 @@ public class TalkPresenter implements TalkContract.UserActionsListener {
         view.showItemPaused(position,itemData);
 
         String text = new String(itemData.getItemData());
+        //以下两行代码是后来添加的
+        hasNextPosition = -1;
+        hasItemData = null;
         Log.d(TAG,"startTTSpeaking:"+text);
         int ret = AiHelper.getInst().engineInit(AbilityConstant.XTTS_ID);
         if (ret != AbilityConstant.ABILITY_SUCCESS_CODE) {
@@ -901,6 +910,7 @@ public class TalkPresenter implements TalkContract.UserActionsListener {
             pcmAudioPlayer = new PcmAudioPlayer(context);
         }
         //能力回调
+        Log.d(TAG,"updateRecordingDir tts能力初始化");
         AiHelper.getInst().registerListener(AbilityConstant.XTTS_ID, new AiListener() {
             /**
              * 能力输出回调
@@ -989,6 +999,21 @@ public class TalkPresenter implements TalkContract.UserActionsListener {
             curTtsPlayItem.playStatus = 0;
             view.showItemTtsPlay(curTtsPlayPosition,curTtsPlayItem);
         }
+        // 这里理论也可以播放下一条的 代替之前的600毫秒延迟的handle的发送请求
+        if(hasItemData != null) {
+            startTTS(hasNextPosition, hasItemData);
+        }
+    }
+    /**
+     * 所有能力在退出的时候需要手动去释放会话
+     * AiHelper.getInst().end(aiHandle)
+     */
+    @Override
+    public void destroy() {
+        AiHelper.getInst().end(aiHandle);
+        aiHandle = null;
+        audioPlayer.stop();
+        audioPlayer.release();
     }
 
     @Override

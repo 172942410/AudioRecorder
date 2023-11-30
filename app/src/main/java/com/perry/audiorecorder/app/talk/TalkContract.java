@@ -285,5 +285,7 @@ public interface TalkContract {
         void setPcmPlayerListener(PcmAudioPlayer.PcmPlayerListener pcmPlayerCallback);
 
         void stopTtsPlay();
+
+        void destroy();
     }
 }

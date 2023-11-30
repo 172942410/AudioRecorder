@@ -401,7 +401,6 @@ public class TalkActivity extends Activity implements TalkContract.View, View.On
             public void onStoped() {
                 sendShowMessage("播放停止了===>\n");
                 presenter.stopTtsPlay();
-
             }
         });
         //Check start recording shortcut
@@ -792,6 +791,7 @@ public class TalkActivity extends Activity implements TalkContract.View, View.On
     protected void onDestroy() {
         super.onDestroy();
         colorMap.removeOnThemeColorChangeListener(onThemeColorChangeListener);
+        presenter.destroy();
     }
 
     @Override
