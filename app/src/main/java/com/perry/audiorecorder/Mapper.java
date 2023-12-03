@@ -31,7 +31,8 @@ public class Mapper {
 				record.getBitrate(),
 				record.isBookmarked(),
 				record.getAmps(),
-				record.getMsgData()
+				record.getMsgData(),
+				record.getLoadStatus()
 		);
 	}
 

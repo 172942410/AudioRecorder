@@ -37,11 +37,14 @@ public class ItemData implements Parcelable {
 	private int[] amps;
 	private byte[] itemData;
 
+	/**
+	 * 0 成功；1失败；2加载中
+	 */
 	private int loadStatus = 0; // 0 成功；1失败；2加载中
 
 	public ItemData(long id, int type, String name, String format, String description, long duration,
 					long size, long created, long added, String path, int sampleRate, int channelCount, int bitrate,
-					boolean bookmarked, int[] amps ,byte[] itemData) {
+					boolean bookmarked, int[] amps ,byte[] itemData,int loadStatus) {
 		this.id = id;
 		this.type = type;
 		this.name = name;
@@ -62,23 +65,24 @@ public class ItemData implements Parcelable {
 		this.avatar_url = "";
 		this.amps = amps;
 		this.itemData = itemData;
+		this.loadStatus = loadStatus;
 	}
 
 	public static ItemData createHeaderItem() {
-		return new ItemData(-1, ItemType.HEADER.typeId, "HEADER", "", "", 0, 0, 0, 0, "", 0, 0, 0, false, null, null);
+		return new ItemData(-1, ItemType.HEADER.typeId, "HEADER", "", "", 0, 0, 0, 0, "", 0, 0, 0, false, null, null,0);
 	}
 
 	public static ItemData createFooterItem() {
-		return new ItemData(-1, ItemType.FOOTER.typeId, "FOOTER", "", "", 0, 0, 0, 0, "", 0, 0, 0, false, null,null);
+		return new ItemData(-1, ItemType.FOOTER.typeId, "FOOTER", "", "", 0, 0, 0, 0, "", 0, 0, 0, false, null,null,0);
 	}
 
 	public static ItemData createDateItem(long date) {
-		return new ItemData(-1, ItemType.DATE.typeId, "DATE", "", "", 0, 0, 0, date, "", 0, 0, 0, false, null, null);
+		return new ItemData(-1, ItemType.DATE.typeId, "DATE", "", "", 0, 0, 0, date, "", 0, 0, 0, false, null, null,0);
 	}
 
 	public static ItemData createTextItem(String msgStr) {
 		if(!TextUtils.isEmpty(msgStr)) {
-			return new ItemData(-1, ItemType.SEND_TEXT.typeId, "TEXT", "", "", 0, 0, System.currentTimeMillis(), 0, "", 0, 0, 0, false, null,  msgStr.getBytes());
+			return new ItemData(-1, ItemType.SEND_TEXT.typeId, "TEXT", "", "", 0, 0, System.currentTimeMillis(), 0, "", 0, 0, 0, false, null,  msgStr.getBytes(),0);
 		}else{
 			return null;
 		}

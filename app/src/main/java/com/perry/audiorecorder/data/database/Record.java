@@ -298,6 +298,9 @@ public class Record {
      * @return 0 成功；1 失败；2 加载中
      */
     public int getLoadStatus() {
+        if(loadStatus == 2){
+            loadStatus = 1;
+        }
         return loadStatus;
     }
     /**
