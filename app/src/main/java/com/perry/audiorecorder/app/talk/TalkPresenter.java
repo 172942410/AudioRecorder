@@ -11,6 +11,7 @@ import android.os.Message;
 import android.provider.OpenableColumns;
 import android.text.TextUtils;
 import android.util.Log;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 
@@ -390,6 +391,7 @@ public class TalkPresenter implements TalkContract.UserActionsListener {
             TalkPresenter.this.record.setLoading(1);
             localRepository.updateRecord(TalkPresenter.this.record);
             Log.d(TAG, "uploadAudio onError :" + ex + ",isOnCallback:" + isOnCallback);
+            Toast.makeText(pcmAudioPlayer.getContext(), "服务器异常："+ex, Toast.LENGTH_SHORT).show();
         }
 
         @Override

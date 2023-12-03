@@ -51,7 +51,7 @@
     <string name="zero_time">00:00</string>
     <string name="empty">空</string>
     <string name="selected">已选择%d项</string>
-    <string name="no_records">没有录音</string>
+    <string name="no_records">没有消息</string>
     <string name="no_bookmarks">没有书签</string>
     <string name="bookmarks">书签</string>
     <string name="share_record">分享录音: %s</string>
