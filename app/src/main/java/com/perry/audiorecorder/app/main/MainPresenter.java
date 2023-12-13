@@ -469,8 +469,9 @@ public class MainPresenter implements MainContract.UserActionsListener {
                                 record.isWaveformProcessed(),
                                 record.getAmps(),
                                 1,
-                                null,
-                                2);
+                                "",
+                                2,
+                                "");
                         if (localRepository.updateRecord(MainPresenter.this.record)) {
                             AndroidUtils.runOnUIThread(() -> {
                                 if (view != null) {
@@ -780,8 +781,9 @@ public class MainPresenter implements MainContract.UserActionsListener {
                                 false,
                                 new int[ARApplication.getLongWaveformSampleCount()],
                                 1,
-                                null,
-                                2);
+                                "",
+                                2,
+                                "");
                         record = localRepository.insertRecord(r);
                         final Record rec = record;
                         if (rec != null) {
@@ -855,8 +857,9 @@ public class MainPresenter implements MainContract.UserActionsListener {
                                 rec.isWaveformProcessed(),
                                 rec.getAmps(),
                                 1,
-                                null,
-                                2));
+                                "",
+                                2,
+                                ""));
                     }
                 }
             }
@@ -885,8 +888,9 @@ public class MainPresenter implements MainContract.UserActionsListener {
                                 trashRecord.isWaveformProcessed(),
                                 trashRecord.getAmps(),
                                 1,
-                                null,
-                                2));
+                                "",
+                                2,
+                                ""));
                     }
                 }
             }

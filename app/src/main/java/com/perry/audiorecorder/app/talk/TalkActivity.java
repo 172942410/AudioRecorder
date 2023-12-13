@@ -355,7 +355,7 @@ public class TalkActivity extends Activity implements TalkContract.View, View.On
             @Override
             public void onContinueRecord() {
 //				presenter.continueRecord();
-                Log.d(TAG, "持续录音中");
+//                Log.d(TAG, "持续录音中");
                 showRecordingTipView();
             }
         });
@@ -939,7 +939,7 @@ public class TalkActivity extends Activity implements TalkContract.View, View.On
     public void onRecordingProgress(long mills, int amp) {
         runOnUiThread(() -> {
 //            txtProgress.setText(TimeUtils.formatTimeIntervalHourMinSec2(mills));
-            Log.d(TAG, "amp:" + amp);
+//            Log.d(TAG, "amp:" + amp);
             updateCurrentVolume(amp);
         });
     }

@@ -1,19 +1,3 @@
-/*
- * Copyright 2018 Dmytro Ponomarenko
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *    http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.perry.audiorecorder.data.database;
 
 import android.content.ContentValues;
@@ -71,6 +55,7 @@ public class RecordsDataSource extends DataSource<Record> {
             values.put(SQLiteHelper.COLUMN_TYPE, item.getMsgType());
             values.put(SQLiteHelper.COLUMN_MSG_DATA, item.getMsgData());
             values.put(SQLiteHelper.COLUMN_LOAD_STATUS, item.getLoadStatus());
+            values.put(SQLiteHelper.COLUMN_MSG_SPEAK, item.getMsgSpeak());
             return values;
         } else {
             Timber.e("Can't convert Record with empty Name!");
@@ -99,8 +84,9 @@ public class RecordsDataSource extends DataSource<Record> {
 //				Record.stringToArray(
 //						cursor.getString(cursor.getColumnIndex(SQLiteHelper.COLUMN_DATA_STR)))
                 cursor.getInt(cursor.getColumnIndex(SQLiteHelper.COLUMN_TYPE)),
-                cursor.getBlob(cursor.getColumnIndex(SQLiteHelper.COLUMN_MSG_DATA)),
-                cursor.getInt(cursor.getColumnIndex(SQLiteHelper.COLUMN_LOAD_STATUS))
+                cursor.getString(cursor.getColumnIndex(SQLiteHelper.COLUMN_MSG_DATA)),
+                cursor.getInt(cursor.getColumnIndex(SQLiteHelper.COLUMN_LOAD_STATUS)),
+                cursor.getString(cursor.getColumnIndex(SQLiteHelper.COLUMN_MSG_SPEAK))
         );
     }
 }

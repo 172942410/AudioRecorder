@@ -1,19 +1,3 @@
-/*
- * Copyright 2018 Dmytro Ponomarenko
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *    http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.perry.audiorecorder.data.database;
 
 import android.text.TextUtils;
@@ -21,43 +5,83 @@ import android.text.TextUtils;
 import androidx.annotation.NonNull;
 
 import com.perry.audiorecorder.AppConstants;
+import com.raizlabs.android.dbflow.annotation.Column;
+import com.raizlabs.android.dbflow.annotation.PrimaryKey;
+import com.raizlabs.android.dbflow.annotation.Table;
+import com.raizlabs.android.dbflow.structure.BaseModel;
 
+import java.io.Serializable;
 import java.util.Arrays;
 
-public class Record {
+@Table(database = AppDataBase.class)
+public class Record extends BaseModel implements Serializable {
 
     public static final int NO_ID = -1;
-//	private static final String DELIMITER = ",";
-
-    private final int id;
-    private final String name;
+    @PrimaryKey
+    @Column
+    private int id;
+    @Column
+    private String name;
+    /**
+     * 音频持续时间
+     */
+    @Column
     private long duration;
-    private final long created;
-    private final long added;
-    private final long removed;
+    /**
+     * 创建时间戳
+     */
+    @Column
+    private long created;
+    /**
+     * 添加的时间戳
+     */
+    @Column
+    private long added;
+    @Column
+    private long removed;
+    @Column
     private String path;
-    private final String format;
-    private final long size;
-    private final int sampleRate;
-    private final int channelCount;
-    private final int bitrate;
+    @Column
+    private String format;
+    @Column
+    private long size;
+    @Column
+    private int sampleRate;
+    @Column
+    private int channelCount;
+    @Column
+    private int bitrate;
+    @Column
     private boolean bookmark;
-    private final boolean waveformProcessed;
+    @Column
+    private boolean waveformProcessed;
+    @Column
     private int[] amps;
-    private final byte[] data;
-    //TODO: Remove not needed data clusters.
+    @Column
+    private byte[] data;
+    @Column
+    private int msgType;
+    @Column
+//    private byte[] msgData;
+    private String msgStr;
 
-    private final int msgType;
-    private byte[] msgData;
-
+    private String msgSpeak;
     /**
      * 0 成功；1失败；2加载中
      */
+    @Column
     private int loadStatus;
+
+    /**
+     * dbFlow 要求必须有的无参构建函数
+     */
+    public Record(){
+
+    }
 
     public Record(int id, String name, long duration, long created, long added, long removed, String path,
                   String format, long size, int sampleRate, int channelCount, int bitrate,
-                  boolean bookmark, boolean waveformProcessed, int[] amps, int msgType, byte[] msgData,int loadStatus) {
+                  boolean bookmark, boolean waveformProcessed, int[] amps, int msgType, String msgStr, int loadStatus,String msgSpeak) {
         this.id = id;
         this.name = name;
         this.duration = duration;
@@ -76,13 +100,14 @@ public class Record {
         this.data = int2byte(amps);
 //		this.data = AndroidUtils.int2byte(amps);
         this.msgType = msgType;
-        this.msgData = msgData;
+        this.msgStr = msgStr;
         this.loadStatus = loadStatus;
+        this.msgSpeak = msgSpeak;
     }
 
     public Record(int id, String name, long duration, long created, long added, long removed, String path,
                   String format, long size, int sampleRate, int channelCount, int bitrate,
-                  boolean bookmark, boolean waveformProcessed, byte[] amps, int msgType, byte[] msgData,int loadStatus) {
+                  boolean bookmark, boolean waveformProcessed, byte[] amps, int msgType, String msgStr, int loadStatus) {
         this.id = id;
         this.name = name;
         this.duration = duration;
@@ -101,30 +126,65 @@ public class Record {
 //		this.amps = AndroidUtils.byte2int(amps);
         this.data = amps;
         this.msgType = msgType;
-        this.msgData = msgData;
+        this.msgStr = msgStr;
         this.loadStatus = loadStatus;
     }
 
-    public static Record createTextRecord(long createdTime ,String msgStr){
+    public Record(int id, String name, long duration, long created, long added, long removed, String path,
+                  String format, long size, int sampleRate, int channelCount, int bitrate,
+                  boolean bookmark, boolean waveformProcessed, byte[] amps, int msgType, String msgStr, int loadStatus,String msgSpeak) {
+        this.id = id;
+        this.name = name;
+        this.duration = duration;
+        this.created = created;
+        this.added = added;
+        this.removed = removed;
+        this.path = path;
+        this.format = format;
+        this.size = size;
+        this.sampleRate = sampleRate;
+        this.channelCount = channelCount;
+        this.bitrate = bitrate;
+        this.bookmark = bookmark;
+        this.waveformProcessed = waveformProcessed;
+        this.amps = byte2int(amps);
+//		this.amps = AndroidUtils.byte2int(amps);
+        this.data = amps;
+        this.msgType = msgType;
+        this.msgStr = msgStr;
+        this.loadStatus = loadStatus;
+        this.msgSpeak = msgSpeak;
+    }
+
+    public static Record createTextRecord(long createdTime, String msgStr) {
         byte[] arr = new byte[1];
-        if(!TextUtils.isEmpty(msgStr)){
-            return new Record(Record.NO_ID,"",0,createdTime,createdTime,0,"","",0,0,0,0,false,false,arr,2,msgStr.getBytes(),2);
+        if (!TextUtils.isEmpty(msgStr)) {
+            return new Record(Record.NO_ID, "", 0, createdTime, createdTime, 0, "", "", 0, 0, 0, 0, false, false, arr, 2, msgStr, 2);
         }
-        return new Record(Record.NO_ID,"",0,createdTime,createdTime,0,"","",0,0,0,0,false,false,arr,2,null,2);
+        return new Record(Record.NO_ID, "", 0, createdTime, createdTime, 0, "", "", 0, 0, 0, 0, false, false, arr, 2, null, 2);
     }
 
     /**
      * 接收到的文本消息
+     *
      * @param createdTime
      * @param msgStr
      * @return
      */
-    public static Record createReceiveTextRecord(long createdTime ,String msgStr){
+    public static Record createReceiveTextRecord(long createdTime, String msgStr) {
         byte[] arr = new byte[1];
-        if(!TextUtils.isEmpty(msgStr)){
-            return new Record(Record.NO_ID,"",0,createdTime,createdTime,0,"","",0,0,0,0,false,false,arr, 13,msgStr.getBytes(),0);
+        if (!TextUtils.isEmpty(msgStr)) {
+            return new Record(Record.NO_ID, "", 0, createdTime, createdTime, 0, "", "", 0, 0, 0, 0, false, false, arr, 13, msgStr, 0);
         }
-        return new Record(Record.NO_ID,"",0,createdTime,createdTime,0,"","",0,0,0,0,false,false,arr,13,null,0);
+        return new Record(Record.NO_ID, "", 0, createdTime, createdTime, 0, "", "", 0, 0, 0, 0, false, false, arr, 13, null, 0);
+    }
+
+    public static Record createReceiveTextRecord(long createdTime, String msgStr,String msgSpeak) {
+        byte[] arr = new byte[1];
+        if (!TextUtils.isEmpty(msgStr) && !TextUtils.isEmpty(msgSpeak)) {
+            return new Record(Record.NO_ID, "", 0, createdTime, createdTime, 0, "", "", 0, 0, 0, 0, false, false, arr, 13, msgStr, 0,msgSpeak);
+        }
+        return new Record(Record.NO_ID, "", 0, createdTime, createdTime, 0, "", "", 0, 0, 0, 0, false, false, arr, 13, null, 0);
     }
 
     public byte[] int2byte(int[] amps) {
@@ -204,7 +264,8 @@ public class Record {
     public int[] getAmps() {
         return amps;
     }
-    public void setAmps(int[] amps){
+
+    public void setAmps(int[] amps) {
         this.amps = amps;
     }
 
@@ -232,36 +293,6 @@ public class Record {
         this.bookmark = b;
     }
 
-//	public static int[] stringToArray(String groups) {
-//		if (groups != null && !groups.isEmpty()) {
-//			String[] grStr = groups.split(DELIMITER);
-//			int[] grInt = new int[grStr.length];
-//			for (int i = 0; i < grStr.length; i++) {
-//				try {
-//					grInt[i] = Integer.parseInt(grStr[i]);
-//				} catch (NumberFormatException e) {
-//					Timber.e(e);
-//				}
-//			}
-//			return grInt;
-//		}
-//		return new int[0];
-//	}
-//
-//	public static String arrayToString(int[] tokens) {
-//		StringBuilder sb = new StringBuilder();
-//		boolean firstTime = true;
-//		for (Object token: tokens) {
-//			if (firstTime) {
-//				firstTime = false;
-//			} else {
-//				sb.append(DELIMITER);
-//			}
-//			sb.append(token);
-//		}
-//		return sb.toString();
-//	}
-
     @NonNull
     @Override
     public String toString() {
@@ -282,7 +313,7 @@ public class Record {
                 ", waveformProcessed=" + waveformProcessed +
                 ", amps=" + Arrays.toString(amps) +
                 ", data=" + Arrays.toString(data) +
-                ", msgData=" + Arrays.toString(msgData) +
+                ", msgData=" + msgStr +
                 '}';
     }
 
@@ -290,23 +321,28 @@ public class Record {
         return msgType;
     }
 
-    public byte[] getMsgData(){
-        return msgData;
+    public String  getMsgData() {
+        return msgStr;
     }
 
     /**
      * @return 0 成功；1 失败；2 加载中
      */
     public int getLoadStatus() {
-        if(loadStatus == 2){
+        if (loadStatus == 2) {
             loadStatus = 1;
         }
         return loadStatus;
     }
+
     /**
      * @param loadStatus 0 成功；1 失败；2 加载中
      */
-    public void setLoading(int loadStatus){
+    public void setLoading(int loadStatus) {
         this.loadStatus = loadStatus;
+    }
+
+    public String getMsgSpeak() {
+        return msgSpeak;
     }
 }

@@ -32,7 +32,8 @@ public class Mapper {
 				record.isBookmarked(),
 				record.getAmps(),
 				record.getMsgData(),
-				record.getLoadStatus()
+				record.getLoadStatus(),
+				record.getMsgSpeak()
 		);
 	}
 

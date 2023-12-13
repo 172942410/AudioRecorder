@@ -35,16 +35,17 @@ public class ItemData implements Parcelable {
     private boolean bookmarked;
 	private final String avatar_url;
 	private int[] amps;
-	private byte[] itemData;
+	private String  itemData;
 
 	/**
 	 * 0 成功；1失败；2加载中
 	 */
 	private int loadStatus = 0; // 0 成功；1失败；2加载中
 
+	public String msgSpeak;
 	public ItemData(long id, int type, String name, String format, String description, long duration,
 					long size, long created, long added, String path, int sampleRate, int channelCount, int bitrate,
-					boolean bookmarked, int[] amps ,byte[] itemData,int loadStatus) {
+					boolean bookmarked, int[] amps ,String itemData,int loadStatus,String msgSpeak) {
 		this.id = id;
 		this.type = type;
 		this.name = name;
@@ -66,23 +67,24 @@ public class ItemData implements Parcelable {
 		this.amps = amps;
 		this.itemData = itemData;
 		this.loadStatus = loadStatus;
+		this.msgSpeak = msgSpeak;
 	}
 
 	public static ItemData createHeaderItem() {
-		return new ItemData(-1, ItemType.HEADER.typeId, "HEADER", "", "", 0, 0, 0, 0, "", 0, 0, 0, false, null, null,0);
+		return new ItemData(-1, ItemType.HEADER.typeId, "HEADER", "", "", 0, 0, 0, 0, "", 0, 0, 0, false, null, null,0,"");
 	}
 
 	public static ItemData createFooterItem() {
-		return new ItemData(-1, ItemType.FOOTER.typeId, "FOOTER", "", "", 0, 0, 0, 0, "", 0, 0, 0, false, null,null,0);
+		return new ItemData(-1, ItemType.FOOTER.typeId, "FOOTER", "", "", 0, 0, 0, 0, "", 0, 0, 0, false, null,null,0,"");
 	}
 
 	public static ItemData createDateItem(long date) {
-		return new ItemData(-1, ItemType.DATE.typeId, "DATE", "", "", 0, 0, 0, date, "", 0, 0, 0, false, null, null,0);
+		return new ItemData(-1, ItemType.DATE.typeId, "DATE", "", "", 0, 0, 0, date, "", 0, 0, 0, false, null, null,0,"");
 	}
 
 	public static ItemData createTextItem(String msgStr) {
 		if(!TextUtils.isEmpty(msgStr)) {
-			return new ItemData(-1, ItemType.SEND_TEXT.typeId, "TEXT", "", "", 0, 0, System.currentTimeMillis(), 0, "", 0, 0, 0, false, null,  msgStr.getBytes(),0);
+			return new ItemData(-1, ItemType.SEND_TEXT.typeId, "TEXT", "", "", 0, 0, System.currentTimeMillis(), 0, "", 0, 0, 0, false, null,  msgStr,0,"");
 		}else{
 			return null;
 		}
@@ -172,7 +174,7 @@ public class ItemData implements Parcelable {
 		return amps;
 	}
 
-	public byte[] getItemData(){
+	public String  getItemData(){
 		return itemData;
 	}
 	private String convertTimeToStr(long time) {
@@ -214,7 +216,7 @@ public class ItemData implements Parcelable {
 		in.readBooleanArray(bools);
 		bookmarked = bools[0];
 //		后来新加的读取
-		in.readByteArray(itemData);
+		itemData = in.readString();
 	}
 
 	public int describeContents() {
@@ -228,7 +230,7 @@ public class ItemData implements Parcelable {
 		out.writeIntArray(amps);
 		out.writeBooleanArray(new boolean[] {bookmarked});
 //		后来新加的
-		out.writeByteArray(itemData);
+		out.writeString(itemData);
 	}
 
 	public static final Creator<ItemData> CREATOR

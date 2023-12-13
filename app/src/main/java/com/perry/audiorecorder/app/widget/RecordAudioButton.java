@@ -48,7 +48,7 @@ public class RecordAudioButton extends AppCompatButton {
                         mOnVoiceButtonCallBack.onWillCancelRecord();
                     }
                 } else {
-                    Log.v("onTouchEvent", "继续录音");
+//                    Log.v("onTouchEvent", "继续录音");
                     if (mOnVoiceButtonCallBack != null) {
                         mOnVoiceButtonCallBack.onContinueRecord();
                     }

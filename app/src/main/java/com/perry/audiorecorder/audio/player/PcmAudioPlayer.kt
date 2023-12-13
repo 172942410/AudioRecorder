@@ -275,7 +275,7 @@ class PcmAudioPlayer @JvmOverloads constructor(val context: Context) {
             readOffset += readLen
             bufOffset = 0
             this@PcmAudioPlayer.bufLength = dataSize
-            Log.i(TAG, "readAudio leave, dataSize=$dataSize, bufLen=$bufLen")
+//            Log.i(TAG, "readAudio leave, dataSize=$dataSize, bufLen=$bufLen")
         }
 
         override fun run() {
@@ -399,7 +399,7 @@ class PcmAudioPlayer @JvmOverloads constructor(val context: Context) {
             }
             setAudioFocus(false)
             pcmThread = null
-            Log.i(TAG, "player stopped")
+            Log.i(TAG, "player stopped tts 真的停止")
             mainThread {
                 pcmAudioPlayerListener?.onStoped()
             }

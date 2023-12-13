@@ -141,8 +141,9 @@ public class AppRecorderImpl implements AppRecorder {
                                 record.isWaveformProcessed(),
                                 waveForm,
                                 1,
-                                null,
-                                2);
+                                "",
+                                2,
+                                "");
                         if (localRepository.updateRecord(update)) {
                             recordingData.clear();
                             final Record rec = localRepository.getRecord(update.getId());

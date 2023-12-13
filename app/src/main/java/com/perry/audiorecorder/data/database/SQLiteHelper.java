@@ -90,6 +90,7 @@ public class SQLiteHelper extends SQLiteOpenHelper {
     static final String COLUMN_MSG_DATA = "msgData";
 
     static final String COLUMN_LOAD_STATUS = "load_status";
+    static final String COLUMN_MSG_SPEAK = "msgSpeak";
     //Create records table sql statement
     private static final String CREATE_RECORDS_TABLE_SCRIPT =
             "CREATE TABLE " + TABLE_RECORDS + " ("
@@ -110,7 +111,8 @@ public class SQLiteHelper extends SQLiteOpenHelper {
                     + COLUMN_DATA_STR + " BLOB NOT NULL, "
                     + COLUMN_TYPE + " INTEGER NOT NULL DEFAULT 0, "
                     + COLUMN_LOAD_STATUS + " INTEGER NOT NULL DEFAULT 0, "
-                    + COLUMN_MSG_DATA + " BLOB"
+                    + COLUMN_MSG_DATA + " TEXT NOT NULL DEFAULT '', "
+                    + COLUMN_MSG_SPEAK + " TEXT NOT NULL DEFAULT '' "
                     + ");";
 
     //Create trash table sql statement
@@ -134,6 +136,7 @@ public class SQLiteHelper extends SQLiteOpenHelper {
                     + COLUMN_DATA_STR + " BLOB NOT NULL, "
                     + COLUMN_TYPE + " INTEGER NOT NULL DEFAULT 0, "
                     + COLUMN_LOAD_STATUS + " INTEGER NOT NULL DEFAULT 0, "
-                    + COLUMN_MSG_DATA + " BLOB"
+                    + COLUMN_MSG_DATA + " TEXT NOT NULL DEFAULT '', "
+                    + COLUMN_MSG_SPEAK + " TEXT NOT NULL DEFAULT ''"
                     + ");";
 }

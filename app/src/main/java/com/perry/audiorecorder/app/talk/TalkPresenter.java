@@ -198,7 +198,7 @@ public class TalkPresenter implements TalkContract.UserActionsListener {
                         rec.setAmps(rec.byte2int(rec.int2byte(rec.getAmps())));
                         ItemData itemData = Mapper.recordToItemType(rec);
 //                        这里先请求网络接口
-                        httpUploadFile.uploadAudio(itemData.getName(), itemData.getPath(), new HttpCallback(itemData));
+                        httpUploadFile.uploadFaultAudio(itemData.getName(), itemData.getPath(), new HttpCallback(itemData));
                         addLastNewRecord(itemData);
                     }
                     if (view != null) {
@@ -354,8 +354,12 @@ public class TalkPresenter implements TalkContract.UserActionsListener {
 //                                字符串在解析json之前需要先转义成功；因为服务端有可能把字符串外面又多节了双引号导致的问题
 //            Log.d(TAG, "uploadAudio onSuccess 请求耗时:" + (endTimeLong - startTimeLong) + "，result：" + result);
             ReceiveMsgBean receiveMsgBean = JSON.parseObject(result, ReceiveMsgBean.class);
+//            receiveMsgBean.showMsg = receiveMsgBean.showMsg();
+//            receiveMsgBean.speakMsg = receiveMsgBean.speakMsg();
+
             Log.d(TAG, "耗时：" + (System.currentTimeMillis() - endTimeLong) + ",uploadAudio json解析完成 :" + receiveMsgBean);
-            Record receiveRecord = Record.createReceiveTextRecord(System.currentTimeMillis(), receiveMsgBean.text);
+
+            Record receiveRecord = Record.createReceiveTextRecord(System.currentTimeMillis(), receiveMsgBean.showMsg(),receiveMsgBean.speakMsg());
             Record receiveRecordDb = localRepository.insertRecord(receiveRecord);
             ItemData itemData = Mapper.recordToItemType(receiveRecordDb);
             view.sendTextShow(itemData);
@@ -515,7 +519,7 @@ public class TalkPresenter implements TalkContract.UserActionsListener {
         itemData.playStatus = 1;
         view.showItemPaused(position,itemData);
 
-        String text = new String(itemData.getItemData());
+        String text = new String(itemData.msgSpeak);
         //以下两行代码是后来添加的
         hasNextPosition = -1;
         hasItemData = null;
@@ -769,8 +773,9 @@ public class TalkPresenter implements TalkContract.UserActionsListener {
                                 record.isWaveformProcessed(),
                                 record.getAmps(),
                                 1,
-                                null,
-                                0);
+                                "",
+                                0,
+                                "");
                         if (localRepository.updateRecord(TalkPresenter.this.record)) {
                             AndroidUtils.runOnUIThread(() -> {
                                 if (view != null) {
@@ -1427,8 +1432,9 @@ public class TalkPresenter implements TalkContract.UserActionsListener {
                                 rec.isWaveformProcessed(),
                                 rec.getAmps(),
                                 1,
-                                null,
-                                0));
+                                "",
+                                0,
+                                ""));
                     }
                 }
             }
@@ -1457,8 +1463,9 @@ public class TalkPresenter implements TalkContract.UserActionsListener {
                                 trashRecord.isWaveformProcessed(),
                                 trashRecord.getAmps(),
                                 1,
-                                null,
-                                0));
+                                "",
+                                0,
+                                ""));
                     }
                 }
             }

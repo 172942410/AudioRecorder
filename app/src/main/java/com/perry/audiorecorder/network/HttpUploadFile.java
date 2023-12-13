@@ -29,6 +29,31 @@ public class HttpUploadFile {
     Activity activity;
     String saveDate, lastDate;
 
+    public <T> void uploadFaultAudio(String fileName, String filePath, Callback.CommonCallback<T> callback) {
+        android.util.Log.d(TAG, "fileName:" + fileName + ",filePath:" + filePath);
+//        if (fileName.endsWith(".wav")) {
+//            fileName = fileName.substring(0, fileName.length() - 4);
+//        }
+        File file = new File(filePath);
+        if (!file.exists()) {
+            Log.e(TAG, "音频文件不存在啊");
+            return;
+        }
+        Log.e(TAG, "开始接口上传音频文件了");
+        String url = URL_HOST + "/uploadfaultaudio";
+        RequestParams params = new RequestParams(url);
+//        params.setAsJsonContent(true);
+//        params.addHeader("Content-Type", "application/json");
+        params.addHeader("Filename", fileName + ".wav");
+        List<KeyValue> list = new ArrayList<>();
+        list.add(new KeyValue("file", file));
+//        list.add(new KeyValue("Filename", fileName+".wav"));
+        MultipartBody body = new MultipartBody(list, "UTF-8");
+        params.setRequestBody(body);
+        params.setConnectTimeout(120000);
+        x.http().post(params, callback);
+    }
+
     public <T> void uploadAudio(String fileName, String filePath, Callback.CommonCallback<T> callback) {
         android.util.Log.d(TAG, "fileName:" + fileName + ",filePath:" + filePath);
 //        if (fileName.endsWith(".wav")) {
