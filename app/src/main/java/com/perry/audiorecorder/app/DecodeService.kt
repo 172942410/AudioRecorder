@@ -35,7 +35,7 @@ import com.perry.audiorecorder.app.main.MainActivity
 import com.perry.audiorecorder.audio.AudioDecodingListener
 import com.perry.audiorecorder.audio.AudioWaveformVisualization
 import com.perry.audiorecorder.data.database.LocalRepository
-import com.perry.audiorecorder.data.database.Record
+import com.perry.audiorecorder.util.AndroidUtils
 import timber.log.Timber
 
 /**
@@ -154,28 +154,11 @@ class DecodeService : Service() {
                             recordingsTasks.postRunnable {
                                 val rec1 = localRepository.getRecord(id)
                                 if (rec1 != null) {
-                                    val decodedRecord = Record(
-                                        rec1.id,
-                                        rec1.name,
-                                        rec1.duration,
-                                        rec1.created,
-                                        rec1.added,
-                                        rec1.removed,
-                                        rec1.path,
-                                        rec1.format,
-                                        rec1.size,
-                                        rec1.sampleRate,
-                                        rec1.channelCount,
-                                        rec1.bitrate,
-                                        rec1.isBookmarked,
-                                        true,
-                                        data,
-                                        1,
-                                        "",
-                                        2,
-                                        ""
-                                    )
-                                    localRepository.updateRecord(decodedRecord)
+                                    rec1.waveformProcessed =true;
+                                    rec1.setAmps(AndroidUtils.int2byte(data));
+                                    rec1.msgType = 1;
+                                    rec1.loadStatus = 2;
+                                    rec1.save()
                                 }
                                 decodeListener?.onFinishProcessing()
                                 stopService()

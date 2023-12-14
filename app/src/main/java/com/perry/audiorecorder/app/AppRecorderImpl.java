@@ -124,36 +124,23 @@ public class AppRecorderImpl implements AppRecorder {
                     int[] waveForm = convertRecordingData(recordingData, (int) (duration / 1000000f));
                     final Record record = localRepository.getRecord((int) prefs.getActiveRecord());
                     if (record != null) {
-                        final Record update = new Record(
-                                record.getId(),
-                                record.getName(),
-                                duration,
-                                record.getCreated(),
-                                record.getAdded(),
-                                record.getRemoved(),
-                                record.getPath(),
-                                info.getFormat(),
-                                info.getSize(),
-                                info.getSampleRate(),
-                                info.getChannelCount(),
-                                info.getBitrate(),
-                                record.isBookmarked(),
-                                record.isWaveformProcessed(),
-                                waveForm,
-                                1,
-                                "",
-                                2,
-                                "");
-                        if (localRepository.updateRecord(update)) {
+                        record.duration = duration;
+                        record.format = info.getFormat();
+                        record.size = info.getSize();
+                        record.sampleRate = info.getSampleRate();
+                        record.channelCount = info.getChannelCount();
+                        record.bitrate = info.getBitrate();
+                        record.msgType = 1;
+                        record.loadStatus = 2;
+                        record.amps = AndroidUtils.int2byte(waveForm);
+                        if (record.save()) {
                             recordingData.clear();
-                            final Record rec = localRepository.getRecord(update.getId());
-                            AndroidUtils.runOnUIThread(() -> onRecordingStopped(output, rec));
+                            AndroidUtils.runOnUIThread(() -> onRecordingStopped(output, record));
                         } else {
                             //Try to update record again if failed.
-                            if (localRepository.updateRecord(update)) {
+                            if (record.save()) {
                                 recordingData.clear();
-                                final Record rec = localRepository.getRecord(update.getId());
-                                AndroidUtils.runOnUIThread(() -> onRecordingStopped(output, rec));
+                                AndroidUtils.runOnUIThread(() -> onRecordingStopped(output, record));
                             } else {
                                 AndroidUtils.runOnUIThread(() -> onRecordingStopped(output, record));
                             }

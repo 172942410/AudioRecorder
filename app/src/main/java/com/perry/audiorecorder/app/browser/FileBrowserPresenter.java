@@ -222,8 +222,7 @@ public class FileBrowserPresenter implements FileBrowserContract.UserActionsList
                     File file = new File(info.getLocation());
 
                     //Do 2 step import: 1) Import record with empty waveform. 2) Process and update waveform in background.
-                    Record r = new Record(
-                            Record.NO_ID,
+                    Record rec = new Record(
                             info.getName(),
                             info.getDuration() >= 0 ? info.getDuration() : 0,
                             file.lastModified(),
@@ -237,12 +236,12 @@ public class FileBrowserPresenter implements FileBrowserContract.UserActionsList
                             info.getBitrate(),
                             false,
                             false,
-                            new int[ARApplication.getLongWaveformSampleCount()],
+                            new byte[ARApplication.getLongWaveformSampleCount()*4],
                             1,
                             "",
                             2,
                             "");
-                    final Record rec = localRepository.insertRecord(r);
+                    rec.save();
                     if (rec != null) {
                         id = rec.getId();
                         AndroidUtils.runOnUIThread(() -> {

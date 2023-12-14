@@ -1,12 +1,18 @@
-apply plugin: 'com.android.application'
-apply plugin: 'kotlin-android'
-apply plugin: 'kotlin-kapt'
+plugins {
+	id 'com.android.application'
+	id 'kotlin-android'
+	id 'kotlin-kapt'
+}
+
+//apply plugin: 'com.android.application'
+//apply plugin: 'kotlin-android'
+//apply plugin: 'kotlin-kapt'
 
 android {
-//	compileOptions {
-//		sourceCompatibility JavaVersion.VERSION_1_8
-//		targetCompatibility JavaVersion.VERSION_1_8
-//	}
+	compileOptions {
+		sourceCompatibility JavaVersion.VERSION_1_8
+		targetCompatibility JavaVersion.VERSION_1_8
+	}
 //	kotlinOptions {
 //		jvmTarget = '1.8'
 //	}
@@ -146,6 +152,12 @@ dependencies {
 	implementation "androidx.viewpager2:viewpager2:1.0.0"
 	implementation 'androidx.appcompat:appcompat:1.6.1'
 	implementation 'com.google.android.material:material:1.10.0'
-	implementation 'org.xutils:xutils:3.8.12'
+	implementation 'org.xutils:xutils:3.9.0'
 	implementation 'com.alibaba.fastjson2:fastjson2:2.0.42.android4'
+
+	//    数据库 DBFlow
+//	annotationProcessor "com.github.Raizlabs.DBFlow:dbflow-processor:4.2.4"
+	kapt "com.github.Raizlabs.DBFlow:dbflow-processor:4.2.4"
+	implementation "com.github.Raizlabs.DBFlow:dbflow-core:4.2.4"
+	implementation "com.github.Raizlabs.DBFlow:dbflow:4.2.4"
 }

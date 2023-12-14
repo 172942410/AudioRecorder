@@ -23,10 +23,6 @@ import java.util.List;
 
 public interface LocalRepository {
 
-	void open();
-
-	void close();
-
 	Record getRecord(int id);
 
 	Record findRecordByPath(String path);
@@ -48,12 +44,6 @@ public interface LocalRepository {
 	boolean deleteAllRecords();
 
 	Record getLastRecord();
-
-	Record insertRecord(Record record);
-
-	boolean updateRecord(Record record);
-
-	boolean updateTrashRecord(Record record);
 
 	Record insertEmptyFile(String filePath) throws IOException;
 

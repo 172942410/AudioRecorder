@@ -5,6 +5,7 @@ import com.perry.audiorecorder.app.lostrecords.RecordItem;
 import com.perry.audiorecorder.app.talk.ItemData;
 import com.perry.audiorecorder.data.database.Record;
 import com.perry.audiorecorder.app.records.ListItem;
+import com.perry.audiorecorder.util.AndroidUtils;
 import com.perry.audiorecorder.util.TimeUtils;
 
 import java.util.ArrayList;
@@ -30,7 +31,7 @@ public class Mapper {
 				record.getChannelCount(),
 				record.getBitrate(),
 				record.isBookmarked(),
-				record.getAmps(),
+				AndroidUtils.byte2int(record.getAmps()),
 				record.getMsgData(),
 				record.getLoadStatus(),
 				record.getMsgSpeak()
@@ -54,7 +55,7 @@ public class Mapper {
 				record.getChannelCount(),
 				record.getBitrate(),
 				record.isBookmarked(),
-				record.getAmps());
+				AndroidUtils.byte2int(record.getAmps()));
 	}
 
 	public static List<ItemData> recordsToItemType(List<Record> records) {

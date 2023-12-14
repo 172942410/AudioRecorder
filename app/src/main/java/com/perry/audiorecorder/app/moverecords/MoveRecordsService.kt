@@ -158,7 +158,7 @@ class MoveRecordsService : Service() {
 									moveListener?.onRecordMoved()
 									copied++
 									copiedPercent += oneRecordProgress.toInt()
-									localRepository.updateRecord(record)
+									record.save();
 									fileRepository.deleteRecordFile(sourceFilePath)
 									if (copied + failed == list.size) {
 										val text = getResultMessage(message, copied, failed, list.size)

@@ -185,7 +185,7 @@ public class TalkPresenter implements TalkContract.UserActionsListener {
                         record = rec;
                         songDuration = rec.getDuration();
                         if (view != null) {
-                            view.showWaveForm(rec.getAmps(), songDuration, 0);
+                            view.showWaveForm(AndroidUtils.byte2int(rec.getAmps()), songDuration, 0);
                             view.showName(rec.getName());
                             view.showDuration(TimeUtils.formatTimeIntervalHourMinSec2(songDuration / 1000));
                             view.showOptionsMenu();
@@ -195,7 +195,6 @@ public class TalkPresenter implements TalkContract.UserActionsListener {
                         long startTimeLong = System.currentTimeMillis();
                         Log.d(TAG, "每次录音完成这里其实可以只添加最后一条的:" + startTimeLong);
 //                        loadRecords();
-                        rec.setAmps(rec.byte2int(rec.int2byte(rec.getAmps())));
                         ItemData itemData = Mapper.recordToItemType(rec);
 //                        这里先请求网络接口
                         httpUploadFile.uploadFaultAudio(itemData.getName(), itemData.getPath(), new HttpCallback(itemData));
@@ -340,7 +339,7 @@ public class TalkPresenter implements TalkContract.UserActionsListener {
         public void onSuccess(String result) {
             view.sendSuccess(itemData);
             TalkPresenter.this.record.setLoading(0);
-            localRepository.updateRecord(TalkPresenter.this.record);
+            TalkPresenter.this.record.save();
             long endTimeLong = System.currentTimeMillis();
             Log.d(TAG, "uploadAudio onSuccess 原始数据: result：" + result);
 //                                字符串开始转义
@@ -360,8 +359,8 @@ public class TalkPresenter implements TalkContract.UserActionsListener {
             Log.d(TAG, "耗时：" + (System.currentTimeMillis() - endTimeLong) + ",uploadAudio json解析完成 :" + receiveMsgBean);
 
             Record receiveRecord = Record.createReceiveTextRecord(System.currentTimeMillis(), receiveMsgBean.showMsg(),receiveMsgBean.speakMsg());
-            Record receiveRecordDb = localRepository.insertRecord(receiveRecord);
-            ItemData itemData = Mapper.recordToItemType(receiveRecordDb);
+            receiveRecord.save();
+            ItemData itemData = Mapper.recordToItemType(receiveRecord);
             view.sendTextShow(itemData);
 //            这里调用播放器播放文本
             startTTSpeaking(-1,itemData);
@@ -393,7 +392,7 @@ public class TalkPresenter implements TalkContract.UserActionsListener {
         public void onError(Throwable ex, boolean isOnCallback) {
             view.sendFailed(itemData, ex);
             TalkPresenter.this.record.setLoading(1);
-            localRepository.updateRecord(TalkPresenter.this.record);
+            TalkPresenter.this.record.save();
             Log.d(TAG, "uploadAudio onError :" + ex + ",isOnCallback:" + isOnCallback);
             Toast.makeText(pcmAudioPlayer.getContext(), "服务器异常："+ex, Toast.LENGTH_SHORT).show();
         }
@@ -402,7 +401,7 @@ public class TalkPresenter implements TalkContract.UserActionsListener {
         public void onCancelled(CancelledException cex) {
             view.sendFailed(itemData, cex);
             TalkPresenter.this.record.setLoading(1);
-            localRepository.updateRecord(TalkPresenter.this.record);
+            TalkPresenter.this.record.save();
             Log.d(TAG, "uploadAudio onCancelled :" + cex);
         }
 
@@ -578,8 +577,8 @@ public class TalkPresenter implements TalkContract.UserActionsListener {
     public void sendText(String msgStr) {
 //        1,显示到界面上
         Record recordTemp = Record.createTextRecord(System.currentTimeMillis(), msgStr);
-        Record recordReturn = localRepository.insertRecord(recordTemp);
-        ItemData itemData = Mapper.recordToItemType(recordReturn);
+        recordTemp.save();
+        ItemData itemData = Mapper.recordToItemType(recordTemp);
         view.sendTextShow(itemData);
 
 //        2，发送成功后还需要回调的
@@ -618,7 +617,6 @@ public class TalkPresenter implements TalkContract.UserActionsListener {
         if (view != null) {
             unbindView();
         }
-        localRepository.close();
         audioPlayer.release();
         appRecorder.release();
         loadingTasks.close();
@@ -756,27 +754,13 @@ public class TalkPresenter implements TalkContract.UserActionsListener {
                     });
                 } else {
                     if (fileRepository.renameFile(record.getPath(), name, extension)) {
-                        TalkPresenter.this.record = new Record(
-                                record.getId(),
-                                name,
-                                record.getDuration(),
-                                record.getCreated(),
-                                record.getAdded(),
-                                record.getRemoved(),
-                                renamed.getAbsolutePath(),
-                                record.getFormat(),
-                                record.getSize(),
-                                record.getSampleRate(),
-                                record.getChannelCount(),
-                                record.getBitrate(),
-                                record.isBookmarked(),
-                                record.isWaveformProcessed(),
-                                record.getAmps(),
-                                1,
-                                "",
-                                0,
-                                "");
-                        if (localRepository.updateRecord(TalkPresenter.this.record)) {
+                        record.name = name;
+                        record.path = renamed.getAbsolutePath();
+                        record.msgType = 1;
+                        record.loadStatus = 0;
+
+                        TalkPresenter.this.record = record;
+                        if (TalkPresenter.this.record.save()) {
                             AndroidUtils.runOnUIThread(() -> {
                                 if (view != null) {
                                     view.hideProgress();
@@ -851,10 +835,10 @@ public class TalkPresenter implements TalkContract.UserActionsListener {
                                 if (duration > 0) {
                                     long playProgressMills = audioPlayer.getPauseTime();
                                     view.onPlayProgress(playProgressMills, (int) (1000 * playProgressMills / duration));
-                                    view.showWaveForm(rec.getAmps(), songDuration, playProgressMills);
+                                    view.showWaveForm(AndroidUtils.byte2int(rec.getAmps()), songDuration, playProgressMills);
                                 }
                             } else {
-                                view.showWaveForm(rec.getAmps(), songDuration, 0);
+                                view.showWaveForm(AndroidUtils.byte2int(rec.getAmps()), songDuration, 0);
                             }
 
                             view.showName(rec.getName());
@@ -1172,7 +1156,7 @@ public class TalkPresenter implements TalkContract.UserActionsListener {
                 if (rec != null) {
                     AndroidUtils.runOnUIThread(() -> {
                         if (view != null) {
-                            view.showWaveForm(rec.getAmps(), rec.getDuration(), 0);
+                            view.showWaveForm(AndroidUtils.byte2int(rec.getAmps()), rec.getDuration(), 0);
                             view.showDuration(TimeUtils.formatTimeIntervalHourMinSec2(rec.getDuration() / 1000));
                             view.showRecordName(rec.getName());
                             callback.onSuccess();
@@ -1276,10 +1260,10 @@ public class TalkPresenter implements TalkContract.UserActionsListener {
                                     if (duration > 0) {
                                         long playProgressMills = audioPlayer.getPauseTime();
                                         view.onPlayProgress(playProgressMills, (int) (1000 * playProgressMills / duration));
-                                        view.showWaveForm(rec.getAmps(), rec.getDuration(), playProgressMills);
+                                        view.showWaveForm(AndroidUtils.byte2int(rec.getAmps()), rec.getDuration(), playProgressMills);
                                     }
                                 } else {
-                                    view.showWaveForm(rec.getAmps(), rec.getDuration(), 0);
+                                    view.showWaveForm(AndroidUtils.byte2int(rec.getAmps()), rec.getDuration(), 0);
                                 }
                                 view.showDuration(TimeUtils.formatTimeIntervalHourMinSec2(rec.getDuration() / 1000));
                                 view.showRecordName(rec.getName());
@@ -1415,26 +1399,15 @@ public class TalkPresenter implements TalkContract.UserActionsListener {
                     rec = localRepository.getRecord(ids.get(i));
                     if (rec != null) {
                         RecordInfo info = AudioDecoder.readRecordInfo(new File(rec.getPath()));
-                        localRepository.updateRecord(new Record(
-                                rec.getId(),
-                                FileUtil.removeFileExtension(rec.getName()),
-                                rec.getDuration(),
-                                rec.getCreated(),
-                                rec.getAdded(),
-                                rec.getRemoved(),
-                                rec.getPath(),
-                                info.getFormat(),
-                                info.getSize(),
-                                info.getSampleRate(),
-                                info.getChannelCount(),
-                                info.getBitrate(),
-                                rec.isBookmarked(),
-                                rec.isWaveformProcessed(),
-                                rec.getAmps(),
-                                1,
-                                "",
-                                0,
-                                ""));
+                        rec.name = FileUtil.removeFileExtension(rec.getName());
+                        rec.format = info.getFormat();
+                        rec.size = info.getSize();
+                        rec.sampleRate = info.getSampleRate();
+                        rec.channelCount = info.getChannelCount();
+                        rec.bitrate = info.getBitrate();
+                        rec.msgType = 1;
+                        rec.loadStatus = 0;
+                        rec.save();
                     }
                 }
             }
@@ -1446,26 +1419,15 @@ public class TalkPresenter implements TalkContract.UserActionsListener {
                     trashRecord = localRepository.getTrashRecord(trashIds.get(i));
                     if (trashRecord != null) {
                         RecordInfo info = AudioDecoder.readRecordInfo(new File(trashRecord.getPath()));
-                        localRepository.updateTrashRecord(new Record(
-                                trashRecord.getId(),
-                                FileUtil.removeFileExtension(trashRecord.getName()),
-                                trashRecord.getDuration(),
-                                trashRecord.getCreated(),
-                                trashRecord.getAdded(),
-                                trashRecord.getRemoved(),
-                                trashRecord.getPath(),
-                                info.getFormat(),
-                                info.getSize(),
-                                info.getSampleRate(),
-                                info.getChannelCount(),
-                                info.getBitrate(),
-                                trashRecord.isBookmarked(),
-                                trashRecord.isWaveformProcessed(),
-                                trashRecord.getAmps(),
-                                1,
-                                "",
-                                0,
-                                ""));
+                        trashRecord.name = FileUtil.removeFileExtension(trashRecord.getName());
+                        trashRecord.format = info.getFormat();
+                        trashRecord.size = info.getSize();
+                        trashRecord.sampleRate = info.getSampleRate();
+                        trashRecord.channelCount = info.getChannelCount();
+                        trashRecord.bitrate = info.getBitrate();
+                        trashRecord.msgType = 1;
+                        trashRecord.loadStatus = 0;
+                        trashRecord.save();
                     }
                 }
             }

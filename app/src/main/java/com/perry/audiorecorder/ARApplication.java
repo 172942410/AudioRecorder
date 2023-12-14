@@ -1,19 +1,3 @@
-/*
- * Copyright 2018 Dmytro Ponomarenko
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *    http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.perry.audiorecorder;
 
 import android.app.Application;
@@ -24,18 +8,19 @@ import android.content.IntentFilter;
 import android.os.Handler;
 import android.telephony.PhoneStateListener;
 import android.telephony.TelephonyManager;
+import android.util.Log;
 
 import com.perry.audiorecorder.audio.player.PlayerContractNew;
 import com.perry.audiorecorder.data.Prefs;
 import com.perry.audiorecorder.util.AndroidUtils;
-//import com.google.firebase.FirebaseApp;
+import com.raizlabs.android.dbflow.config.FlowManager;
 
 import org.xutils.x;
 
 import timber.log.Timber;
 
 public class ARApplication extends Application {
-
+	final String TAG = ARApplication.class.getName();
 	final static String AUDIO_BECOMING_NOISY = "android.media.AUDIO_BECOMING_NOISY";
 	private AudioOutputChangeReceiver audioOutputChangeReceiver;
 
@@ -84,6 +69,9 @@ public class ARApplication extends Application {
 			});
 		}
 		super.onCreate();
+		// DBFlow 初始化
+		FlowManager.init(this);
+		// xUtils 的初始化
 		x.Ext.init(this);
 		PACKAGE_NAME = getApplicationContext().getPackageName();
 		applicationHandler = new Handler(getApplicationContext().getMainLooper());
@@ -103,7 +91,8 @@ public class ARApplication extends Application {
 			TelephonyManager mTelephonyMgr = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
 			mTelephonyMgr.listen(mPhoneStateListener, PhoneStateListener.LISTEN_CALL_STATE);
 		} catch (Exception e) {
-			Timber.e(e);
+//			Timber.e(e);
+			Log.e("ARApplication.java","SecurityException: listen:");
 		}
 //		FirebaseApp.initializeApp(this);
 	}

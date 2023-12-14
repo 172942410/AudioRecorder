@@ -211,6 +211,9 @@ public class AndroidUtils {
 	 * Convert int array to byte array
 	 */
 	public static byte[] int2byte(int[] src) {
+		if(src == null){
+			return null;
+		}
 		ByteBuffer byteBuffer = ByteBuffer.allocate(src.length * 4);
 		IntBuffer intBuffer = byteBuffer.asIntBuffer();
 		intBuffer.put(src);
@@ -221,6 +224,9 @@ public class AndroidUtils {
 	 * Convert byte array to int array
 	 */
 	public static int[] byte2int(byte[]src) {
+		if(src == null){
+			return null;
+		}
 		int dstLength = src.length >>> 2;
 		int[]dst = new int[dstLength];
 

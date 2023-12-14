@@ -1,25 +1,7 @@
-/*
- * Copyright 2018 Dmytro Ponomarenko
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *    http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.perry.audiorecorder.data.database;
 
-import static com.perry.audiorecorder.data.database.SQLiteHelper.COLUMN_PATH;
-
-import android.database.Cursor;
 import android.database.SQLException;
+import android.text.TextUtils;
 
 import com.perry.audiorecorder.ARApplication;
 import com.perry.audiorecorder.AppConstants;
@@ -27,6 +9,8 @@ import com.perry.audiorecorder.data.FileRepository;
 import com.perry.audiorecorder.data.Prefs;
 import com.perry.audiorecorder.exception.FailedToRestoreRecord;
 import com.perry.audiorecorder.util.FileUtil;
+import com.raizlabs.android.dbflow.sql.language.SQLite;
+import com.raizlabs.android.dbflow.sql.language.property.IProperty;
 
 import java.io.File;
 import java.io.IOException;
@@ -38,28 +22,6 @@ import timber.log.Timber;
 
 public class LocalRepositoryImpl implements LocalRepository {
 
-//**
-// EXAMPLE
-// 			LocalRepository rep = new LocalRepositoryImpl(new RecordsDataSource(getApplicationContext()));
-//				rep.open();
-//				rep.insertRecord(new Record(
-//						Record.NO_ID,
-//						"audio_rec_1542035885701.m4a",
-//						new Date().getTime(),
-//						"/storage/emulated/0/Android/data/com.perry.audiorecorder.debug/files/Music/records/audio_rec_1542035885701.m4a",
-//						new int[] {10, 20, 30, 40, 50, 45, 81}
-//						));
-//
-//				List<Record> recordList = rep.getAllRecords();
-//				Timber.v("All records size: "+ recordList.size() + " 0 pos: " + recordList.get(0).toString());
-//				rep.close();
-//
-// */
-
-    private final RecordsDataSource dataSource;
-
-    private final TrashDataSource trashDataSource;
-
     private final FileRepository fileRepository;
 
     private final Prefs prefs;
@@ -68,18 +30,16 @@ public class LocalRepositoryImpl implements LocalRepository {
 
     private OnRecordsLostListener onLostRecordsListener;
 
-    private LocalRepositoryImpl(RecordsDataSource dataSource, TrashDataSource trashDataSource, FileRepository fileRepository, Prefs prefs) {
-        this.dataSource = dataSource;
-        this.trashDataSource = trashDataSource;
+    private LocalRepositoryImpl(FileRepository fileRepository, Prefs prefs) {
         this.fileRepository = fileRepository;
         this.prefs = prefs;
     }
 
-    public static LocalRepositoryImpl getInstance(RecordsDataSource source, TrashDataSource trashSource, FileRepository fileRepository, Prefs prefs) {
+    public static LocalRepositoryImpl getInstance(FileRepository fileRepository, Prefs prefs) {
         if (instance == null) {
             synchronized (LocalRepositoryImpl.class) {
                 if (instance == null) {
-                    instance = new LocalRepositoryImpl(source, trashSource, fileRepository, prefs);
+                    instance = new LocalRepositoryImpl(fileRepository, prefs);
                     instance.removeOutdatedTrashRecords();
                 }
             }
@@ -87,108 +47,54 @@ public class LocalRepositoryImpl implements LocalRepository {
         return instance;
     }
 
-    public void open() {
-        dataSource.open();
-        trashDataSource.open();
-    }
-
-    public void close() {
-        dataSource.close();
-        trashDataSource.close();
-    }
-
     public Record getRecord(int id) {
-        if (!dataSource.isOpen()) {
-            dataSource.open();
-        }
-        Record r = dataSource.getItem(id);
+        Record r = SQLite.select().from(Record.class).where(Record_Table.id.eq(id),Record_Table.isDelete.eq(false)).querySingle();
         if (r != null) {
             List<Record> l = new ArrayList<>(1);
             l.add(r);
             checkForLostRecords(l);
-            return r;
         }
-        return null;
+        return r;
     }
 
     @Override
     public Record findRecordByPath(String path) {
-        if (!dataSource.isOpen()) {
-            dataSource.open();
-        }
         if (path.contains("'")) {
             path = path.replace("'", "''");
         }
-        List<Record> records = dataSource.getItems(COLUMN_PATH + " = '" + path + "'");
-        if (records.isEmpty()) {
-            return null;
-        } else {
-            return records.get(0);
-        }
+        Record record = SQLite.select().from(Record.class).where(Record_Table.path.eq(path),Record_Table.isDelete.eq(false)).querySingle();
+        return record;
     }
 
     @Override
     public List<Record> findRecordsByPath(String path) {
-        if (!dataSource.isOpen()) {
-            dataSource.open();
-        }
         if (path.contains("'")) {
             path = path.replace("'", "''");
         }
-        return dataSource.getItems(COLUMN_PATH + " LIKE '%" + path + "%'");
+        List<Record> records = SQLite.select().from(Record.class).where(Record_Table.path.like(path),Record_Table.isDelete.eq(false)).queryList();
+        return records;
     }
 
     @Override
     public boolean hasRecordsWithPath(String path) {
-        if (!dataSource.isOpen()) {
-            dataSource.open();
-        }
         if (path.contains("'")) {
             path = path.replace("'", "''");
         }
-        List<Record> records = dataSource.getItems(COLUMN_PATH + " LIKE '%" + path + "%' LIMIT 1");
+        List<Record> records = SQLite.select().from(Record.class).where(Record_Table.path.like(path),Record_Table.isDelete.eq(false)).limit(1).queryList();
         return records.size() > 0;
     }
 
     @Override
     public Record getTrashRecord(int id) {
-        if (!trashDataSource.isOpen()) {
-            trashDataSource.open();
-        }
-        return trashDataSource.getItem(id);
-    }
-
-    public Record insertRecord(Record record) {
-        if (!dataSource.isOpen()) {
-            dataSource.open();
-        }
-        return dataSource.insertItem(record);
-    }
-
-    @Override
-    public boolean updateRecord(Record record) {
-        if (!dataSource.isOpen()) {
-            dataSource.open();
-        }
-        //If updated record count is more than 0, then update is successful.
-        return (dataSource.updateItem(record) > 0);
-    }
-
-    @Override
-    public boolean updateTrashRecord(Record record) {
-        if (!trashDataSource.isOpen()) {
-            trashDataSource.open();
-        }
-        //If updated record count is more than 0, then update is successful.
-        return (trashDataSource.updateItem(record) > 0);
+        Record record = SQLite.select().from(Record.class).where(Record_Table.id.eq(id),Record_Table.isDelete.eq(true)).querySingle();
+        return record;
     }
 
     @Override
     public Record insertEmptyFile(String path) throws IOException {
-        if (path != null && !path.isEmpty()) {
+        if (!TextUtils.isEmpty(path)) {
             File file = new File(path);
             Record record = new Record(
-                    Record.NO_ID,
                     FileUtil.removeFileExtension(file.getName()),
                     0, //mills
                     file.lastModified(),
@@ -202,100 +108,109 @@ public class LocalRepositoryImpl implements LocalRepository {
                     prefs.getSettingBitrate(),
                     false,
                     false,
-                    new int[ARApplication.getLongWaveformSampleCount()],
+                    new byte[ARApplication.getLongWaveformSampleCount()*4],
                     0,
                     "",
                     2,
                     "");
-            Record r = insertRecord(record);
-            if (r != null) {
-                return r;
-            } else {
-                Timber.e("Failed to insert record into local database!");
-            }
+            record.save();
+            return record;
         } else {
             Timber.e("Unable to read sound file by specified path!");
             throw new IOException("Unable to read sound file by specified path!");
         }
-        return null;
     }
 
     public List<Record> getAllRecords() {
-        if (!dataSource.isOpen()) {
-            dataSource.open();
-        }
-        List<Record> list = dataSource.getAll();
+        List<Record> list = SQLite.select().from(Record.class).where(Record_Table.isDelete.eq(false)).orderBy(Record_Table.added, false).queryList();
         checkForLostRecords(list);
         return list;
     }
 
     @Override
     public List<Integer> getAllItemsIds() {
-        if (!dataSource.isOpen()) {
-            dataSource.open();
+        ArrayList<Integer> items = new ArrayList<>();
+//        FlowManager.getDatabase(AppDataBase.class).executeTransaction(
+//                new ProcessModelTransaction.Builder<Integer>((integer, wrapper) -> {
+        //
+        List<Record> records = SQLite.select().from(Record.class).where(Record_Table.isDelete.eq(false)).queryList();
+        if (records != null && records.size() > 0) {
+            for (int i = 0; i < records.size(); i++) {
+                Record record = records.get(i);
+                items.add(record.id);
+            }
         }
-        return dataSource.getAllItemsIds();
+//                }).build());
+        return items;
+//        return dataSource.getAllItemsIds();
     }
 
     @Override
     public List<Record> getRecords(int page) {
-        if (!dataSource.isOpen()) {
-            dataSource.open();
-        }
-        List<Record> list = dataSource.getRecords(page);
+        List<Record> list = SQLite.select().from(Record.class)
+                .where(Record_Table.isDelete.eq(false))
+                .orderBy(Record_Table.added, false)
+                .limit(AppConstants.DEFAULT_PER_PAGE)
+                .offset((page - 1) * AppConstants.DEFAULT_PER_PAGE)
+                .queryList();
         checkForLostRecords(list);
         return list;
     }
 
     @Override
     public List<Record> getRecords(int page, int order) {
-        if (!dataSource.isOpen()) {
-            dataSource.open();
-        }
-        String orderStr;
+        IProperty property;
+        boolean ascending;
         switch (order) {
             case AppConstants.SORT_NAME:
-                orderStr = SQLiteHelper.COLUMN_NAME + " ASC";
+                property = Record_Table.name;
+                ascending = true;
                 break;
             case AppConstants.SORT_NAME_DESC:
-                orderStr = SQLiteHelper.COLUMN_NAME + " DESC";
+                property = Record_Table.name;
+                ascending = false;
                 break;
             case AppConstants.SORT_DURATION:
-                orderStr = SQLiteHelper.COLUMN_DURATION + " DESC";
+                property = Record_Table.duration;
+                ascending = false;
                 break;
             case AppConstants.SORT_DURATION_DESC:
-                orderStr = SQLiteHelper.COLUMN_DURATION + " ASC";
+                property = Record_Table.duration;
+                ascending = true;
                 break;
             case AppConstants.SORT_DATE_DESC:
-                orderStr = SQLiteHelper.COLUMN_DATE_ADDED + " ASC";
+                property = Record_Table.added;
+                ascending = true;
                 break;
             case AppConstants.SORT_DATE:
             default:
-                orderStr = SQLiteHelper.COLUMN_DATE_ADDED + " DESC";
+                property = Record_Table.added;
+                ascending = false;
         }
-        List<Record> list = dataSource.getRecords(page, orderStr);
+        List<Record> list = SQLite.select().from(Record.class)
+                .orderBy(property, ascending)
+                .limit(AppConstants.DEFAULT_PER_PAGE)
+                .offset((page - 1) * AppConstants.DEFAULT_PER_PAGE)
+                .queryList();
         checkForLostRecords(list);
         return list;
     }
 
     @Override
     public Record getLastRecord() {
-        if (!dataSource.isOpen()) {
-            dataSource.open();
-        }
-        Cursor c = dataSource.queryLocal("SELECT * FROM " + SQLiteHelper.TABLE_RECORDS +
-                " ORDER BY " + SQLiteHelper.COLUMN_ID + " DESC LIMIT 1");
-        if (c != null && c.moveToFirst()) {
-            Record r = dataSource.recordToItem(c);
-            if (!isFileExists(r.getPath())) {
-                List<Record> l = new ArrayList<>(1);
-                l.add(r);
-                checkForLostRecords(l);
-            }
-            return r;
-        } else {
+        Record r = SQLite.select().from(Record.class)
+                .where(Record_Table.isDelete.eq(false))
+                .orderBy(Record_Table.id, false)
+                .limit(1).querySingle();
+        if (r == null) {
             return null;
         }
+        if (!isFileExists(r.getPath())) {
+            List<Record> l = new ArrayList<>(1);
+            l.add(r);
+            checkForLostRecords(l);
+        }
+        return r;
     }
 
     private boolean isFileExists(String path) {
@@ -303,57 +218,44 @@ public class LocalRepositoryImpl implements LocalRepository {
     }
 
     public void deleteRecord(int id) {
-        if (!dataSource.isOpen()) {
-            dataSource.open();
-        }
-        if (!trashDataSource.isOpen()) {
-            trashDataSource.open();
-        }
-        Record recordToDelete = dataSource.getItem(id);
+        Record recordToDelete = SQLite.select().from(Record.class).where(Record_Table.id.eq(id),Record_Table.isDelete.eq(false)).querySingle();
         if (recordToDelete != null) {
             String renamed = fileRepository.markAsTrashRecord(recordToDelete.getPath());
             if (renamed != null) {
+                recordToDelete.isDelete = true;
                 recordToDelete.setPath(renamed);
-                trashDataSource.insertItem(recordToDelete);
+                recordToDelete.save();
             } else {
-                renamed = fileRepository.markAsTrashRecord(recordToDelete.getPath());
-                if (renamed != null) {
-                    recordToDelete.setPath(renamed);
-                    trashDataSource.insertItem(recordToDelete);
-                } else {
-                    trashDataSource.insertItem(recordToDelete);
-//					fileRepository.deleteRecordFile(recordToDelete.getPath());
-                }
+                recordToDelete.delete();
+                fileRepository.deleteRecordFile(recordToDelete.getPath());
             }
         }
-        dataSource.deleteItem(id);
     }
 
     @Override
     public void deleteRecordForever(int id) {
-        if (!dataSource.isOpen()) {
-            dataSource.open();
-        }
-        dataSource.deleteItem(id);
+        SQLite.delete(Record.class).where(Record_Table.id.eq(id)).execute();
     }
 
     @Override
     public List<Long> getRecordsDurations() {
-        if (!dataSource.isOpen()) {
-            dataSource.open();
+        List<Record> records = SQLite.select().from(Record.class).where(Record_Table.isDelete.eq(false)).queryList();
+        ArrayList<Long> items = new ArrayList<>();
+        if(records != null && records.size() > 0){
+            for (int i=0;i<records.size();i++){
+                Record record = records.get(i);
+                items.add(record.duration);
+            }
         }
-        return dataSource.getRecordsDurations();
+        return items;
     }
 
     @Override
     public boolean addToBookmarks(int id) {
-        if (!dataSource.isOpen()) {
-            dataSource.open();
-        }
-        Record r = dataSource.getItem(id);
+        Record r = SQLite.select().from(Record.class).where(Record_Table.id.eq(id)).querySingle();
         if (r != null) {
             r.setBookmark(true);
-            return (dataSource.updateItem(r) > 0);
+            return r.save();
         } else {
             return false;
         }
@@ -361,13 +263,10 @@ public class LocalRepositoryImpl implements LocalRepository {
 
     @Override
     public boolean removeFromBookmarks(int id) {
-        if (!dataSource.isOpen()) {
-            dataSource.open();
-        }
-        Record r = dataSource.getItem(id);
+        Record r = SQLite.select().from(Record.class).where(Record_Table.id.eq(id)).querySingle();
         if (r != null) {
             r.setBookmark(false);
-            return (dataSource.updateItem(r) > 0);
+            return r.save();
         } else {
             return false;
         }
@@ -375,69 +274,47 @@ public class LocalRepositoryImpl implements LocalRepository {
 
     @Override
     public List<Record> getBookmarks() {
-        if (!dataSource.isOpen()) {
-            dataSource.open();
-        }
-        List<Record> list = new ArrayList<>();
-        Cursor c = dataSource.queryLocal("SELECT * FROM " + SQLiteHelper.TABLE_RECORDS +
-                " WHERE " + SQLiteHelper.COLUMN_BOOKMARK + " = 1" +
-                " ORDER BY " + SQLiteHelper.COLUMN_CREATION_DATE + " DESC");
-
-        if (c != null && c.moveToFirst()) {
-            do {
-                Record r = dataSource.recordToItem(c);
-//				if (isFileExists(r.getPath())) {
-                list.add(r);
-//				} else {
-//					List<Record> l = new ArrayList<>(1);
-//					l.add(r);
-//					checkForLostRecords(l);
-//				}
-            } while (c.moveToNext());
-        } else {
-            return new ArrayList<>();
-        }
-        Timber.v("Bookmarks: %s", list.toString());
+        List<Record> list = SQLite.select().from(Record.class)
+                .where(Record_Table.bookmark.eq(true),Record_Table.isDelete.eq(false))
+                .orderBy(Record_Table.created,false).queryList();
         return list;
     }
 
     @Override
     public List<Record> getTrashRecords() {
-        if (!trashDataSource.isOpen()) {
-            trashDataSource.open();
-        }
-        return trashDataSource.getAll();
+        List<Record> list = SQLite.select().from(Record.class)
+                .where(Record_Table.isDelete.eq(true))
+                .orderBy(Record_Table.added,false).queryList();
+        return list;
     }
 
     @Override
     public List<Integer> getTrashRecordsIds() {
-        if (!trashDataSource.isOpen()) {
-            trashDataSource.open();
+        ArrayList<Integer> items = new ArrayList<>();
+        List<Record> records = SQLite.select().from(Record.class)
+                .where(Record_Table.isDelete.eq(true)).queryList();
+        if (records != null && records.size() > 0) {
+            for (int i = 0; i < records.size(); i++) {
+                Record record = records.get(i);
+                items.add(record.id);
+            }
         }
-        return trashDataSource.getAllItemsIds();
+        return items;
     }
 
     @Override
     public int getTrashRecordsCount() {
-        if (!trashDataSource.isOpen()) {
-            trashDataSource.open();
-        }
-        return trashDataSource.getCount();
+        long count = SQLite.select().from(Record.class).where(Record_Table.isDelete.eq(true)).count();
+        return (int)count;
     }
 
     @Override
     public void restoreFromTrash(int id) throws FailedToRestoreRecord {
-        if (!trashDataSource.isOpen()) {
-            trashDataSource.open();
-        }
-        Record recordToRestore = trashDataSource.getItem(id);
+        Record recordToRestore = SQLite.select().from(Record.class).where(Record_Table.isDelete.eq(true),Record_Table.id.eq(id)).querySingle();
         if (recordToRestore != null) {
-            if (trashDataSource.deleteItem(id) > 0) {
-                restoreRecord(recordToRestore);
-            } else {
-                trashDataSource.insertItem(recordToRestore);
-                throw new FailedToRestoreRecord();
-            }
+            recordToRestore.isDelete= false;
+//            recordToRestore.save();
+            restoreRecord(recordToRestore);
         } else {
             throw new FailedToRestoreRecord();
         }
@@ -447,14 +324,14 @@ public class LocalRepositoryImpl implements LocalRepository {
         String renamed = fileRepository.unmarkTrashRecord(record.getPath());
         if (renamed != null) {
             record.setPath(renamed);
-            insertRecord(record);
+            record.save();
         } else {
             renamed = fileRepository.unmarkTrashRecord(record.getPath());
             if (renamed != null) {
                 record.setPath(renamed);
-                insertRecord(record);
+                record.save();
             } else {
-                insertRecord(record);
+                record.save();
 //				throw new FailedToRestoreRecord();
             }
         }
@@ -462,19 +339,15 @@ public class LocalRepositoryImpl implements LocalRepository {
 
     @Override
     public boolean removeFromTrash(int id) {
-        if (!trashDataSource.isOpen()) {
-            trashDataSource.open();
-        }
-        return trashDataSource.deleteItem(id) > 0;
+        SQLite.delete(Record.class).where(Record_Table.isDelete.eq(true),Record_Table.id.eq(id)).execute();
+//        return trashDataSource.deleteItem(id) > 0;
+        return true;
     }
 
     @Override
     public boolean emptyTrash() {
-        if (!trashDataSource.isOpen()) {
-            trashDataSource.open();
-        }
         try {
-            trashDataSource.deleteAll();
+            SQLite.delete(Record.class).where(Record_Table.isDelete.eq(true)).execute();
             return true;
         } catch (SQLException e) {
             Timber.e(e);
@@ -484,32 +357,22 @@ public class LocalRepositoryImpl implements LocalRepository {
 
     @Override
     public void removeOutdatedTrashRecords() {
-        if (!trashDataSource.isOpen()) {
-            trashDataSource.open();
-        }
         long curTime = new Date().getTime();
-        List<Record> list = trashDataSource.getAll();
+//        List<Record> list = trashDataSource.getAll();
+        List<Record> list = SQLite.select().from(Record.class).where(Record_Table.isDelete.eq(true)).queryList();
         for (int i = 0; i < list.size(); i++) {
-            if (list.get(i).getRemoved() + AppConstants.RECORD_IN_TRASH_MAX_DURATION < curTime) {
-                fileRepository.deleteRecordFile(list.get(i).getPath());
-                trashDataSource.deleteItem(list.get(i).getId());
+            Record record = list.get(i);
+            if (record.getRemoved() + AppConstants.RECORD_IN_TRASH_MAX_DURATION < curTime) {
+                fileRepository.deleteRecordFile(record.getPath());
+                record.delete();
             }
         }
     }
 
     @Override
     public boolean deleteAllRecords() {
-        return false;
-//		if (!dataSource.isOpen()) {
-//			dataSource.open();
-//		}
-//		try {
-////			dataSource.deleteAll();
-//			return true;
-//		} catch (SQLException e) {
-//			Timber.e(e);
-//			return false;
-//		}
+        SQLite.delete(Record.class).execute();
+        return true;
     }
 
     private void checkForLostRecords(List<Record> list) {

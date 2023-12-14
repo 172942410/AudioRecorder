@@ -45,14 +45,12 @@ import com.perry.audiorecorder.data.Prefs;
 import com.perry.audiorecorder.data.PrefsImpl;
 import com.perry.audiorecorder.data.database.LocalRepository;
 import com.perry.audiorecorder.data.database.LocalRepositoryImpl;
-import com.perry.audiorecorder.data.database.RecordsDataSource;
 import com.perry.audiorecorder.app.main.MainContract;
 import com.perry.audiorecorder.app.main.MainPresenter;
 import com.perry.audiorecorder.app.records.RecordsContract;
 import com.perry.audiorecorder.app.records.RecordsPresenter;
 import com.perry.audiorecorder.app.settings.SettingsContract;
 import com.perry.audiorecorder.app.settings.SettingsPresenter;
-import com.perry.audiorecorder.data.database.TrashDataSource;
 
 public class Injector {
 
@@ -89,20 +87,14 @@ public class Injector {
 		return PrefsImpl.getInstance(context);
 	}
 
-	public RecordsDataSource provideRecordsDataSource() {
-		return RecordsDataSource.getInstance(context);
-	}
 
-	public TrashDataSource provideTrashDataSource() {
-		return TrashDataSource.getInstance(context);
-	}
 
 	public FileRepository provideFileRepository() {
 		return FileRepositoryImpl.getInstance(context, providePrefs());
 	}
 
 	public LocalRepository provideLocalRepository() {
-		return LocalRepositoryImpl.getInstance(provideRecordsDataSource(), provideTrashDataSource(), provideFileRepository(), providePrefs());
+		return LocalRepositoryImpl.getInstance(provideFileRepository(), providePrefs());
 	}
 
 	public AppRecorder provideAppRecorder() {

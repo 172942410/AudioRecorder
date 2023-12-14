@@ -10,5 +10,5 @@ data class MoveRecordsPlayPanelState(
 	val recordPath: String = "",
 	val playRecordName: String = "",
 	val playRecordDuration: Long = 0,
-	val activeRecordData: IntArray = intArrayOf()
+	val activeRecordData: ByteArray = byteArrayOf()
 )

@@ -321,10 +321,10 @@ public class RecordsPresenter implements RecordsContract.UserActionsListener {
         view.showProgress();
         final String name = FileUtil.removeUnallowedSignsFromName(n);
         recordingsTasks.postRunnable(() -> {
-            Record rec2 = localRepository.getRecord((int) id);
-            if (rec2 != null) {
+            Record renamedRecord = localRepository.getRecord((int) id);
+            if (renamedRecord != null) {
                 String nameWithExt = name + AppConstants.EXTENSION_SEPARATOR + extension;
-                File file = new File(rec2.getPath());
+                File file = new File(renamedRecord.getPath());
                 File renamed = new File(file.getParentFile().getAbsolutePath() + File.separator + nameWithExt);
 
                 if (renamed.exists()) {
@@ -334,28 +334,13 @@ public class RecordsPresenter implements RecordsContract.UserActionsListener {
                         }
                     });
                 } else {
-                    if (fileRepository.renameFile(rec2.getPath(), name, extension)) {
-                        Record renamedRecord = new Record(
-                                rec2.getId(),
-                                name,
-                                rec2.getDuration(),
-                                rec2.getCreated(),
-                                rec2.getAdded(),
-                                rec2.getRemoved(),
-                                renamed.getAbsolutePath(),
-                                rec2.getFormat(),
-                                rec2.getSize(),
-                                rec2.getSampleRate(),
-                                rec2.getChannelCount(),
-                                rec2.getBitrate(),
-                                rec2.isBookmarked(),
-                                rec2.isWaveformProcessed(),
-                                rec2.getAmps(),
-                                1,
-                                "",
-                                2,
-                                "");
-                        if (localRepository.updateRecord(renamedRecord)) {
+                    if (fileRepository.renameFile(renamedRecord.getPath(), name, extension)) {
+                        renamedRecord.name = name;
+                        renamedRecord.path = renamed.getAbsolutePath();
+                        renamedRecord.msgType = 1;
+                        renamedRecord.loadStatus = 2;
+
+                        if (renamedRecord.save()) {
                             AndroidUtils.runOnUIThread(() -> {
                                 if (view != null) {
                                     view.hideProgress();
@@ -422,10 +407,10 @@ public class RecordsPresenter implements RecordsContract.UserActionsListener {
                                     if (duration > 0) {
                                         long playProgressMills = audioPlayer.getPauseTime();
                                         view.onPlayProgress(playProgressMills, (int) (1000 * playProgressMills / duration));
-                                        view.showWaveForm(rec.getAmps(), rec.getDuration(), playProgressMills);
+                                        view.showWaveForm(AndroidUtils.byte2int(rec.getAmps()), rec.getDuration(), playProgressMills);
                                     }
                                 } else {
-                                    view.showWaveForm(rec.getAmps(), rec.getDuration(), 0);
+                                    view.showWaveForm(AndroidUtils.byte2int(rec.getAmps()), rec.getDuration(), 0);
                                 }
                                 view.showDuration(TimeUtils.formatTimeIntervalHourMinSec2(rec.getDuration() / 1000));
                                 view.showRecordName(rec.getName());
@@ -591,7 +576,7 @@ public class RecordsPresenter implements RecordsContract.UserActionsListener {
                 if (rec != null) {
                     AndroidUtils.runOnUIThread(() -> {
                         if (view != null) {
-                            view.showWaveForm(rec.getAmps(), rec.getDuration(), 0);
+                            view.showWaveForm(AndroidUtils.byte2int(rec.getAmps()), rec.getDuration(), 0);
                             view.showDuration(TimeUtils.formatTimeIntervalHourMinSec2(rec.getDuration() / 1000));
                             view.showRecordName(rec.getName());
                             callback.onSuccess();

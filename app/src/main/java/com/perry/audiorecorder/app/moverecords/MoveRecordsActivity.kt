@@ -259,7 +259,7 @@ class MoveRecordsActivity : Activity() {
 		binding.waveformView.setPlayback(state.playProgressMills)
 		binding.txtProgress.text = TimeUtils.formatTimeIntervalHourMinSec2(state.playProgressMills)
 		binding.txtDuration.text = TimeUtils.formatTimeIntervalHourMinSec2(state.playRecordDuration)
-		binding.waveformView.setWaveform(state.activeRecordData, state.playRecordDuration, state.playProgressMills)
+		binding.waveformView.setWaveform(AndroidUtils.byte2int(state.activeRecordData), state.playRecordDuration, state.playProgressMills)
 	}
 
 	private fun handleViewEvent(event: MoveRecordsEvent) {

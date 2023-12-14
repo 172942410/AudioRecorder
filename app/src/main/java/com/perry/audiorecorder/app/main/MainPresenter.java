@@ -173,7 +173,7 @@ public class MainPresenter implements MainContract.UserActionsListener {
                         record = rec;
                         songDuration = rec.getDuration();
                         if (view != null) {
-                            view.showWaveForm(rec.getAmps(), songDuration, 0);
+                            view.showWaveForm(AndroidUtils.byte2int(rec.getAmps()), songDuration, 0);
                             view.showName(rec.getName());
                             view.showDuration(TimeUtils.formatTimeIntervalHourMinSec2(songDuration / 1000));
                             view.showOptionsMenu();
@@ -322,7 +322,6 @@ public class MainPresenter implements MainContract.UserActionsListener {
         if (view != null) {
             unbindView();
         }
-        localRepository.close();
         audioPlayer.release();
         appRecorder.release();
         loadingTasks.close();
@@ -452,27 +451,11 @@ public class MainPresenter implements MainContract.UserActionsListener {
                     });
                 } else {
                     if (fileRepository.renameFile(record.getPath(), name, extension)) {
-                        MainPresenter.this.record = new Record(
-                                record.getId(),
-                                name,
-                                record.getDuration(),
-                                record.getCreated(),
-                                record.getAdded(),
-                                record.getRemoved(),
-                                renamed.getAbsolutePath(),
-                                record.getFormat(),
-                                record.getSize(),
-                                record.getSampleRate(),
-                                record.getChannelCount(),
-                                record.getBitrate(),
-                                record.isBookmarked(),
-                                record.isWaveformProcessed(),
-                                record.getAmps(),
-                                1,
-                                "",
-                                2,
-                                "");
-                        if (localRepository.updateRecord(MainPresenter.this.record)) {
+                        record.name = name;
+                        record.msgType = 1;
+                        record.loadStatus = 2;
+                        MainPresenter.this.record = record;
+                        if (MainPresenter.this.record.save()) {
                             AndroidUtils.runOnUIThread(() -> {
                                 if (view != null) {
                                     view.hideProgress();
@@ -547,10 +530,10 @@ public class MainPresenter implements MainContract.UserActionsListener {
                                 if (duration > 0) {
                                     long playProgressMills = audioPlayer.getPauseTime();
                                     view.onPlayProgress(playProgressMills, (int) (1000 * playProgressMills / duration));
-                                    view.showWaveForm(rec.getAmps(), songDuration, playProgressMills);
+                                    view.showWaveForm(AndroidUtils.byte2int(rec.getAmps()), songDuration, playProgressMills);
                                 }
                             } else {
-                                view.showWaveForm(rec.getAmps(), songDuration, 0);
+                                view.showWaveForm(AndroidUtils.byte2int(rec.getAmps()), songDuration, 0);
                             }
 
                             view.showName(rec.getName());
@@ -764,8 +747,7 @@ public class MainPresenter implements MainContract.UserActionsListener {
                         RecordInfo info = AudioDecoder.readRecordInfo(newFile);
 
                         //Do 2 step import: 1) Import record with empty waveform. 2) Process and update waveform in background.
-                        Record r = new Record(
-                                Record.NO_ID,
+                        Record rec = new Record(
                                 FileUtil.removeFileExtension(newFile.getName()),
                                 info.getDuration() >= 0 ? info.getDuration() : 0,
                                 newFile.lastModified(),
@@ -779,13 +761,13 @@ public class MainPresenter implements MainContract.UserActionsListener {
                                 info.getBitrate(),
                                 false,
                                 false,
-                                new int[ARApplication.getLongWaveformSampleCount()],
+                                new byte[ARApplication.getLongWaveformSampleCount()*4],
                                 1,
                                 "",
                                 2,
                                 "");
-                        record = localRepository.insertRecord(r);
-                        final Record rec = record;
+                        rec.save();
+                        record = rec;
                         if (rec != null) {
                             id = rec.getId();
                             prefs.setActiveRecord(id);
@@ -793,7 +775,7 @@ public class MainPresenter implements MainContract.UserActionsListener {
                             AndroidUtils.runOnUIThread(() -> {
                                 if (view != null) {
                                     audioPlayer.stop();
-                                    view.showWaveForm(rec.getAmps(), songDuration, 0);
+                                    view.showWaveForm(AndroidUtils.byte2int(rec.getAmps()), songDuration, 0);
                                     view.showName(rec.getName());
                                     view.showDuration(TimeUtils.formatTimeIntervalHourMinSec2(songDuration / 1000));
                                     view.hideProgress();
@@ -840,26 +822,15 @@ public class MainPresenter implements MainContract.UserActionsListener {
                     rec = localRepository.getRecord(ids.get(i));
                     if (rec != null) {
                         RecordInfo info = AudioDecoder.readRecordInfo(new File(rec.getPath()));
-                        localRepository.updateRecord(new Record(
-                                rec.getId(),
-                                FileUtil.removeFileExtension(rec.getName()),
-                                rec.getDuration(),
-                                rec.getCreated(),
-                                rec.getAdded(),
-                                rec.getRemoved(),
-                                rec.getPath(),
-                                info.getFormat(),
-                                info.getSize(),
-                                info.getSampleRate(),
-                                info.getChannelCount(),
-                                info.getBitrate(),
-                                rec.isBookmarked(),
-                                rec.isWaveformProcessed(),
-                                rec.getAmps(),
-                                1,
-                                "",
-                                2,
-                                ""));
+                        rec.name = FileUtil.removeFileExtension(rec.getName());
+                        rec.msgType = 1;
+                        rec.loadStatus = 2;
+                        rec.format = info.getFormat();
+                        rec.size = info.getSize();
+                        rec.sampleRate = info.getSampleRate();
+                        rec.channelCount = info.getChannelCount();
+                        rec.bitrate = info.getBitrate();
+                        rec.save();
                     }
                 }
             }
@@ -871,26 +842,15 @@ public class MainPresenter implements MainContract.UserActionsListener {
                     trashRecord = localRepository.getTrashRecord(trashIds.get(i));
                     if (trashRecord != null) {
                         RecordInfo info = AudioDecoder.readRecordInfo(new File(trashRecord.getPath()));
-                        localRepository.updateTrashRecord(new Record(
-                                trashRecord.getId(),
-                                FileUtil.removeFileExtension(trashRecord.getName()),
-                                trashRecord.getDuration(),
-                                trashRecord.getCreated(),
-                                trashRecord.getAdded(),
-                                trashRecord.getRemoved(),
-                                trashRecord.getPath(),
-                                info.getFormat(),
-                                info.getSize(),
-                                info.getSampleRate(),
-                                info.getChannelCount(),
-                                info.getBitrate(),
-                                trashRecord.isBookmarked(),
-                                trashRecord.isWaveformProcessed(),
-                                trashRecord.getAmps(),
-                                1,
-                                "",
-                                2,
-                                ""));
+                        trashRecord.name = FileUtil.removeFileExtension(trashRecord.getName());
+                        trashRecord.format = info.getFormat();
+                        trashRecord.size =   info.getSize();
+                        trashRecord.sampleRate =   info.getSampleRate();
+                        trashRecord.channelCount =         info.getChannelCount();
+                        trashRecord.bitrate = info.getBitrate();
+                        trashRecord.msgType = 1;
+                        trashRecord.loadStatus = 2;
+                        trashRecord.save();
                     }
                 }
             }
