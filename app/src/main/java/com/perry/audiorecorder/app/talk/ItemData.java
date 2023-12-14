@@ -43,6 +43,7 @@ public class ItemData implements Parcelable {
 	private int loadStatus = 0; // 0 成功；1失败；2加载中
 
 	public String msgSpeak;
+
 	public ItemData(long id, int type, String name, String format, String description, long duration,
 					long size, long created, long added, String path, int sampleRate, int channelCount, int bitrate,
 					boolean bookmarked, int[] amps ,String itemData,int loadStatus,String msgSpeak) {
@@ -188,12 +189,14 @@ public class ItemData implements Parcelable {
 
 	//----- START Parcelable implementation ----------
 	private ItemData(Parcel in) {
-		int[] ints = new int[4];
+		int[] ints = new int[6];
 		in.readIntArray(ints);
 		type = ints[0];
 		sampleRate = ints[1];
 		channelCount = ints[2];
 		bitrate = ints[3];
+		playStatus = ints[4];
+		loadStatus = ints[5];
 		long[] longs = new long[5];
 		in.readLongArray(longs);
 		id = longs[0];
@@ -201,7 +204,7 @@ public class ItemData implements Parcelable {
 		size = longs[2];
 		created = longs[3];
 		added = longs[4];
-		String[] data = new String[8];
+		String[] data = new String[10];
 		in.readStringArray(data);
 		name = data[0];
 		format = data[1];
@@ -211,12 +214,13 @@ public class ItemData implements Parcelable {
 		addedTime = data[5];
 		createTime = data[6];
 		avatar_url = data[7];
+		itemData = data[8];
+		msgSpeak = data[9];
 		in.readIntArray(amps);
 		boolean[] bools = new boolean[1];
 		in.readBooleanArray(bools);
 		bookmarked = bools[0];
-//		后来新加的读取
-		itemData = in.readString();
+
 	}
 
 	public int describeContents() {
@@ -224,13 +228,11 @@ public class ItemData implements Parcelable {
 	}
 
 	public void writeToParcel(Parcel out, int flags) {
-		out.writeIntArray(new int[] {type, sampleRate, channelCount, bitrate});
+		out.writeIntArray(new int[] {type, sampleRate, channelCount, bitrate,playStatus,loadStatus});
 		out.writeLongArray(new long[] {id, duration, size, created, added});
-		out.writeStringArray(new String[] {name, format, path, description, durationStr, addedTime, createTime, avatar_url});
+		out.writeStringArray(new String[] {name, format, path, description, durationStr, addedTime, createTime, avatar_url,itemData,msgSpeak});
 		out.writeIntArray(amps);
 		out.writeBooleanArray(new boolean[] {bookmarked});
-//		后来新加的
-		out.writeString(itemData);
 	}
 
 	public static final Creator<ItemData> CREATOR

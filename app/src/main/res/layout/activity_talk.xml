@@ -173,6 +173,7 @@
                     android:src="@drawable/baseline_keyboard"
                     android:scaleType="fitCenter"
                     android:background="@null"
+                    android:visibility="gone"
                     />
 
                 <com.perry.audiorecorder.app.widget.RecordAudioButton

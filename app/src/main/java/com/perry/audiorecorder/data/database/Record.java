@@ -65,6 +65,7 @@ public class Record extends BaseModel implements Serializable {
     @Column
     public String msgStr;
 
+    @Column
     public String msgSpeak;
     /**
      * 0 成功；1失败；2加载中
