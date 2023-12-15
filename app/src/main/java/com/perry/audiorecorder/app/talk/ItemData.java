@@ -25,8 +25,8 @@ public class ItemData implements Parcelable {
 	private final int channelCount;
 	private final int bitrate;
 	private final long created;
-	private final long added;
-	private final String addedTime;
+	public long added;
+	public String addedTime;
 	private final String createTime;
 	/**
 	 * 0：停止 1：播放； 2：暂停 ； -1：异常

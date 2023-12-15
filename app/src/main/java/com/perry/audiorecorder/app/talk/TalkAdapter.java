@@ -245,6 +245,15 @@ public class TalkAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             }else if(item.getLoadStatus() == 1){ //失败
                 holder.buttonFailed.setVisibility(View.VISIBLE);
                 holder.progressBar.setVisibility(View.GONE);
+                holder.buttonFailed.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        if(onRequestFailed != null){
+                            onRequestFailed.sendHttpRequest(item);
+                        }
+
+                    }
+                });
             }else if(item.getLoadStatus() == 2){ //加载中...
                 holder.buttonFailed.setVisibility(View.GONE);
                 holder.progressBar.setVisibility(View.VISIBLE);
@@ -758,6 +767,19 @@ public class TalkAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         notifyDataSetChanged();
     }
 
+    /**
+     * 首次创建应用于 发送失败重新发送的数据需要刷新到最下面一个数据中来
+     *
+     * @param itemData
+     */
+    public void addLastData(ItemData itemData) {
+        if(data.contains(itemData)){
+            data.remove(itemData);
+        }
+        data.add(itemData);
+//        notifyItemChanged(data.size()-1);
+    }
+
     public interface ItemClickListener {
         void onItemClick(View view, long id, String path, int position);
     }
@@ -942,6 +964,13 @@ public class TalkAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         }
     }
 
+    public void setOnRequestFailed(OnRequestFailed onRequestFailed){
+        this.onRequestFailed = onRequestFailed;
+    }
+    OnRequestFailed onRequestFailed;
+    public interface OnRequestFailed{
+        void sendHttpRequest(ItemData itemData);
+    }
     public interface OnItemClickListener {
         void onItemClick(int position, ItemViewHolder itemViewHolder);
     }

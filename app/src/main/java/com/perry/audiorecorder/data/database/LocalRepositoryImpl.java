@@ -172,15 +172,15 @@ public class LocalRepositoryImpl implements LocalRepository {
                 break;
             case AppConstants.SORT_DURATION:
                 property = Record_Table.duration;
-                ascending = false;
+                ascending = true;
                 break;
             case AppConstants.SORT_DURATION_DESC:
                 property = Record_Table.duration;
-                ascending = true;
+                ascending = false;
                 break;
             case AppConstants.SORT_DATE_DESC:
                 property = Record_Table.added;
-                ascending = true;
+                ascending = true;//这里的值其实颠倒了
                 break;
             case AppConstants.SORT_DATE:
             default:

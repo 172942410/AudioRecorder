@@ -314,6 +314,12 @@ public class TalkActivity extends Activity implements TalkContract.View, View.On
                 txtSelectedCount.setText(getResources().getString(R.string.selected, selectedCount));
             }
         });
+        talkAdapter.setOnRequestFailed(new TalkAdapter.OnRequestFailed() {
+            @Override
+            public void sendHttpRequest(ItemData itemData) {
+                presenter.sendHttpRequest(itemData);
+            }
+        });
         recyclerView.setAdapter(talkAdapter);
 //        下面这行代码很重要就是说话的时候seek进度条不闪动了
         ((SimpleItemAnimator) recyclerView.getItemAnimator()).setSupportsChangeAnimations(false);
@@ -561,8 +567,12 @@ public class TalkActivity extends Activity implements TalkContract.View, View.On
     }
 
     @Override
-    public void showItemProgress(ItemData itemData) {
+    public void showItemProgress(ItemData itemData,boolean repeatSend) {
         itemData.setLoading(2);
+        if(repeatSend) {
+            talkAdapter.addLastData(itemData);
+            recyclerView.scrollToPosition(talkAdapter.getItemCount() - 1);
+        }
         talkAdapter.notifyDataSetChanged();
     }
 

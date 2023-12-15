@@ -61,7 +61,9 @@ public class ReceiveMsgBean {
             }
         }
         if(fault != null){
-            msgStringBuilder.append("\n");
+            if(msgStringBuilder.length() > 0) {
+                msgStringBuilder.append("\n");
+            }
             if(!TextUtils.isEmpty(fault.error)){
                 msgStringBuilder.append(fault.error);
             }else {

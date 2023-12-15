@@ -189,7 +189,7 @@ public interface TalkContract {
 
         void sendFailed(ItemData itemData,Throwable ex);
 
-        void showItemProgress(ItemData itemData);
+        void showItemProgress(ItemData itemData,boolean repeatSend);
 
         void showItemPaused(int position, ItemData itemData);
 
@@ -287,5 +287,7 @@ public interface TalkContract {
         void stopTtsPlay();
 
         void destroy();
+
+        void sendHttpRequest(ItemData itemData);
     }
 }

@@ -328,6 +328,17 @@ public class TalkPresenter implements TalkContract.UserActionsListener {
         );
     }
 
+    public void sendHttpRequest(ItemData itemData){
+        // 再次发送的时间需要修改 并且修改数据库时间
+        record = localRepository.getRecord((int)itemData.getId());
+        itemData.added = System.currentTimeMillis();
+        record.added = itemData.added;
+        record.save();
+        itemData.addedTime = TimeUtils.formatDateTimeLocale(itemData.added);
+        //adapter中移动到最后一个
+        view.showItemProgress(itemData,true);
+        httpUploadFile.uploadFaultAudio(itemData.getName(), itemData.getPath(), new HttpCallback(itemData));
+    }
     class HttpCallback implements Callback.CommonCallback<String> {
         ItemData itemData;
 
@@ -337,12 +348,9 @@ public class TalkPresenter implements TalkContract.UserActionsListener {
 
         @Override
         public void onSuccess(String result) {
-            view.sendSuccess(itemData);
-            TalkPresenter.this.record.setLoading(0);
-            TalkPresenter.this.record.save();
             long endTimeLong = System.currentTimeMillis();
             Log.d(TAG, "uploadAudio onSuccess 原始数据: result：" + result);
-//                                字符串开始转义
+//          字符串开始转义
             result = result.replace("\\", "");
             if (result.startsWith("\"")) {
                 result = result.substring(1);
@@ -350,14 +358,13 @@ public class TalkPresenter implements TalkContract.UserActionsListener {
             if (result.endsWith("\"")) {
                 result = result.substring(0, result.length() - 1);
             }
-//                                字符串在解析json之前需要先转义成功；因为服务端有可能把字符串外面又多节了双引号导致的问题
-//            Log.d(TAG, "uploadAudio onSuccess 请求耗时:" + (endTimeLong - startTimeLong) + "，result：" + result);
+//          字符串在解析json之前需要先转义成功；因为服务端有可能把字符串外面又多节了双引号导致的问题
+//          Log.d(TAG, "uploadAudio onSuccess 请求耗时:" + (endTimeLong - startTimeLong) + "，result：" + result);
             ReceiveMsgBean receiveMsgBean = JSON.parseObject(result, ReceiveMsgBean.class);
-//            receiveMsgBean.showMsg = receiveMsgBean.showMsg();
-//            receiveMsgBean.speakMsg = receiveMsgBean.speakMsg();
-
+            view.sendSuccess(itemData);
+            TalkPresenter.this.record.setLoading(0);
+            TalkPresenter.this.record.save();
             Log.d(TAG, "耗时：" + (System.currentTimeMillis() - endTimeLong) + ",uploadAudio json解析完成 :" + receiveMsgBean);
-
             Record receiveRecord = Record.createReceiveTextRecord(System.currentTimeMillis(), receiveMsgBean.showMsg(),receiveMsgBean.speakMsg());
             receiveRecord.save();
             ItemData itemData = Mapper.recordToItemType(receiveRecord);
@@ -596,7 +603,7 @@ public class TalkPresenter implements TalkContract.UserActionsListener {
         if (view != null) {
             final int order = prefs.getRecordsOrder();
             ArrayList list = new ArrayList<ItemData>();
-            view.showItemProgress(itemData);
+            view.showItemProgress(itemData,false);
             list.add(itemData);
             view.addRecords(list, order);
         }
