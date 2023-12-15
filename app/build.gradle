@@ -76,7 +76,7 @@ android {
 //			dimension "default"
 			signingConfig = signingConfigs.config
 			applicationId "com.perry.audiorecorder"
-			manifestPlaceholders = [app_name: "无崖"]
+			manifestPlaceholders = [app_name: "无涯"]
 		}
 	}
 
