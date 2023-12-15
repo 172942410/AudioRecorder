@@ -213,6 +213,21 @@ public class TalkAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 //            Log.d(TAG, "item:" + item);
             holder.name.setText(item.getName());
 //            duration=4639875 4秒
+            if(item.durationCur >= 0){
+                holder.durationCur.setText(item.durationCur+"/");
+                holder.durationCur.setVisibility(View.VISIBLE);
+            }else{
+                holder.durationCur.setVisibility(View.INVISIBLE);
+            }
+            if (item.playStatus == 0) {
+                holder.btnPlay.setImageResource(R.drawable.ic_play);
+            } else if (item.playStatus == 1) {
+                holder.btnPlay.setImageResource(R.drawable.ic_pause);
+            } else if (item.playStatus == 2) {
+                holder.btnPlay.setImageResource(R.drawable.ic_play);
+            } else if (item.playStatus == -1) {
+                holder.btnPlay.setImageResource(R.drawable.ic_play);
+            }
             holder.setDurationInt((int) (item.getDuration() / 1000000));
 //            Log.d(TAG, "获取到的 durationInt：" + holder.durationInt);
             String durationStr = holder.durationInt + "\"";
@@ -678,62 +693,60 @@ public class TalkAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
     public void setProgress(long mills, int percent) {
 //        Log.d(TAG, "setProgress mills:" + mills + ",percent:" + percent);
-        if (itemViewHolderCur != null) {
-//            Log.d(TAG, "setProgress:" + percent);
-            itemViewHolderCur.playProgress.setProgress(percent);
-            String curTime = mills / 1000 + "";
-            itemViewHolderCur.durationCur.setText(curTime + "/");
-            itemViewHolderCur.durationCur.setVisibility(View.VISIBLE);
-            notifyItemChanged(activeItem);
-        }
-//        if (playProgressCur != null) {
-////            Log.d(TAG,"setProgress:"+percent);
-//            playProgressCur.setProgress(percent);
-//            notifyItemChanged(posCur);
-//        }
-    }
-
-    public void showPlayStart(boolean animate, int index) {
-        if (itemViewHolderCur != null) {
-            Log.d(TAG, "index:" + index + ",activeItem:" + activeItem + ",posPrev:" + posPrev);
-            if (index == posPrev) {
-                itemViewHolderCur.btnPlay.setImageResource(R.drawable.ic_pause);
-            } else {
-                if (itemViewHolderPrev != null) {
-                    itemViewHolderPrev.btnPlay.setImageResource(R.drawable.ic_play);
-                    itemViewHolderPrev.playProgress.setProgress(0);
-                    itemViewHolderPrev.durationCur.setText("0/");
-                    itemViewHolderPrev.durationCur.setVisibility(View.INVISIBLE);
-                }
-                itemViewHolderCur.btnPlay.setImageResource(R.drawable.ic_pause);
-                itemViewHolderCur.playProgress.setProgress(0);
+        if(itemDataCur != null){
+            if(data.get(activeItem).equals(itemDataCur)) {
+                itemDataCur.playProgress = percent;
+                itemDataCur.durationCur = (int) mills / 1000;
+                notifyItemChanged(activeItem);
+            }else{
+                Log.e(TAG,"当前选中的item对象不一致异常");
             }
+        }
+    }
+    ItemData itemDataCur;
+    ItemData itemDataPrev;
+    public void showPlayStart(boolean animate, int index) {
+        if(data != null && data.size() > index){
+            itemDataCur = data.get(index);
+            itemDataCur.playStatus = 1;
+            if(index != posPrev) {
+                itemDataCur.playProgress = 0;
+                if(posPrev >= 0 && data.size() > posPrev){
+                    itemDataPrev = data.get(posPrev);
+                    itemDataPrev.playStatus = 0;
+                    itemDataPrev.playProgress = 0;
+                    itemDataPrev.durationCur = -1;
+                    notifyItemChanged(posPrev);
+                }
+            }
+            notifyItemChanged(index);
         }
     }
 
     public void showPlayPause(int index) {
-        if (itemViewHolderCur != null) {
+        if(data != null && data.size() > index){
+            itemDataCur = data.get(index);
             if (index == activeItem) {
-                itemViewHolderCur.btnPlay.setImageResource(R.drawable.ic_play);
-            } else {
-                itemViewHolderCur.btnPlay.setImageResource(R.drawable.ic_stop);
-                itemViewHolderCur.playProgress.setProgress(0);
-                itemViewHolderCur.durationCur.setText("0/");
-                itemViewHolderCur.durationCur.setVisibility(View.INVISIBLE);
+                itemDataCur.playStatus = 0;
+            }else{
+                itemDataCur.playStatus = 1;
+                itemDataCur.playProgress = 0;
+                itemDataCur.durationCur = -1;
             }
+            notifyItemChanged(index);
         }
     }
 
     public void showPlayStop(int index) {
-        if (itemViewHolderCur != null) {
-            if (index == activeItem) {
-                itemViewHolderCur.btnPlay.setImageResource(R.drawable.ic_play);
-                itemViewHolderCur.playProgress.setProgress(0);
-                itemViewHolderCur.durationCur.setText("0/");
-                itemViewHolderCur.durationCur.setVisibility(View.INVISIBLE);
-            } else {
 
+        if(data != null && data.size() > index){
+            itemDataCur = data.get(index);
+            if (index == activeItem) {
+                itemDataCur.playStatus = 0;
+                itemDataCur.playProgress = 0;
+                itemDataCur.durationCur = -1;
             }
+            notifyItemChanged(index);
         }
         setActiveItem(-1);
     }
